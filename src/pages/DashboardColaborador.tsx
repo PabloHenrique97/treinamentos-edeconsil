@@ -48,6 +48,15 @@ const recomendados = [
   { cor: C.purple, titulo: 'EdeconQuiz — SIPAT 2026',   info: '20 questões · 15 min'   },
 ]
 
+const disciplinas = [
+  { id: 1, titulo: 'NR-35 — Trabalho em Altura',          status: 'Cursando', pct: 68  },
+  { id: 2, titulo: 'SIPAT — Segurança no Canteiro',       status: 'Cursando', pct: 35  },
+  { id: 3, titulo: 'Gestão da Qualidade ISO 9001',        status: 'Cursando', pct: 12  },
+  { id: 4, titulo: 'Liderança em Obras e Canteiros',      status: 'Cursando', pct: 0   },
+  { id: 5, titulo: 'NR-18 — Condições e Meio Ambiente',   status: 'Cursando', pct: 0   },
+  { id: 6, titulo: 'Gestão Ambiental em Obras',           status: 'Cursando', pct: 0   },
+]
+
 interface DashboardColaboradorProps {
   onLogout: () => void
 }
@@ -95,6 +104,57 @@ export function DashboardColaborador({ onLogout }: DashboardColaboradorProps) {
             </div>
           ))}
         </nav>
+
+        {/* Widget progresso geral */}
+        <div style={{
+          margin: '0 8px 8px',
+          background: 'rgba(26,86,255,0.08)',
+          border: '0.5px solid rgba(26,86,255,0.20)',
+          borderRadius: '12px',
+          padding: '14px',
+        }}>
+          {/* Selecionar curso */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            marginBottom: '12px', cursor: 'pointer',
+          }}>
+            <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid rgba(26,86,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronRight size={10} color={C.muted} style={{ transform: 'rotate(90deg)' }} />
+            </div>
+            <span style={{ fontSize: '11px', color: C.muted2 }}>Selecionar curso</span>
+          </div>
+
+          {/* Donut + número */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Mini donut SVG */}
+            <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0 }}>
+              <svg viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)', width: '44px', height: '44px' }}>
+                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="5" />
+                <circle cx="22" cy="22" r="18" fill="none" stroke={C.blue} strokeWidth="5"
+                  strokeDasharray={`${2 * Math.PI * 18 * 0.27} ${2 * Math.PI * 18 * 0.73}`}
+                  strokeLinecap="round" />
+              </svg>
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '9px', fontWeight: 700, color: C.blue,
+              }}>
+                27%
+              </div>
+            </div>
+
+            {/* Texto */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                <span style={{ fontSize: '20px', fontWeight: 700, color: C.text, lineHeight: 1 }}>12</span>
+                <span style={{ fontSize: '13px', color: C.muted }}>de 44</span>
+              </div>
+              <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>
+                disciplinas concluídas
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Perfil + Logout */}
         <div style={{ padding: '12px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -191,6 +251,125 @@ export function DashboardColaborador({ onLogout }: DashboardColaboradorProps) {
                     <div style={{ fontSize: '10px', color: C.muted }}>{r.info}</div>
                   </div>
                   <ChevronRight size={14} color={C.blue} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── DISCIPLINAS EM ANDAMENTO ── */}
+          <div style={{
+            background: 'rgba(7,15,30,0.8)',
+            border: `0.5px solid ${C.border}`,
+            borderRadius: '12px',
+            padding: '20px 24px',
+          }}>
+            {/* Cabeçalho */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: C.text }}>
+                  Disciplinas em andamento
+                </span>
+                <div style={{
+                  width: '18px', height: '18px',
+                  borderRadius: '50%',
+                  border: `1px solid ${C.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'help',
+                }}>
+                  <span style={{ fontSize: '10px', color: C.muted }}>?</span>
+                </div>
+              </div>
+              <a style={{ fontSize: '13px', color: C.blue, textDecoration: 'none', cursor: 'pointer', fontWeight: 500 }}>
+                Ver todas as disciplinas
+              </a>
+            </div>
+
+            {/* Grid de cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '12px',
+            }}>
+              {disciplinas.map(d => (
+                <div
+                  key={d.id}
+                  style={{
+                    background: C.surface2,
+                    border: `0.5px solid ${C.border}`,
+                    borderRadius: '10px',
+                    padding: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 150ms',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'rgba(26,86,255,0.40)'
+                    e.currentTarget.style.background = 'rgba(26,86,255,0.06)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = C.border
+                    e.currentTarget.style.background = C.surface2
+                  }}
+                >
+                  {/* Badge status */}
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    background: 'rgba(26,86,255,0.12)',
+                    border: '0.5px solid rgba(26,86,255,0.25)',
+                    borderRadius: '6px',
+                    padding: '3px 10px',
+                    marginBottom: '10px',
+                  }}>
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: C.blue }}>
+                      {d.status}
+                    </span>
+                  </div>
+
+                  {/* Título */}
+                  <p style={{
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: C.text,
+                    margin: '0 0 14px',
+                    lineHeight: 1.4,
+                    minHeight: '36px',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical' as const,
+                    overflow: 'hidden',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px',
+                  }}>
+                    {d.titulo}
+                  </p>
+
+                  {/* Barra de progresso */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      flex: 1,
+                      background: 'rgba(26,86,255,0.10)',
+                      borderRadius: '4px',
+                      height: '5px',
+                    }}>
+                      <div style={{
+                        background: d.pct > 0 ? C.blue : 'rgba(26,86,255,0.20)',
+                        height: '5px',
+                        borderRadius: '4px',
+                        width: `${d.pct}%`,
+                        minWidth: d.pct > 0 ? '4px' : '0',
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: d.pct > 0 ? C.blue : C.muted,
+                      minWidth: '28px',
+                      textAlign: 'right',
+                    }}>
+                      {d.pct}%
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
