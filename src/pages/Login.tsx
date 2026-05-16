@@ -263,42 +263,42 @@ export default function Login({ onLogin }: LoginProps) {
       {/* PAINEL DIREITO */}
       <div style={{
         position: 'absolute',
-        right: '60px',
+        right: '48px',
         top: '50%',
         transform: 'translateY(-50%)',
-        width: '380px',
-        background: 'linear-gradient(160deg, rgba(10,22,40,0.92) 0%, rgba(5,13,26,0.96) 100%)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(26,86,255,0.20)',
-        borderRadius: '24px',
-        padding: '40px 36px',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(26,86,255,0.08)',
+        width: '440px',
+        background: 'linear-gradient(160deg, rgba(10,22,40,0.95) 0%, rgba(5,13,26,0.98) 100%)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid rgba(26,86,255,0.22)',
+        borderRadius: '28px',
+        padding: '48px 44px',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(26,86,255,0.10)',
         zIndex: 10,
       }}>
         <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 340 }}>
 
           {/* Ícone topo */}
           <div style={{
-            width: 64, height: 64,
+            width: 72, height: 72,
             background: 'linear-gradient(135deg, #1a56ff22, #1a56ff44)',
             border: '1px solid #1a56ff55',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px',
           }}>
-            <GraduationCap size={28} color="#1a56ff" />
+            <GraduationCap size={32} color="#1a56ff" />
           </div>
 
           {/* Título */}
           <h1 style={{
-            fontSize: 24, fontWeight: 700, color: '#fff',
+            fontSize: 28, fontWeight: 700, color: '#fff',
             textAlign: 'center', margin: '0 0 8px',
           }}>Bem-vindo!</h1>
 
           {/* Subtítulo */}
           <p style={{
-            fontSize: 14, color: '#8899aa', textAlign: 'center',
+            fontSize: 15, color: '#8899aa', textAlign: 'center',
             lineHeight: 1.6, margin: '0 0 32px',
           }}>
             Acesse sua conta para continuar<br />
@@ -329,10 +329,10 @@ export default function Login({ onLogin }: LoginProps) {
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  padding: '13px 16px 13px 42px',
+                  padding: '15px 16px 15px 44px',
                   background: '#0d1f3c',
                   border: `1px solid ${focusCpf ? '#1a56ff' : '#1a56ff33'}`,
-                  borderRadius: 10, color: '#fff', fontSize: 14,
+                  borderRadius: 10, color: '#fff', fontSize: 15,
                   outline: 'none', transition: 'all 200ms',
                   boxShadow: focusCpf ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
@@ -363,10 +363,10 @@ export default function Login({ onLogin }: LoginProps) {
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  padding: '13px 44px 13px 42px',
+                  padding: '15px 44px 15px 44px',
                   background: '#0d1f3c',
                   border: `1px solid ${focusSenha ? '#1a56ff' : '#1a56ff33'}`,
-                  borderRadius: 10, color: '#fff', fontSize: 14,
+                  borderRadius: 10, color: '#fff', fontSize: 15,
                   outline: 'none', transition: 'all 200ms',
                   boxShadow: focusSenha ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
@@ -438,9 +438,9 @@ export default function Login({ onLogin }: LoginProps) {
             className="login-btn"
             style={{
               marginTop: 24,
-              width: '100%', padding: '14px',
+              width: '100%', padding: '16px',
               background: 'linear-gradient(90deg, #1a56ff, #3b82f6)',
-              color: '#fff', fontSize: 15, fontWeight: 700,
+              color: '#fff', fontSize: 16, fontWeight: 700,
               border: 'none', borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: '0 4px 20px #1a56ff44',
