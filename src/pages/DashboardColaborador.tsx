@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   LayoutDashboard, BookOpen, Award, ClipboardCheck,
   FileText, BarChart2, Bell, LogOut, ChevronRight,
-  Play
+  Play, GitBranch
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
 
@@ -27,6 +27,7 @@ const navItems = [
   { icon: ClipboardCheck,  label: 'EdeconQuiz'    },
   { icon: FileText,        label: 'Apostilas'     },
   { icon: BarChart2,       label: 'Meu Progresso' },
+  { icon: GitBranch,       label: 'Trilhas de Aprendizado' },
 ]
 
 const metricas = [
@@ -90,6 +91,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
               onClick={() => {
                 setNavAtiva(item.label)
                 if (item.label === 'Meus Cursos') onNavigate('meusCursos')
+                if (item.label === 'Trilhas de Aprendizado') onNavigate('trilha')
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',

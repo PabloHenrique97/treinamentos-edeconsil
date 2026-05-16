@@ -151,6 +151,7 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
             <div key={item.label}
               onClick={() => {
                 if (item.label === 'Dashboard') onNavigate('dashboard')
+                if (item.label === 'Trilhas de Aprendizado') onNavigate('trilha')
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
