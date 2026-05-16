@@ -3,6 +3,7 @@ import {
   HardHat, ShieldCheck, BookOpen, TrendingUp,
   GraduationCap, User, Lock, Eye, EyeOff, ArrowRight
 } from 'lucide-react'
+import logoEdeconsil from '../assets/logo-edeconsil.png'
 
 interface LoginProps {
   onLogin: () => void
@@ -150,7 +151,7 @@ export default function Login({ onLogin }: LoginProps) {
           zIndex: 10,
         }}>
           <img
-            src="/logo-edeconsil.png"
+            src={logoEdeconsil}
             alt="Edeconsil"
             style={{
               height: '52px',
