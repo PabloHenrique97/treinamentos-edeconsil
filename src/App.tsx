@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Login from './pages/Login'
-import { Treinamentos } from './pages/Treinamentos'
+import { DashboardColaborador } from './pages/DashboardColaborador'
 import { DashboardAdmin } from './pages/DashboardAdmin'
 import './App.css'
 
@@ -23,5 +23,5 @@ export default function App() {
     return <DashboardAdmin onLogout={() => setLogado(false)} />
   }
 
-  return <Treinamentos />
+  return <DashboardColaborador onLogout={() => setLogado(false)} />
 }
