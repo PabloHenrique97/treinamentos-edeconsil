@@ -208,7 +208,7 @@ export default function Login({ onLogin }: LoginProps) {
             <span style={{
               display: 'inline-block',
               border: '1px solid rgba(26,86,255,0.60)',
-              background: 'rgba(26,86,255,0.25)',
+              background: 'rgba(5,15,40,0.75)',
               borderRadius: 20, padding: '6px 16px',
               color: '#1a56ff', fontSize: 11, fontWeight: 600, letterSpacing: 3,
             }}>PLATAFORMA EAD</span>
@@ -237,7 +237,7 @@ export default function Login({ onLogin }: LoginProps) {
             {diferenciais.map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 44, height: 44, background: 'rgba(26,86,255,0.28)',
+                  width: 44, height: 44, background: 'rgba(5,15,40,0.75)',
                   border: '1px solid rgba(26,86,255,0.55)', borderRadius: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
