@@ -79,11 +79,11 @@ export default function Login({ onLogin }: LoginProps) {
 
   return (
     <div style={{
-      display: 'flex',
+      position: 'relative',
       width: '100vw',
       height: '100vh',
       overflow: 'hidden',
-      background: '#050d1a',
+      display: 'flex',
       fontFamily: "'Inter', sans-serif",
     }}>
       <style>{`
@@ -108,7 +108,7 @@ export default function Login({ onLogin }: LoginProps) {
 
       {/* PAINEL ESQUERDO */}
       <div style={{
-        flex: '1.4',
+        flex: 1,
         position: 'relative',
         background: `url(${fundoTreinamento}) center center / cover no-repeat`,
         overflow: 'hidden',
@@ -207,8 +207,8 @@ export default function Login({ onLogin }: LoginProps) {
           <div style={{ marginTop: 120 }}>
             <span style={{
               display: 'inline-block',
-              border: '1px solid #1a56ff33',
-              background: '#1a56ff15',
+              border: '1px solid rgba(26,86,255,0.60)',
+              background: 'rgba(26,86,255,0.25)',
               borderRadius: 20, padding: '6px 16px',
               color: '#1a56ff', fontSize: 11, fontWeight: 600, letterSpacing: 3,
             }}>PLATAFORMA EAD</span>
@@ -237,8 +237,8 @@ export default function Login({ onLogin }: LoginProps) {
             {diferenciais.map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 44, height: 44, background: '#1a56ff15',
-                  border: '1px solid #1a56ff33', borderRadius: 10,
+                  width: 44, height: 44, background: 'rgba(26,86,255,0.28)',
+                  border: '1px solid rgba(26,86,255,0.55)', borderRadius: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
                 }}>
@@ -262,11 +262,19 @@ export default function Login({ onLogin }: LoginProps) {
 
       {/* PAINEL DIREITO */}
       <div style={{
-        width: 420, flexShrink: 0,
-        background: 'linear-gradient(160deg, #0a1628 0%, #050d1a 100%)',
-        borderLeft: '1px solid #1a56ff22',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '48px 40px',
+        position: 'absolute',
+        right: '60px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '380px',
+        background: 'linear-gradient(160deg, rgba(10,22,40,0.92) 0%, rgba(5,13,26,0.96) 100%)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(26,86,255,0.20)',
+        borderRadius: '24px',
+        padding: '40px 36px',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(26,86,255,0.08)',
+        zIndex: 10,
       }}>
         <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 340 }}>
 
