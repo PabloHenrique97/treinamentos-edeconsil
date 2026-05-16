@@ -2,13 +2,16 @@ import { useState } from 'react'
 import Login from './pages/Login'
 import { DashboardColaborador } from './pages/DashboardColaborador'
 import { DashboardAdmin } from './pages/DashboardAdmin'
+import { MeusCursos } from './pages/MeusCursos'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
+type Pagina = 'dashboard' | 'meusCursos'
 
 export default function App() {
   const [logado, setLogado] = useState(false)
   const [perfil, setPerfil] = useState<Perfil>('colaborador')
+  const [pagina, setPagina] = useState<Pagina>('dashboard')
 
   if (!logado) {
     return (
@@ -23,5 +26,14 @@ export default function App() {
     return <DashboardAdmin onLogout={() => setLogado(false)} />
   }
 
-  return <DashboardColaborador onLogout={() => setLogado(false)} />
+  if (pagina === 'meusCursos') {
+    return <MeusCursos onNavigate={(page) => setPagina(page as Pagina)} />
+  }
+
+  return (
+    <DashboardColaborador
+      onLogout={() => setLogado(false)}
+      onNavigate={(page) => setPagina(page as Pagina)}
+    />
+  )
 }

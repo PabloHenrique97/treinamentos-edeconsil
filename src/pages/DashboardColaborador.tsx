@@ -59,9 +59,10 @@ const disciplinas = [
 
 interface DashboardColaboradorProps {
   onLogout: () => void
+  onNavigate: (page: string) => void
 }
 
-export function DashboardColaborador({ onLogout }: DashboardColaboradorProps) {
+export function DashboardColaborador({ onLogout, onNavigate }: DashboardColaboradorProps) {
   const [navAtiva, setNavAtiva] = useState('Início')
 
   return (
@@ -86,7 +87,10 @@ export function DashboardColaborador({ onLogout }: DashboardColaboradorProps) {
           {navItems.map(item => (
             <div
               key={item.label}
-              onClick={() => setNavAtiva(item.label)}
+              onClick={() => {
+                setNavAtiva(item.label)
+                if (item.label === 'Meus Cursos') onNavigate('meusCursos')
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
@@ -225,6 +229,7 @@ export function DashboardColaborador({ onLogout }: DashboardColaboradorProps) {
               ))}
 
               <button
+                onClick={() => onNavigate('meusCursos')}
                 style={{ marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'opacity 150ms', fontFamily: "'Inter', sans-serif" }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
                 onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
