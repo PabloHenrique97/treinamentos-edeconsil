@@ -144,18 +144,18 @@ export default function Login({ onLogin }: LoginProps) {
         {/* LOGO */}
         <div style={{
           position: 'absolute',
-          top: '40px',
-          left: '56px',
+          top: '36px',
+          left: '48px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '20px',
           zIndex: 10,
         }}>
           <img
             src={logoEdeconsil}
             alt="Edeconsil"
             style={{
-              height: '52px',
+              height: '72px',
               width: 'auto',
               objectFit: 'contain',
               display: 'block',
@@ -166,28 +166,30 @@ export default function Login({ onLogin }: LoginProps) {
           />
           <div style={{
             width: '1.5px',
-            height: '36px',
+            height: '48px',
             background: 'rgba(255,255,255,0.25)',
             flexShrink: 0,
           }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <span style={{
-              fontSize: '12px',
+              fontSize: '15px',
               fontWeight: 700,
               color: '#ffffff',
-              letterSpacing: '2px',
+              letterSpacing: '3px',
               lineHeight: 1.2,
               textTransform: 'uppercase',
+              margin: 0,
             }}>
               Universidade
             </span>
             <span style={{
-              fontSize: '12px',
+              fontSize: '15px',
               fontWeight: 700,
               color: '#1a56ff',
-              letterSpacing: '2px',
+              letterSpacing: '3px',
               lineHeight: 1.2,
               textTransform: 'uppercase',
+              margin: 0,
             }}>
               Corporativa
             </span>
