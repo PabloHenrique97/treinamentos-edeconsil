@@ -6,6 +6,7 @@ import {
   Clock, Award
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
+import { Sidebar } from '../components/Sidebar'
 
 const C = {
   bg:      '#050d1a',
@@ -93,25 +94,6 @@ const aprendizados = [
   'Identificar pontos críticos no projeto',
 ]
 
-const navSidebar = [
-  { label: 'Dashboard',              ativo: false },
-  { label: 'Meus Cursos',            ativo: true  },
-  { label: 'Certificados',           ativo: false },
-  { label: 'Biblioteca',             ativo: false },
-  { label: 'Trilhas de Aprendizado', ativo: false },
-  { label: 'Favoritos',              ativo: false },
-  { label: 'Histórico',              ativo: false },
-]
-
-const categorias = [
-  'Obras e Infraestrutura',
-  'Terraplanagem',
-  'Pavimentação',
-  'Equipamentos',
-  'Segurança do Trabalho',
-  'Gestão e Suprimentos',
-]
-
 export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [modulosAbertos, setModulosAbertos] = useState<number[]>([2])
   const [abaAtiva, setAbaAtiva] = useState('Sobre a Aula')
@@ -127,87 +109,11 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
       {/* SIDEBAR ESQUERDA */}
-      <aside style={{
-        width: '220px', flexShrink: 0,
-        background: C.surface,
-        borderRight: `1px solid ${C.border}`,
-        display: 'flex', flexDirection: 'column',
-        overflowY: 'auto',
-      }}>
-
-        {/* Logo */}
-        <div style={{ padding: '16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '32px', objectFit: 'contain' }} />
-          <div>
-            <div style={{ fontSize: '8px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>EDECONSIL</div>
-            <div style={{ fontSize: '8px', color: C.blue, letterSpacing: '1px' }}>UNIVERSIDADE</div>
-          </div>
-        </div>
-
-        {/* Nav principal */}
-        <div style={{ padding: '12px 8px' }}>
-          <div style={{ fontSize: '9px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '4px 12px 8px', textTransform: 'uppercase' }}>Menu</div>
-          {navSidebar.map(item => (
-            <div key={item.label}
-              onClick={() => {
-                if (item.label === 'Dashboard') onNavigate('dashboard')
-                if (item.label === 'Trilhas de Aprendizado') onNavigate('trilha')
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '9px 12px', borderRadius: '8px', cursor: 'pointer',
-                background: item.ativo ? 'rgba(26,86,255,0.15)' : 'transparent',
-                borderLeft: item.ativo ? `3px solid ${C.blue}` : '3px solid transparent',
-                marginBottom: '1px',
-                transition: 'all 150ms',
-              }}
-              onMouseEnter={e => { if (!item.ativo) e.currentTarget.style.background = 'rgba(26,86,255,0.06)' }}
-              onMouseLeave={e => { if (!item.ativo) e.currentTarget.style.background = 'transparent' }}
-            >
-              <span style={{ fontSize: '13px', fontWeight: item.ativo ? 700 : 400, color: item.ativo ? C.blue : C.muted2 }}>
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Categorias */}
-        <div style={{ padding: '0 8px', marginTop: '8px' }}>
-          <div style={{ fontSize: '9px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '4px 12px 8px', textTransform: 'uppercase' }}>Categorias</div>
-          {categorias.map(cat => (
-            <div key={cat} style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '8px 12px', borderRadius: '8px', cursor: 'pointer',
-              transition: 'all 150ms',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,86,255,0.06)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: C.muted, flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', color: C.muted2 }}>{cat}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Suporte */}
-        <div style={{ marginTop: 'auto', padding: '12px' }}>
-          <div style={{
-            background: 'rgba(26,86,255,0.08)',
-            border: `1px solid ${C.border}`,
-            borderRadius: '10px', padding: '12px',
-            display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-          }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(26,86,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MessageSquare size={13} color={C.blue} />
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: C.blue }}>Precisa de ajuda?</div>
-              <div style={{ fontSize: '10px', color: C.muted }}>Fale com nosso suporte</div>
-            </div>
-            <ChevronRight size={12} color={C.muted} style={{ marginLeft: 'auto' }} />
-          </div>
-        </div>
-      </aside>
+      <Sidebar
+        paginaAtiva="meusCursos"
+        onNavigate={onNavigate}
+        onLogout={() => onNavigate('dashboard')}
+      />
 
       {/* ÁREA CENTRAL */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

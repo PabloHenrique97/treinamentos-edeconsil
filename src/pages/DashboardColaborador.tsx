@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import {
-  LayoutDashboard, BookOpen, Award, ClipboardCheck,
-  FileText, BarChart2, Bell, LogOut, ChevronRight,
-  Play, GitBranch
+  BookOpen, Bell, ChevronRight,
+  Play
 } from 'lucide-react'
-import logoEdeconsil from '../assets/logo-edeconsil.png'
+import { Sidebar } from '../components/Sidebar'
 
 const C = {
   bg:      '#050d1a',
@@ -19,16 +17,6 @@ const C = {
   muted:   '#4a6080',
   muted2:  '#6b80a0',
 }
-
-const navItems = [
-  { icon: LayoutDashboard, label: 'Início'        },
-  { icon: BookOpen,        label: 'Meus Cursos'   },
-  { icon: Award,           label: 'Certificados'  },
-  { icon: ClipboardCheck,  label: 'EdeconQuiz'    },
-  { icon: FileText,        label: 'Apostilas'     },
-  { icon: BarChart2,       label: 'Meu Progresso' },
-  { icon: GitBranch,       label: 'Trilhas de Aprendizado' },
-]
 
 const metricas = [
   { label: 'Cursos ativos',   valor: '8',   delta: '+2 este mês',  deltaColor: C.blue  },
@@ -64,116 +52,15 @@ interface DashboardColaboradorProps {
 }
 
 export function DashboardColaborador({ onLogout, onNavigate }: DashboardColaboradorProps) {
-  const [navAtiva, setNavAtiva] = useState('Início')
-
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width: '220px', background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-
-        {/* Logo */}
-        <div style={{ padding: '20px 16px', borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '36px', objectFit: 'contain' }} />
-            <div>
-              <div style={{ fontSize: '9px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>UNIVERSIDADE</div>
-              <div style={{ fontSize: '9px', fontWeight: 700, color: C.blue, letterSpacing: '1.5px' }}>CORPORATIVA</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ padding: '12px 8px', flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {navItems.map(item => (
-            <div
-              key={item.label}
-              onClick={() => {
-                setNavAtiva(item.label)
-                if (item.label === 'Meus Cursos') onNavigate('meusCursos')
-                if (item.label === 'Trilhas de Aprendizado') onNavigate('trilha')
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
-                background: navAtiva === item.label ? 'rgba(26,86,255,0.15)' : 'transparent',
-                border: navAtiva === item.label ? '0.5px solid rgba(26,86,255,0.3)' : '0.5px solid transparent',
-                transition: 'all 150ms',
-              }}
-              onMouseEnter={e => { if (navAtiva !== item.label) e.currentTarget.style.background = 'rgba(26,86,255,0.06)' }}
-              onMouseLeave={e => { if (navAtiva !== item.label) e.currentTarget.style.background = 'transparent' }}
-            >
-              <item.icon size={16} color={navAtiva === item.label ? C.blue : C.muted} />
-              <span style={{ fontSize: '13px', fontWeight: navAtiva === item.label ? 600 : 400, color: navAtiva === item.label ? C.text : C.muted2 }}>
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </nav>
-
-        {/* Widget progresso geral */}
-        <div style={{
-          margin: '0 8px 8px',
-          background: 'rgba(26,86,255,0.08)',
-          border: '0.5px solid rgba(26,86,255,0.20)',
-          borderRadius: '12px',
-          padding: '14px',
-        }}>
-          {/* Selecionar curso */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            marginBottom: '12px', cursor: 'pointer',
-          }}>
-            <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid rgba(26,86,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ChevronRight size={10} color={C.muted} style={{ transform: 'rotate(90deg)' }} />
-            </div>
-            <span style={{ fontSize: '11px', color: C.muted2 }}>Selecionar curso</span>
-          </div>
-
-          {/* Donut + número */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Mini donut SVG */}
-            <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0 }}>
-              <svg viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)', width: '44px', height: '44px' }}>
-                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="5" />
-                <circle cx="22" cy="22" r="18" fill="none" stroke={C.blue} strokeWidth="5"
-                  strokeDasharray={`${2 * Math.PI * 18 * 0.27} ${2 * Math.PI * 18 * 0.73}`}
-                  strokeLinecap="round" />
-              </svg>
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '9px', fontWeight: 700, color: C.blue,
-              }}>
-                27%
-              </div>
-            </div>
-
-            {/* Texto */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-                <span style={{ fontSize: '20px', fontWeight: 700, color: C.text, lineHeight: 1 }}>12</span>
-                <span style={{ fontSize: '13px', color: C.muted }}>de 44</span>
-              </div>
-              <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>
-                disciplinas concluídas
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Perfil + Logout */}
-        <div style={{ padding: '12px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(26,86,255,0.2)', border: '1px solid rgba(26,86,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: C.blue, flexShrink: 0 }}>
-            SE
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Suporte TI</div>
-            <div style={{ fontSize: '10px', color: C.muted }}>Colaborador</div>
-          </div>
-          <LogOut size={15} color={C.muted} style={{ cursor: 'pointer', flexShrink: 0 }} onClick={onLogout} />
-        </div>
-      </aside>
+      <Sidebar
+        paginaAtiva="dashboard"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+      />
 
       {/* MAIN */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
