@@ -7,7 +7,7 @@ import logoEdeconsil from '../assets/logo-edeconsil.png'
 import fundoTreinamento from '../assets/fundo-treinamento.png'
 
 interface LoginProps {
-  onLogin: () => void
+  onLogin: (perfil: 'colaborador' | 'admin') => void
 }
 
 function mascararCPF(valor: string) {
@@ -74,7 +74,8 @@ export default function Login({ onLogin }: LoginProps) {
     setLoading(true)
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false)
-    onLogin()
+    const isAdmin = cpf === '000.000.000-00' && senha === 'admin123'
+    onLogin(isAdmin ? 'admin' : 'colaborador')
   }
 
   return (
