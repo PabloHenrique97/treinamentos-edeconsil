@@ -141,24 +141,54 @@ export default function Login({ onLogin }: LoginProps) {
 
         {/* LOGO */}
         <div style={{
-          position: 'absolute', top: 40, left: 56,
-          zIndex: 1, display: 'flex', flexDirection: 'column', gap: 6,
+          position: 'absolute',
+          top: '40px',
+          left: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          zIndex: 10,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 40, height: 40, background: '#1a56ff',
-              borderRadius: 8, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', color: '#fff',
-              fontWeight: 700, fontSize: 20, flexShrink: 0,
-            }}>E</div>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>EDECONSIL</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-            <div style={{ width: 2, height: 28, background: '#333', flexShrink: 0 }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: 2 }}>UNIVERSIDADE</span>
-              <span style={{ color: '#1a56ff', fontSize: 13, fontWeight: 700, letterSpacing: 2 }}>CORPORATIVA</span>
-            </div>
+          <img
+            src="/logo-edeconsil.png"
+            alt="Edeconsil"
+            style={{
+              height: '52px',
+              width: 'auto',
+              objectFit: 'contain',
+              display: 'block',
+            }}
+            onError={e => {
+              e.currentTarget.style.display = 'none'
+            }}
+          />
+          <div style={{
+            width: '1.5px',
+            height: '36px',
+            background: 'rgba(255,255,255,0.25)',
+            flexShrink: 0,
+          }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+            <span style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              color: '#ffffff',
+              letterSpacing: '2px',
+              lineHeight: 1.2,
+              textTransform: 'uppercase',
+            }}>
+              Universidade
+            </span>
+            <span style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              color: '#1a56ff',
+              letterSpacing: '2px',
+              lineHeight: 1.2,
+              textTransform: 'uppercase',
+            }}>
+              Corporativa
+            </span>
           </div>
         </div>
 
