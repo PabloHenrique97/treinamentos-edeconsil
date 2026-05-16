@@ -4,6 +4,7 @@ import {
   GraduationCap, User, Lock, Eye, EyeOff, ArrowRight
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
+import fundoTreinamento from '../assets/fundo-treinamento.png'
 
 interface LoginProps {
   onLogin: () => void
@@ -109,14 +110,14 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{
         flex: '1.4',
         position: 'relative',
-        background: 'linear-gradient(135deg, #050d1a 0%, #0a1628 40%, #0d1f3c 100%)',
+        background: `url(${fundoTreinamento}) center center / cover no-repeat`,
         overflow: 'hidden',
       }}>
         {/* Overlay */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to right, rgba(5,13,26,0.85) 0%, rgba(5,13,26,0.3) 100%)',
+          background: 'linear-gradient(to right, rgba(5,13,26,0.88) 0%, rgba(5,13,26,0.55) 60%, rgba(5,13,26,0.20) 100%)',
           zIndex: 0,
         }} />
 
