@@ -155,7 +155,7 @@ export default function Login({ onLogin }: LoginProps) {
             src={logoEdeconsil}
             alt="Edeconsil"
             style={{
-              height: '72px',
+              height: '100px',
               width: 'auto',
               objectFit: 'contain',
               display: 'block',
