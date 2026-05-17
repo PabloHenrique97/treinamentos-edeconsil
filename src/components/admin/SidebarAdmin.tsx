@@ -11,7 +11,7 @@ const navGestao = [
   { label: 'Alunos',                 page: 'alunosAdmin' },
   { label: 'Instrutores',            page: 'instrutoresAdmin' },
   { label: 'Certificados',           page: 'certificadosAdmin' },
-  { label: 'Biblioteca',             page: ''            },
+  { label: 'Biblioteca',             page: 'bibliotecaAdmin' },
 ]
 
 const navAdmin = [

@@ -11,11 +11,12 @@ import { TurmasAdmin } from './pages/admin/TurmasAdmin'
 import { AlunosAdmin } from './pages/admin/AlunosAdmin'
 import { InstrutoresAdmin } from './pages/admin/InstrutoresAdmin'
 import { CertificadosAdmin } from './pages/admin/CertificadosAdmin'
+import { BibliotecaAdmin } from './pages/admin/BibliotecaAdmin'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -71,6 +72,12 @@ function AppContent() {
     )
     if (pagina === 'certificadosAdmin') return (
       <CertificadosAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => setLogado(false)}
+      />
+    )
+    if (pagina === 'bibliotecaAdmin') return (
+      <BibliotecaAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={() => setLogado(false)}
       />
