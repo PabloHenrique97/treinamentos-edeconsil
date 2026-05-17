@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Login from './pages/Login'
 import { DashboardColaborador } from './pages/DashboardColaborador'
 import { DashboardAdmin } from './pages/DashboardAdmin'
@@ -18,6 +18,67 @@ import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
+
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    if (
+      error.message.includes('removeChild') ||
+      error.message.includes('Extension') ||
+      error.message.includes('pinComponent') ||
+      error.message.includes('NotFoundError')
+    ) {
+      console.warn('Erro de extensão do navegador ignorado:', error.message)
+      this.setState({ hasError: false, error: null })
+      return
+    }
+    console.error('Erro na aplicação:', error, info)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          height: '100vh', gap: '16px', fontFamily: 'Inter, sans-serif',
+          background: '#050d1a', color: '#ffffff',
+        }}>
+          <div style={{ fontSize: '48px' }}>⚠️</div>
+          <h2 style={{ fontSize: '18px', margin: 0 }}>
+            Algo deu errado
+          </h2>
+          <p style={{ fontSize: '14px', color: '#94a3b8', margin: 0, textAlign: 'center', maxWidth: '400px' }}>
+            Uma extensão do navegador pode estar causando conflito.
+            Tente recarregar a página ou usar o modo anônimo.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '10px 24px', background: '#1a56ff',
+              color: '#fff', border: 'none', borderRadius: '8px',
+              fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Recarregar página
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 type Perfil = 'colaborador' | 'admin'
 type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
@@ -141,8 +202,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
