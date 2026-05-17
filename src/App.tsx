@@ -4,11 +4,12 @@ import { DashboardColaborador } from './pages/DashboardColaborador'
 import { DashboardAdmin } from './pages/DashboardAdmin'
 import { MeusCursos } from './pages/MeusCursos'
 import { TrilhaAprendizado } from './pages/TrilhaAprendizado'
+import { CursosAdmin } from './pages/admin/CursosAdmin'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha'
+type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -25,7 +26,18 @@ function AppContent() {
   }
 
   if (perfil === 'admin') {
-    return <DashboardAdmin onLogout={() => setLogado(false)} />
+    if (pagina === 'cursosAdmin') return (
+      <CursosAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => setLogado(false)}
+      />
+    )
+    return (
+      <DashboardAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => setLogado(false)}
+      />
+    )
   }
 
   if (pagina === 'meusCursos') {

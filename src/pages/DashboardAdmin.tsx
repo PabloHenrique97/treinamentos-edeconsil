@@ -111,7 +111,7 @@ function Sparkline({ data, cor }: { data: number[]; cor: string }) {
   )
 }
 
-export function DashboardAdmin({ onLogout }: { onLogout: () => void }) {
+export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: string) => void; onLogout: () => void }) {
   const { C } = useTheme()
   const [_navAtiva, setNavAtiva] = useState('Dashboard')
 
@@ -166,6 +166,7 @@ export function DashboardAdmin({ onLogout }: { onLogout: () => void }) {
           <div style={{ fontSize: '10px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '8px 12px 4px', textTransform: 'uppercase' }}>Gestão</div>
           {navGestao.map(item => (
             <div key={item.label}
+              onClick={() => item.label === 'Cursos' && onNavigate('cursosAdmin')}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '1px' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,86,255,0.08)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
