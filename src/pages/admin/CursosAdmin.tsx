@@ -330,7 +330,8 @@ export function CursosAdmin({ onNavigate, onLogout }: {
               {cursosFiltrados.map(curso => (
                 <div
                   key={curso.id}
-                  style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative' }}
+                  onClick={() => onNavigate('cursoDetalheAdmin')}
+                  style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative', cursor: 'pointer' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                 >
@@ -351,7 +352,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                       {/* Menu 3 pontos */}
                       <div style={{ position: 'relative' }}>
                         <button
-                          onClick={() => setMenuAberto(menuAberto === curso.id ? null : curso.id)}
+                          onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === curso.id ? null : curso.id) }}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: C.muted, borderRadius: '6px' }}
                         >
                           <MoreVertical size={16} />
@@ -359,14 +360,14 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                         {menuAberto === curso.id && (
                           <div style={{ position: 'absolute', right: 0, top: '100%', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', minWidth: '140px', zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
                             {[
-                              { icon: Eye,    label: 'Visualizar'             },
-                              { icon: Edit,   label: 'Editar'                 },
-                              { icon: Copy,   label: 'Duplicar'               },
-                              { icon: Trash2, label: 'Excluir', danger: true  },
+                              { icon: Eye,    label: 'Visualizar', navTo: 'cursoDetalheAdmin' },
+                              { icon: Edit,   label: 'Editar'                                 },
+                              { icon: Copy,   label: 'Duplicar'                               },
+                              { icon: Trash2, label: 'Excluir', danger: true                  },
                             ].map(a => (
                               <div
                                 key={a.label}
-                                onClick={() => setMenuAberto(null)}
+                                onClick={e => { e.stopPropagation(); setMenuAberto(null); if (a.navTo) onNavigate(a.navTo) }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 14px', cursor: 'pointer', fontSize: '13px', color: a.danger ? '#ef4444' : C.text, transition: 'background 100ms' }}
                                 onMouseEnter={e => e.currentTarget.style.background = a.danger ? 'rgba(239,68,68,0.08)' : 'rgba(26,86,255,0.06)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
