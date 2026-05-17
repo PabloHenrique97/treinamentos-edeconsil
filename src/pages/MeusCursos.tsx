@@ -194,11 +194,11 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                   <Logo height={28} />
                 </div>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 4px', maxWidth: '340px', lineHeight: 1.3 }}>
+                <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff', margin: '0 0 4px', maxWidth: '340px', lineHeight: 1.3 }}>
                   Leitura e Interpretação de Projetos de{' '}
                   <span style={{ color: C.blue }}>Terraplanagem</span>
                 </h2>
-                <p style={{ fontSize: '13px', color: C.muted2, margin: '8px 0 0', maxWidth: '300px' }}>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: '8px 0 0', maxWidth: '300px' }}>
                   Entenda plantas, cortes, perfis e volumes com eficiência.
                 </p>
               </div>
