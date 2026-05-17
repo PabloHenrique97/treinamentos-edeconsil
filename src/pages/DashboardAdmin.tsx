@@ -12,27 +12,14 @@ import {
   FileBarChart
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
-
-const C = {
-  bg:       '#050d1a',
-  surface:  '#070f1e',
-  surface2: '#0a1628',
-  border:   'rgba(26,86,255,0.15)',
-  blue:     '#1a56ff',
-  blue2:    '#3b82f6',
-  green:    '#10b981',
-  amber:    '#f59e0b',
-  purple:   '#8b5cf6',
-  text:     '#ffffff',
-  muted:    '#4a6080',
-  muted2:   '#6b80a0',
-}
+import { useTheme } from '../contexts/ThemeContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 const metricas = [
-  { icon: GraduationCap, label: 'Alunos Ativos',        valor: '1.248', delta: '+12,5%', cor: C.blue,   spark: [20,35,28,45,38,55,48,65,58,75,68,85] },
-  { icon: BookOpen,      label: 'Cursos Disponíveis',    valor: '42',    delta: '+8,3%',  cor: C.blue2,  spark: [10,15,12,20,18,25,22,28,24,32,30,38] },
-  { icon: Users,         label: 'Turmas Abertas',        valor: '86',    delta: '+15,2%', cor: C.green,  spark: [30,45,38,55,48,65,58,72,65,80,74,90] },
-  { icon: Award,         label: 'Certificados Emitidos', valor: '532',   delta: '+18,7%', cor: C.amber,  spark: [15,22,18,30,25,38,32,45,40,55,50,65] },
+  { icon: GraduationCap, label: 'Alunos Ativos',        valor: '1.248', delta: '+12,5%', cor: '#1a56ff', spark: [20,35,28,45,38,55,48,65,58,75,68,85] },
+  { icon: BookOpen,      label: 'Cursos Disponíveis',    valor: '42',    delta: '+8,3%',  cor: '#3b82f6', spark: [10,15,12,20,18,25,22,28,24,32,30,38] },
+  { icon: Users,         label: 'Turmas Abertas',        valor: '86',    delta: '+15,2%', cor: '#10b981', spark: [30,45,38,55,48,65,58,72,65,80,74,90] },
+  { icon: Award,         label: 'Certificados Emitidos', valor: '532',   delta: '+18,7%', cor: '#f59e0b', spark: [15,22,18,30,25,38,32,45,40,55,50,65] },
 ]
 
 const matriculaData = [
@@ -46,18 +33,18 @@ const matriculaData = [
 ]
 
 const atividades = [
-  { icon: UserPlus, cor: C.blue,   titulo: 'Novo aluno matriculado',  desc: 'João Silva se matriculou no curso NR-18',             tempo: '2 min atrás'    },
-  { icon: Award,    cor: C.green,  titulo: 'Curso concluído',         desc: 'Maria Santos concluiu o curso Gestão de Obras',        tempo: '15 min atrás'   },
-  { icon: Users,    cor: C.purple, titulo: 'Nova turma criada',       desc: 'Turma Pavimentação — Maio/2025',                       tempo: '1 hora atrás'   },
-  { icon: Award,    cor: C.amber,  titulo: 'Certificado emitido',     desc: 'Carlos Lima recebeu certificado em Leitura de Projetos', tempo: '2 horas atrás' },
-  { icon: FileText, cor: C.blue2,  titulo: 'Avaliação respondida',    desc: 'Ana Paula respondeu avaliação do curso Topografia',    tempo: '3 horas atrás'  },
+  { icon: UserPlus, cor: '#1a56ff', titulo: 'Novo aluno matriculado',  desc: 'João Silva se matriculou no curso NR-18',             tempo: '2 min atrás'    },
+  { icon: Award,    cor: '#10b981', titulo: 'Curso concluído',         desc: 'Maria Santos concluiu o curso Gestão de Obras',        tempo: '15 min atrás'   },
+  { icon: Users,    cor: '#8b5cf6', titulo: 'Nova turma criada',       desc: 'Turma Pavimentação — Maio/2025',                       tempo: '1 hora atrás'   },
+  { icon: Award,    cor: '#f59e0b', titulo: 'Certificado emitido',     desc: 'Carlos Lima recebeu certificado em Leitura de Projetos', tempo: '2 horas atrás' },
+  { icon: FileText, cor: '#3b82f6', titulo: 'Avaliação respondida',    desc: 'Ana Paula respondeu avaliação do curso Topografia',    tempo: '3 horas atrás'  },
 ]
 
 const distribuicao = [
-  { nome: 'Obras e Infraestrutura', valor: 38, cor: C.blue    },
-  { nome: 'Terraplanagem',          valor: 22, cor: C.green   },
-  { nome: 'Pavimentação',           valor: 18, cor: C.amber   },
-  { nome: 'Equipamentos',           valor: 12, cor: C.purple  },
+  { nome: 'Obras e Infraestrutura', valor: 38, cor: '#1a56ff' },
+  { nome: 'Terraplanagem',          valor: 22, cor: '#10b981' },
+  { nome: 'Pavimentação',           valor: 18, cor: '#f59e0b' },
+  { nome: 'Equipamentos',           valor: 12, cor: '#8b5cf6' },
   { nome: 'Administrativo',         valor: 10, cor: '#ec4899' },
 ]
 
@@ -70,10 +57,10 @@ const cursosTop = [
 ]
 
 const statusAlunos = [
-  { label: 'Ativos',       valor: 892, cor: C.blue,   pct: 71 },
-  { label: 'Em andamento', valor: 256, cor: C.blue2,  pct: 21 },
-  { label: 'Concluídos',   valor: 532, cor: C.green,  pct: 43 },
-  { label: 'Inativos',     valor: 68,  cor: C.purple, pct: 5  },
+  { label: 'Ativos',       valor: 892, cor: '#1a56ff', pct: 71 },
+  { label: 'Em andamento', valor: 256, cor: '#3b82f6', pct: 21 },
+  { label: 'Concluídos',   valor: 532, cor: '#10b981', pct: 43 },
+  { label: 'Inativos',     valor: 68,  cor: '#8b5cf6', pct: 5  },
 ]
 
 const acoes = [
@@ -86,7 +73,7 @@ const acoes = [
 
 const acoesRapidas = [
   { icon: FileText,     label: 'Importar Alunos',   desc: 'Importar via planilha Excel', cor: '#16a34a' },
-  { icon: FileBarChart, label: 'Relatório Completo', desc: 'Gerar relatório detalhado',   cor: C.blue   },
+  { icon: FileBarChart, label: 'Relatório Completo', desc: 'Gerar relatório detalhado',   cor: '#1a56ff' },
 ]
 
 const navGestao = [
@@ -125,6 +112,7 @@ function Sparkline({ data, cor }: { data: number[]; cor: string }) {
 }
 
 export function DashboardAdmin({ onLogout }: { onLogout: () => void }) {
+  const { C } = useTheme()
   const [_navAtiva, setNavAtiva] = useState('Dashboard')
 
   return (
@@ -262,6 +250,8 @@ export function DashboardAdmin({ onLogout }: { onLogout: () => void }) {
             <span style={{ fontSize: '13px', color: C.muted, flex: 1 }}>Buscar cursos, alunos, turmas...</span>
             <span style={{ fontSize: '10px', color: C.muted, background: C.surface, padding: '2px 6px', borderRadius: '4px' }}>⌘ K</span>
           </div>
+
+          <ThemeToggle />
 
           {/* Ícones direita */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

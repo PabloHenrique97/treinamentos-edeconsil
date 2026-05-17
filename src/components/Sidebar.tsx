@@ -4,19 +4,7 @@ import {
   MessageSquare, LogOut, ChevronRight
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
-
-const C = {
-  bg:      '#050d1a',
-  surface: '#070f1e',
-  surface2:'#0a1628',
-  border:  'rgba(26,86,255,0.15)',
-  blue:    '#1a56ff',
-  green:   '#10b981',
-  amber:   '#f59e0b',
-  text:    '#ffffff',
-  muted:   '#4a6080',
-  muted2:  '#6b80a0',
-}
+import { useTheme } from '../contexts/ThemeContext'
 
 const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
@@ -44,6 +32,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
+  const { C } = useTheme()
   return (
     <aside style={{
       width: '220px',

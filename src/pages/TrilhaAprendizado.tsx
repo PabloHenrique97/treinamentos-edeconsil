@@ -1,24 +1,11 @@
 import { useState } from 'react'
 import {
-  ChevronRight, Bell, Search,
+  ChevronRight,
   Calendar, Trophy,
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
-
-const C = {
-  bg:      '#050d1a',
-  surface: '#070f1e',
-  surface2:'#0a1628',
-  surface3:'#0d1e35',
-  border:  'rgba(26,86,255,0.15)',
-  blue:    '#1a56ff',
-  green:   '#10b981',
-  amber:   '#f59e0b',
-  purple:  '#8b5cf6',
-  text:    '#ffffff',
-  muted:   '#4a6080',
-  muted2:  '#6b80a0',
-}
+import { Topbar } from '../components/Topbar'
+import { useTheme } from '../contexts/ThemeContext'
 
 const cursoDados = {
   nome: 'Gestão de Obras e Construção Civil',
@@ -37,18 +24,18 @@ const disciplinasAndamento = [
 ]
 
 const disciplinasConcluidas = [
-  { id: 7,  titulo: 'Introdução à Construção Civil',           status: 'Aprovada', pct: 100, cor: C.green },
-  { id: 8,  titulo: 'Fundamentos de Terraplanagem',            status: 'Aprovada', pct: 100, cor: C.green },
-  { id: 9,  titulo: 'Materiais e Equipamentos de Obra',        status: 'Aprovada', pct: 96,  cor: C.green },
-  { id: 10, titulo: 'Normas Técnicas ABNT para Construção',    status: 'Aprovada', pct: 84,  cor: C.green },
-  { id: 11, titulo: 'Segurança Básica no Trabalho',            status: 'Aprovada', pct: 83,  cor: C.green },
-  { id: 12, titulo: 'Planejamento de Obras',                   status: 'Aprovada', pct: 100, cor: C.green },
-  { id: 13, titulo: 'Leitura de Projetos — Nível Básico',      status: 'Aprovada', pct: 96,  cor: C.green },
-  { id: 14, titulo: 'Topografia Aplicada',                     status: 'Aprovada', pct: 91,  cor: C.green },
-  { id: 15, titulo: 'Controle de Qualidade em Obras',          status: 'Aprovada', pct: 88,  cor: C.green },
-  { id: 16, titulo: 'Fundamentos de Pavimentação',             status: 'Aprovada', pct: 79,  cor: C.green },
-  { id: 17, titulo: 'Equipamentos de Terraplanagem',           status: 'Aprovada', pct: 85,  cor: C.green },
-  { id: 18, titulo: 'Gestão de Resíduos em Obras',             status: 'Aprovada', pct: 93,  cor: C.green },
+  { id: 7,  titulo: 'Introdução à Construção Civil',           status: 'Aprovada', pct: 100, cor: '#10b981'},
+  { id: 8,  titulo: 'Fundamentos de Terraplanagem',            status: 'Aprovada', pct: 100, cor: '#10b981'},
+  { id: 9,  titulo: 'Materiais e Equipamentos de Obra',        status: 'Aprovada', pct: 96,  cor: '#10b981'},
+  { id: 10, titulo: 'Normas Técnicas ABNT para Construção',    status: 'Aprovada', pct: 84,  cor: '#10b981'},
+  { id: 11, titulo: 'Segurança Básica no Trabalho',            status: 'Aprovada', pct: 83,  cor: '#10b981'},
+  { id: 12, titulo: 'Planejamento de Obras',                   status: 'Aprovada', pct: 100, cor: '#10b981'},
+  { id: 13, titulo: 'Leitura de Projetos — Nível Básico',      status: 'Aprovada', pct: 96,  cor: '#10b981'},
+  { id: 14, titulo: 'Topografia Aplicada',                     status: 'Aprovada', pct: 91,  cor: '#10b981'},
+  { id: 15, titulo: 'Controle de Qualidade em Obras',          status: 'Aprovada', pct: 88,  cor: '#10b981'},
+  { id: 16, titulo: 'Fundamentos de Pavimentação',             status: 'Aprovada', pct: 79,  cor: '#10b981'},
+  { id: 17, titulo: 'Equipamentos de Terraplanagem',           status: 'Aprovada', pct: 85,  cor: '#10b981'},
+  { id: 18, titulo: 'Gestão de Resíduos em Obras',             status: 'Aprovada', pct: 93,  cor: '#10b981'},
 ]
 
 const abasStatus = ['Aprovadas', 'Reprovadas', 'Futuras']
@@ -59,6 +46,7 @@ interface TrilhaAprendizadoProps {
 }
 
 export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoProps) {
+  const { C } = useTheme()
   const [abaAtiva, setAbaAtiva] = useState('Aprovadas')
 
   return (
@@ -75,47 +63,18 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
       <main style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
         {/* TOPBAR */}
-        <div style={{
-          height:'56px', flexShrink:0,
-          background: C.surface,
-          borderBottom:`1px solid ${C.border}`,
-          display:'flex', alignItems:'center',
-          padding:'0 24px', gap:'20px',
-        }}>
-          {['Meus Cursos','Certificados','Biblioteca','Trilhas'].map(t => (
-            <span key={t} style={{
-              fontSize:'13px',
-              fontWeight: t === 'Trilhas' ? 600 : 400,
-              color: t === 'Trilhas' ? C.text : C.muted,
-              cursor:'pointer', padding:'4px 0',
-              borderBottom: t === 'Trilhas' ? `2px solid ${C.blue}` : '2px solid transparent',
-            }}>
-              {t}
-            </span>
-          ))}
-
-          {/* Busca */}
-          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'8px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', padding:'7px 14px', width:'240px' }}>
-            <Search size={13} color={C.muted} />
-            <span style={{ fontSize:'12px', color:C.muted, flex:1 }}>Buscar disciplinas...</span>
-            <span style={{ fontSize:'10px', color:C.muted, background:C.surface, padding:'1px 5px', borderRadius:'4px' }}>⌘ K</span>
-          </div>
-
-          {/* Ícones */}
-          <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <div style={{ position:'relative', cursor:'pointer', padding:'6px' }}>
-              <Bell size={17} color={C.muted} />
-              <div style={{ position:'absolute', top:'3px', right:'3px', width:'14px', height:'14px', background:C.blue, borderRadius:'50%', fontSize:'8px', fontWeight:700, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>3</div>
-            </div>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', cursor:'pointer', padding:'4px 8px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px' }}>
-              <div style={{ width:'26px', height:'26px', borderRadius:'50%', background:C.blue, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px', fontWeight:700, color:'#fff' }}>JS</div>
-              <div>
-                <div style={{ fontSize:'11px', fontWeight:600, color:C.text }}>João Silva</div>
-                <div style={{ fontSize:'9px', color:C.green }}>● Aluno</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Topbar
+          navItems={[
+            { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
+            { label: 'Certificados', ativo: false },
+            { label: 'Biblioteca',   ativo: false },
+            { label: 'Trilhas',      ativo: true  },
+          ]}
+          userName="João Silva"
+          userRole="Aluno"
+          userInitials="JS"
+          notificacoes={3}
+        />
 
         {/* CONTEÚDO COM SCROLL */}
         <div style={{ flex:1, overflowY:'auto', padding:'32px 40px' }}>

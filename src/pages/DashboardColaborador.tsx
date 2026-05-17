@@ -1,40 +1,28 @@
 import {
-  BookOpen, Bell, ChevronRight,
+  BookOpen, ChevronRight,
   Play
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
-
-const C = {
-  bg:      '#050d1a',
-  surface: '#070f1e',
-  surface2:'#0a1628',
-  border:  'rgba(26,86,255,0.15)',
-  blue:    '#1a56ff',
-  green:   '#10b981',
-  amber:   '#f59e0b',
-  purple:  '#8b5cf6',
-  text:    '#ffffff',
-  muted:   '#4a6080',
-  muted2:  '#6b80a0',
-}
+import { Topbar } from '../components/Topbar'
+import { useTheme } from '../contexts/ThemeContext'
 
 const metricas = [
-  { label: 'Cursos ativos',   valor: '8',   delta: '+2 este mês',  deltaColor: C.blue  },
-  { label: 'Concluídos',      valor: '3',   delta: '37% concluído', deltaColor: C.green },
-  { label: 'Certificados',    valor: '3',   delta: 'Ver todos',    deltaColor: C.amber },
-  { label: 'Horas estudadas', valor: '24h', delta: 'Este mês',     deltaColor: C.blue  },
+  { label: 'Cursos ativos',   valor: '8',   delta: '+2 este mês',   deltaColor: '#1a56ff' },
+  { label: 'Concluídos',      valor: '3',   delta: '37% concluído', deltaColor: '#10b981' },
+  { label: 'Certificados',    valor: '3',   delta: 'Ver todos',     deltaColor: '#f59e0b' },
+  { label: 'Horas estudadas', valor: '24h', delta: 'Este mês',      deltaColor: '#1a56ff' },
 ]
 
 const cursosAndamento = [
-  { icon: '🪖', titulo: 'NR-35 — Trabalho em Altura',    pct: 68, cor: C.blue  },
-  { icon: '🛡️', titulo: 'SIPAT — Segurança no Trabalho', pct: 35, cor: C.blue  },
-  { icon: '📋', titulo: 'Gestão da Qualidade ISO 9001',  pct: 12, cor: C.amber },
+  { icon: '🪖', titulo: 'NR-35 — Trabalho em Altura',    pct: 68, cor: '#1a56ff' },
+  { icon: '🛡️', titulo: 'SIPAT — Segurança no Trabalho', pct: 35, cor: '#1a56ff' },
+  { icon: '📋', titulo: 'Gestão da Qualidade ISO 9001',  pct: 12, cor: '#f59e0b' },
 ]
 
 const recomendados = [
-  { cor: C.blue,   titulo: 'Liderança em Obras',        info: '32 aulas · 10 matérias' },
-  { cor: C.green,  titulo: 'Gestão Ambiental em Obras', info: '18 aulas · 6 matérias'  },
-  { cor: C.purple, titulo: 'EdeconQuiz — SIPAT 2026',   info: '20 questões · 15 min'   },
+  { cor: '#1a56ff', titulo: 'Liderança em Obras',        info: '32 aulas · 10 matérias' },
+  { cor: '#10b981', titulo: 'Gestão Ambiental em Obras', info: '18 aulas · 6 matérias'  },
+  { cor: '#8b5cf6', titulo: 'EdeconQuiz — SIPAT 2026',   info: '20 questões · 15 min'   },
 ]
 
 const disciplinas = [
@@ -52,6 +40,7 @@ interface DashboardColaboradorProps {
 }
 
 export function DashboardColaborador({ onLogout, onNavigate }: DashboardColaboradorProps) {
+  const { C } = useTheme()
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
@@ -66,21 +55,17 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Topbar */}
-        <div style={{ padding: '0 24px', height: '64px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, background: C.surface }}>
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: C.text }}>Olá, Suporte! 👋</div>
-            <div style={{ fontSize: '12px', color: C.muted }}>
-              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative', cursor: 'pointer', padding: '8px' }}>
-              <Bell size={18} color={C.muted} />
-              <div style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', background: C.blue, borderRadius: '50%' }} />
-            </div>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(26,86,255,0.2)', border: '1px solid rgba(26,86,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: C.blue }}>SE</div>
-          </div>
-        </div>
+        <Topbar
+          navItems={[
+            { label: 'Início',     ativo: true  },
+            { label: 'Notícias',   ativo: false },
+            { label: 'Biblioteca', ativo: false },
+          ]}
+          userName="Suporte TI"
+          userRole="Colaborador"
+          userInitials="SE"
+          notificacoes={3}
+        />
 
         {/* Conteúdo */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

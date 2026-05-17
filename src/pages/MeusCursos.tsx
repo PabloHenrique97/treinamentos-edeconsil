@@ -1,26 +1,14 @@
 import React, { useState } from 'react'
 import {
-  ChevronRight, Bell, MessageSquare, Search,
+  ChevronRight, MessageSquare,
   FileText, Download, Edit3, Check, Play, Pause,
   SkipForward, Volume2, Settings, Maximize,
   Clock, Award
 } from 'lucide-react'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
 import { Sidebar } from '../components/Sidebar'
-
-const C = {
-  bg:      '#050d1a',
-  surface: '#070f1e',
-  surface2:'#0a1628',
-  surface3:'#0d1e35',
-  border:  'rgba(26,86,255,0.15)',
-  blue:    '#1a56ff',
-  green:   '#10b981',
-  amber:   '#f59e0b',
-  text:    '#ffffff',
-  muted:   '#4a6080',
-  muted2:  '#6b80a0',
-}
+import { Topbar } from '../components/Topbar'
+import { useTheme } from '../contexts/ThemeContext'
 
 const curso = {
   titulo: 'Leitura e Interpretação de Projetos de Terraplanagem',
@@ -95,6 +83,7 @@ const aprendizados = [
 ]
 
 export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void }) {
+  const { C } = useTheme()
   const [modulosAbertos, setModulosAbertos] = useState<number[]>([2])
   const [abaAtiva, setAbaAtiva] = useState('Sobre a Aula')
   const [tocando, setTocando] = useState(false)
@@ -119,57 +108,18 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* TOPBAR */}
-        <div style={{
-          height: '56px', flexShrink: 0,
-          background: C.surface,
-          borderBottom: `1px solid ${C.border}`,
-          display: 'flex', alignItems: 'center',
-          padding: '0 20px', gap: '24px',
-        }}>
-          {['Meus Cursos','Certificados','Biblioteca','Trilhas'].map(item => (
-            <span key={item} style={{
-              fontSize: '13px',
-              fontWeight: item === 'Meus Cursos' ? 600 : 400,
-              color: item === 'Meus Cursos' ? C.text : C.muted,
-              cursor: 'pointer', padding: '4px 0',
-              borderBottom: item === 'Meus Cursos' ? `2px solid ${C.blue}` : '2px solid transparent',
-            }}>
-              {item}
-            </span>
-          ))}
-
-          {/* Busca */}
-          <div style={{
-            marginLeft: 'auto',
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: C.surface2,
-            border: `1px solid ${C.border}`,
-            borderRadius: '8px', padding: '7px 14px', width: '240px',
-          }}>
-            <Search size={13} color={C.muted} />
-            <span style={{ fontSize: '12px', color: C.muted, flex: 1 }}>Buscar aulas, cursos...</span>
-            <span style={{ fontSize: '10px', color: C.muted, background: C.surface, padding: '1px 5px', borderRadius: '4px' }}>⌘ K</span>
-          </div>
-
-          {/* Ícones + Avatar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ position: 'relative', cursor: 'pointer', padding: '6px' }}>
-              <Bell size={17} color={C.muted} />
-              <div style={{ position: 'absolute', top: '3px', right: '3px', width: '14px', height: '14px', background: C.blue, borderRadius: '50%', fontSize: '8px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
-            </div>
-            <div style={{ cursor: 'pointer', padding: '6px' }}>
-              <MessageSquare size={17} color={C.muted} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#fff' }}>JS</div>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: C.text }}>João Silva</div>
-                <div style={{ fontSize: '9px', color: C.green }}>● Aluno</div>
-              </div>
-              <ChevronRight size={12} color={C.muted} />
-            </div>
-          </div>
-        </div>
+        <Topbar
+          navItems={[
+            { label: 'Meus Cursos',  ativo: true  },
+            { label: 'Certificados', ativo: false },
+            { label: 'Biblioteca',   ativo: false },
+            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
+          ]}
+          userName="João Silva"
+          userRole="Aluno"
+          userInitials="JS"
+          notificacoes={3}
+        />
 
         {/* CONTEÚDO COM SCROLL */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
