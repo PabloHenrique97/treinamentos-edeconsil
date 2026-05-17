@@ -6,6 +6,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
+import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 
 const cargos = [
   'Todos os cargos',
@@ -215,152 +216,54 @@ export function CursosAdmin({ onNavigate, onLogout }: {
   }
 
   return (
-    <div style={{
-      fontFamily: "'Inter',sans-serif",
-      background: C.bg,
-      color: C.text,
-      display: 'flex',
-      height: '100vh',
-      overflow: 'hidden',
-    }}>
-
-      {/* Sidebar admin */}
-      <aside style={{
-        width: '220px', flexShrink: 0,
+    <LayoutAdmin
+      paginaAtiva="cursosAdmin"
+      onNavigate={onNavigate}
+      onLogout={onLogout}
+      topbarTitulo="Gestão de Cursos"
+      topbarSubtitulo="Gerencie todos os cursos disponíveis na plataforma."
+    >
+      {/* Breadcrumb + busca + toggle */}
+      <div style={{
+        padding: '12px 24px',
+        borderBottom: `1px solid ${C.border}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
         background: C.surface,
-        borderRight: `1px solid ${C.border}`,
-        display: 'flex', flexDirection: 'column',
-        overflowY: 'auto',
+        flexShrink: 0,
       }}>
-        {/* Logo */}
-        <div style={{ padding: '16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '32px', height: '32px', background: C.blue, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#fff' }}>E</div>
-          <div>
-            <div style={{ fontSize: '9px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>EDECONSIL</div>
-            <div style={{ fontSize: '9px', color: C.blue, letterSpacing: '1px' }}>UNIVERSIDADE</div>
+        <span style={{ fontSize: '12px', color: C.muted }}>Dashboard</span>
+        <span style={{ fontSize: '12px', color: C.muted }}>›</span>
+        <span style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>Cursos</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Busca */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 12px', width: '220px' }}>
+            <Search size={13} color={C.muted} />
+            <input
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              placeholder="Buscar cursos..."
+              style={{ background: 'none', border: 'none', outline: 'none', fontSize: '12px', color: C.text, flex: 1, width: '100%' }}
+            />
+          </div>
+          {/* Toggle grid/lista */}
+          <div style={{ display: 'flex', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+            {(['grid', 'lista'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setVisualizacao(v)}
+                style={{ padding: '6px 12px', background: visualizacao === v ? C.blue : 'none', color: visualizacao === v ? '#fff' : C.muted, border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 150ms' }}
+              >
+                {v === 'grid' ? '⊞' : '☰'}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Nav */}
-        <div style={{ padding: '12px 8px', flex: 1 }}>
-          <div
-            onClick={() => onNavigate('admin')}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '1px', transition: 'all 150ms' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.06)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span style={{ fontSize: '13px', color: C.muted2 }}>Dashboard</span>
-          </div>
-
-          <div style={{ fontSize: '9px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '12px 12px 6px', textTransform: 'uppercase' }}>Gestão</div>
-          {[
-            { label: 'Cursos',                ativo: true  },
-            { label: 'Turmas',                ativo: false },
-            { label: 'Alunos',                ativo: false },
-            { label: 'Instrutores',           ativo: false },
-            { label: 'Certificados',          ativo: false },
-            { label: 'Biblioteca',            ativo: false },
-            { label: 'Trilhas de Aprendizado', ativo: false },
-          ].map(item => (
-            <div
-              key={item.label}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '9px 12px', borderRadius: '8px', cursor: 'pointer',
-                background: item.ativo ? 'rgba(26,86,255,0.15)' : 'transparent',
-                borderLeft: item.ativo ? `3px solid ${C.blue}` : '3px solid transparent',
-                marginBottom: '1px', transition: 'all 150ms',
-              }}
-              onMouseEnter={e => { if (!item.ativo) e.currentTarget.style.background = 'rgba(26,86,255,0.06)' }}
-              onMouseLeave={e => { if (!item.ativo) e.currentTarget.style.background = 'transparent' }}
-            >
-              <span style={{ fontSize: '13px', fontWeight: item.ativo ? 700 : 400, color: item.ativo ? C.blue : C.muted2 }}>
-                {item.label}
-              </span>
-            </div>
-          ))}
-
-          <div style={{ fontSize: '9px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '12px 12px 6px', textTransform: 'uppercase' }}>Administração</div>
-          {['Matrículas','Relatórios','Financeiro','Notificações','Configurações','Permissões'].map(item => (
-            <div
-              key={item}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '1px', transition: 'all 150ms' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.06)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span style={{ fontSize: '13px', color: C.muted2 }}>{item}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Suporte + Sair */}
-        <div style={{ padding: '8px' }}>
-          <div style={{ background: 'rgba(26,86,255,0.08)', border: `1px solid ${C.border}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '8px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: C.blue }}>Suporte EAD</div>
-            <div style={{ fontSize: '10px', color: C.muted }}>Precisa de ajuda? Fale com nosso suporte</div>
-          </div>
-          <div
-            onClick={onLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', color: C.muted, fontSize: '13px', transition: 'all 150ms' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            ↩ Sair
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Topbar */}
-        <div style={{ height: '56px', flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', padding: '0 24px', gap: '16px' }}>
-          <span
-            onClick={() => onNavigate('admin')}
-            style={{ fontSize: '13px', color: C.muted, cursor: 'pointer' }}
-            onMouseEnter={e => e.currentTarget.style.color = C.blue}
-            onMouseLeave={e => e.currentTarget.style.color = C.muted}
-          >
-            Dashboard
-          </span>
-          <span style={{ fontSize: '13px', color: C.muted }}>›</span>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: C.text }}>Cursos</span>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Busca */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '7px 14px', width: '240px' }}>
-              <Search size={13} color={C.muted} />
-              <input
-                value={busca}
-                onChange={e => setBusca(e.target.value)}
-                placeholder="Buscar cursos..."
-                style={{ background: 'none', border: 'none', outline: 'none', fontSize: '13px', color: C.text, flex: 1, width: '100%' }}
-              />
-            </div>
-            {/* Toggle visualização */}
-            <div style={{ display: 'flex', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden' }}>
-              {(['grid', 'lista'] as const).map(v => (
-                <button
-                  key={v}
-                  onClick={() => setVisualizacao(v)}
-                  style={{ padding: '7px 12px', background: visualizacao === v ? C.blue : 'none', color: visualizacao === v ? '#fff' : C.muted, border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 150ms' }}
-                >
-                  {v === 'grid' ? '⊞' : '☰'}
-                </button>
-              ))}
-            </div>
-            {/* Avatar admin */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#fff' }}>A</div>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: C.text }}>Administrador</div>
-                <div style={{ fontSize: '9px', color: C.muted }}>Administrador</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Conteúdo */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+      {/* Conteúdo */}
+      <div style={{ padding: '24px' }}>
 
           {/* Cabeçalho */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
@@ -592,8 +495,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
             </div>
           )}
 
-        </div>
-      </main>
+      </div>
 
       {/* Fechar menu ao clicar fora */}
       {menuAberto !== null && (
@@ -602,6 +504,6 @@ export function CursosAdmin({ onNavigate, onLogout }: {
           style={{ position: 'fixed', inset: 0, zIndex: 40 }}
         />
       )}
-    </div>
+    </LayoutAdmin>
   )
 }

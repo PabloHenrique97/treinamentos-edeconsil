@@ -1,19 +1,15 @@
-import { useState } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
 import {
-  GraduationCap, BookOpen, Users, Award, Bell,
-  MessageSquare, Search, Settings, LogOut,
+  GraduationCap, BookOpen, Users, Award,
   ChevronRight, UserPlus,
   FileText, Send, BarChart2, Calendar,
-  Shield, Library, GitBranch, CreditCard,
   FileBarChart
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
-import { Logo } from '../components/Logo'
-import { ThemeToggle } from '../components/ThemeToggle'
+import { LayoutAdmin } from '../components/admin/LayoutAdmin'
 
 const metricas = [
   { icon: GraduationCap, label: 'Alunos Ativos',        valor: '1.248', delta: '+12,5%', cor: '#1a56ff', spark: [20,35,28,45,38,55,48,65,58,75,68,85] },
@@ -76,24 +72,6 @@ const acoesRapidas = [
   { icon: FileBarChart, label: 'Relatório Completo', desc: 'Gerar relatório detalhado',   cor: '#1a56ff' },
 ]
 
-const navGestao = [
-  { icon: BookOpen,  label: 'Cursos'                },
-  { icon: Users,     label: 'Turmas'                },
-  { icon: UserPlus,  label: 'Alunos'                },
-  { icon: Shield,    label: 'Instrutores'           },
-  { icon: Award,     label: 'Certificados'          },
-  { icon: Library,   label: 'Biblioteca'            },
-  { icon: GitBranch, label: 'Trilhas de Aprendizado' },
-]
-
-const navAdmin = [
-  { icon: UserPlus,   label: 'Matrículas'    },
-  { icon: BarChart2,  label: 'Relatórios'    },
-  { icon: CreditCard, label: 'Financeiro'    },
-  { icon: Bell,       label: 'Notificações'  },
-  { icon: Settings,   label: 'Configurações' },
-  { icon: Shield,     label: 'Permissões'    },
-]
 
 function Sparkline({ data, cor }: { data: number[]; cor: string }) {
   const max = Math.max(...data)
@@ -113,169 +91,16 @@ function Sparkline({ data, cor }: { data: number[]; cor: string }) {
 
 export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: string) => void; onLogout: () => void }) {
   const { C } = useTheme()
-  const [_navAtiva, setNavAtiva] = useState('Dashboard')
 
   return (
-    <div style={{
-      fontFamily: "'Inter', sans-serif",
-      background: C.bg,
-      color: C.text,
-      display: 'flex',
-      height: '100vh',
-      overflow: 'hidden',
-    }}>
-
-      {/* ── SIDEBAR ── */}
-      <aside style={{
-        width: '220px',
-        background: C.surface,
-        borderRight: `1px solid ${C.border}`,
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-        overflowY: 'auto',
-      }}>
-        {/* Logo */}
-        <div style={{ padding: '20px 16px', borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Logo height={36} />
-            <div>
-              <div style={{ fontSize: '9px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>UNIVERSIDADE</div>
-              <div style={{ fontSize: '9px', fontWeight: 700, color: C.blue, letterSpacing: '1.5px' }}>CORPORATIVA</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dashboard item ativo */}
-        <div style={{ padding: '12px 8px' }}>
-          <div
-            onClick={() => setNavAtiva('Dashboard')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '10px 12px',
-              background: C.blue,
-              borderRadius: '8px', cursor: 'pointer',
-            }}>
-            <BarChart2 size={16} color="#fff" />
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Dashboard</span>
-          </div>
-        </div>
-
-        {/* Seção GESTÃO */}
-        <div style={{ padding: '0 8px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '8px 12px 4px', textTransform: 'uppercase' }}>Gestão</div>
-          {navGestao.map(item => (
-            <div key={item.label}
-              onClick={() => item.label === 'Cursos' && onNavigate('cursosAdmin')}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '1px' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,86,255,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <item.icon size={15} color={C.muted} />
-              <span style={{ fontSize: '13px', color: C.muted2 }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Seção ADMINISTRAÇÃO */}
-        <div style={{ padding: '0 8px', marginTop: '8px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '8px 12px 4px', textTransform: 'uppercase' }}>Administração</div>
-          {navAdmin.map(item => (
-            <div key={item.label}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '1px' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,86,255,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <item.icon size={15} color={C.muted} />
-              <span style={{ fontSize: '13px', color: C.muted2 }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Suporte EAD */}
-        <div style={{ marginTop: 'auto', margin: '12px 8px' }}>
-          <div style={{
-            background: 'rgba(26,86,255,0.10)',
-            border: `1px solid ${C.border}`,
-            borderRadius: '10px',
-            padding: '12px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <MessageSquare size={14} color={C.blue} />
-              <span style={{ fontSize: '12px', fontWeight: 600, color: C.blue }}>Suporte EAD</span>
-            </div>
-            <p style={{ fontSize: '11px', color: C.muted2, margin: '0 0 8px' }}>Precisa de ajuda? Fale com nosso suporte</p>
-          </div>
-        </div>
-
-        {/* Logout */}
-        <div style={{ padding: '0 8px 12px' }}>
-          <div
-            onClick={onLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', cursor: 'pointer' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          >
-            <LogOut size={15} color="#ef4444" />
-            <span style={{ fontSize: '13px', color: '#ef4444' }}>Sair</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* ── MAIN ── */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Topbar */}
-        <div style={{
-          padding: '0 24px',
-          height: '64px',
-          borderBottom: `1px solid ${C.border}`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          flexShrink: 0,
-          background: C.surface,
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: C.text }}>Olá, Administrador! 👋</div>
-            <div style={{ fontSize: '12px', color: C.muted }}>Bem-vindo ao painel de gestão da Universidade Corporativa.</div>
-          </div>
-
-          {/* Busca */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: C.surface2, border: `1px solid ${C.border}`,
-            borderRadius: '8px', padding: '8px 14px', width: '280px',
-          }}>
-            <Search size={14} color={C.muted} />
-            <span style={{ fontSize: '13px', color: C.muted, flex: 1 }}>Buscar cursos, alunos, turmas...</span>
-            <span style={{ fontSize: '10px', color: C.muted, background: C.surface, padding: '2px 6px', borderRadius: '4px' }}>⌘ K</span>
-          </div>
-
-          <ThemeToggle />
-
-          {/* Ícones direita */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ position: 'relative', cursor: 'pointer', padding: '8px' }}>
-              <Bell size={18} color={C.muted} />
-              <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', background: C.blue, borderRadius: '50%', fontSize: '9px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>12</div>
-            </div>
-            <div style={{ position: 'relative', cursor: 'pointer', padding: '8px' }}>
-              <MessageSquare size={18} color={C.muted} />
-              <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', background: '#ef4444', borderRadius: '50%', fontSize: '9px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>5</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#fff' }}>A</div>
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>Administrador</div>
-                <div style={{ fontSize: '10px', color: C.muted }}>Administrador</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Conteúdo com scroll */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <LayoutAdmin
+      paginaAtiva="admin"
+      onNavigate={onNavigate}
+      onLogout={onLogout}
+      topbarTitulo="Olá, Administrador! 👋"
+      topbarSubtitulo="Bem-vindo ao painel de gestão da Universidade Corporativa."
+    >
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Filtro de data */}
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -501,8 +326,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
             </div>
           </div>
 
-        </div>
-      </main>
-    </div>
+      </div>
+    </LayoutAdmin>
   )
 }
