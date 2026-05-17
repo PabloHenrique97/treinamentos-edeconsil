@@ -7,7 +7,7 @@ import {
 
 const navGestao = [
   { label: 'Cursos',                 page: 'cursosAdmin' },
-  { label: 'Turmas',                 page: ''            },
+  { label: 'Turmas',                 page: 'turmasAdmin' },
   { label: 'Alunos',                 page: ''            },
   { label: 'Instrutores',            page: ''            },
   { label: 'Certificados',           page: ''            },
