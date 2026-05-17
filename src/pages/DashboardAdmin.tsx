@@ -11,8 +11,8 @@ import {
   Shield, Library, GitBranch, CreditCard,
   FileBarChart
 } from 'lucide-react'
-import logoEdeconsil from '../assets/logo-edeconsil.png'
 import { useTheme } from '../contexts/ThemeContext'
+import { Logo } from '../components/Logo'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 const metricas = [
@@ -138,7 +138,7 @@ export function DashboardAdmin({ onLogout }: { onLogout: () => void }) {
         {/* Logo */}
         <div style={{ padding: '20px 16px', borderBottom: `1px solid ${C.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '36px', objectFit: 'contain' }} />
+            <Logo height={36} />
             <div>
               <div style={{ fontSize: '9px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>UNIVERSIDADE</div>
               <div style={{ fontSize: '9px', fontWeight: 700, color: C.blue, letterSpacing: '1.5px' }}>CORPORATIVA</div>

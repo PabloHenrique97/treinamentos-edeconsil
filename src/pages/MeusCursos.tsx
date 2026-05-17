@@ -5,8 +5,8 @@ import {
   SkipForward, Volume2, Settings, Maximize,
   Clock, Award
 } from 'lucide-react'
-import logoEdeconsil from '../assets/logo-edeconsil.png'
 import { Sidebar } from '../components/Sidebar'
+import { Logo } from '../components/Logo'
 import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -192,7 +192,7 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
                 padding: '32px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <img src={logoEdeconsil} alt="" style={{ height: '28px', objectFit: 'contain' }} />
+                  <Logo height={28} />
                 </div>
                 <h2 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 4px', maxWidth: '340px', lineHeight: 1.3 }}>
                   Leitura e Interpretação de Projetos de{' '}

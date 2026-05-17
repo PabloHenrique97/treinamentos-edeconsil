@@ -3,7 +3,7 @@ import {
   HardHat, ShieldCheck, BookOpen, TrendingUp,
   GraduationCap, User, Lock, Eye, EyeOff, ArrowRight
 } from 'lucide-react'
-import logoEdeconsil from '../assets/logo-edeconsil.png'
+import { Logo } from '../components/Logo'
 import fundoTreinamento from '../assets/fundo-treinamento.png'
 
 interface LoginProps {
@@ -152,19 +152,7 @@ export default function Login({ onLogin }: LoginProps) {
           gap: '20px',
           zIndex: 10,
         }}>
-          <img
-            src={logoEdeconsil}
-            alt="Edeconsil"
-            style={{
-              height: '200px',
-              width: 'auto',
-              objectFit: 'contain',
-              display: 'block',
-            }}
-            onError={e => {
-              e.currentTarget.style.display = 'none'
-            }}
-          />
+          <Logo height={72} />
           <div style={{
             width: '1.5px',
             height: '48px',

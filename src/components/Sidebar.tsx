@@ -3,8 +3,8 @@ import {
   FileText, BarChart2, GitBranch,
   MessageSquare, LogOut, ChevronRight
 } from 'lucide-react'
-import logoEdeconsil from '../assets/logo-edeconsil.png'
 import { useTheme } from '../contexts/ThemeContext'
+import { Logo } from './Logo'
 
 const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
@@ -54,7 +54,7 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
         gap: '10px',
         flexShrink: 0,
       }}>
-        <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '32px', objectFit: 'contain' }} />
+        <Logo height={32} />
         <div>
           <div style={{ fontSize: '8px', fontWeight: 700, color: C.text, letterSpacing: '1.5px' }}>EDECONSIL</div>
           <div style={{ fontSize: '8px', color: C.blue, letterSpacing: '1px' }}>UNIVERSIDADE</div>
