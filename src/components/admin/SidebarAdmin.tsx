@@ -9,7 +9,7 @@ const navGestao = [
   { label: 'Cursos',                 page: 'cursosAdmin' },
   { label: 'Turmas',                 page: 'turmasAdmin' },
   { label: 'Alunos',                 page: 'alunosAdmin' },
-  { label: 'Instrutores',            page: ''            },
+  { label: 'Instrutores',            page: 'instrutoresAdmin' },
   { label: 'Certificados',           page: ''            },
   { label: 'Biblioteca',             page: ''            },
 ]
