@@ -8,7 +8,9 @@
       "PowerShell(Copy-Item *)",
       "Bash(npm install *)",
       "Bash(npx tsc *)",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "Bash(rm -rf \"C:/Arq. Web Developer/treinamentos-edeconsil/node_modules/.vite\")",
+      "Bash(rm -rf \"C:/Arq. Web Developer/treinamentos-edeconsil/dist\")"
     ]
   }
 }
