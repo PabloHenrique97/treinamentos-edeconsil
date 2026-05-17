@@ -11,7 +11,7 @@ const navItems = [
   { label: 'Meus Cursos',           page: 'meusCursos', icon: BookOpen         },
   { label: 'Certificados',          page: 'certificadosColaborador', icon: Award },
   { label: 'EdeconQuiz',            page: '',           icon: ClipboardCheck   },
-  { label: 'Apostilas',             page: '',           icon: FileText         },
+  { label: 'Apostilas',             page: 'apostilas',  icon: FileText         },
   { label: 'Meu Progresso',         page: '',           icon: BarChart2        },
   { label: 'Trilhas de Aprendizado',page: 'trilha',     icon: GitBranch        },
 ]
