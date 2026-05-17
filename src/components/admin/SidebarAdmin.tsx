@@ -12,7 +12,6 @@ const navGestao = [
   { label: 'Instrutores',            page: ''            },
   { label: 'Certificados',           page: ''            },
   { label: 'Biblioteca',             page: ''            },
-  { label: 'Trilhas de Aprendizado', page: ''            },
 ]
 
 const navAdmin = [
@@ -20,7 +19,6 @@ const navAdmin = [
   { label: 'Relatórios',     page: ''                  },
   { label: 'Indicadores',    page: 'indicadoresAdmin'  },
   { label: 'Centro de Custo',page: ''                  },
-  { label: 'Financeiro',     page: ''                  },
   { label: 'Notificações',   page: ''                  },
   { label: 'Configurações',  page: ''                  },
   { label: 'Permissões',     page: ''                  },
