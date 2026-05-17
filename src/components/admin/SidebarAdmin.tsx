@@ -16,12 +16,14 @@ const navGestao = [
 ]
 
 const navAdmin = [
-  { label: 'Matrículas'    },
-  { label: 'Relatórios'    },
-  { label: 'Financeiro'    },
-  { label: 'Notificações'  },
-  { label: 'Configurações' },
-  { label: 'Permissões'    },
+  { label: 'Matrículas',     page: ''                  },
+  { label: 'Relatórios',     page: ''                  },
+  { label: 'Indicadores',    page: 'indicadoresAdmin'  },
+  { label: 'Centro de Custo',page: ''                  },
+  { label: 'Financeiro',     page: ''                  },
+  { label: 'Notificações',   page: ''                  },
+  { label: 'Configurações',  page: ''                  },
+  { label: 'Permissões',     page: ''                  },
 ]
 
 interface SidebarAdminProps {
@@ -128,21 +130,33 @@ export function SidebarAdmin({ paginaAtiva, onNavigate, onLogout }: SidebarAdmin
         }}>
           Administração
         </div>
-        {navAdmin.map(item => (
-          <div
-            key={item.label}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '9px 12px', borderRadius: '8px',
-              cursor: 'default',
-              marginBottom: '1px', transition: 'all 150ms',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.06)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span style={{ fontSize: '13px', color: C.muted2 }}>{item.label}</span>
-          </div>
-        ))}
+        {navAdmin.map(item => {
+          const ativo = paginaAtiva === item.page && item.page !== ''
+          return (
+            <div
+              key={item.label}
+              onClick={() => item.page && onNavigate(item.page)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '9px 12px', borderRadius: '8px',
+                cursor: item.page ? 'pointer' : 'default',
+                background: ativo ? 'rgba(26,86,255,0.15)' : 'transparent',
+                borderLeft: ativo ? `3px solid ${C.blue}` : '3px solid transparent',
+                marginBottom: '1px', transition: 'all 150ms',
+              }}
+              onMouseEnter={e => { if (!ativo && item.page) e.currentTarget.style.background = 'rgba(26,86,255,0.06)' }}
+              onMouseLeave={e => { if (!ativo) e.currentTarget.style.background = 'transparent' }}
+            >
+              <span style={{
+                fontSize: '13px',
+                fontWeight: ativo ? 700 : 400,
+                color: ativo ? C.blue : item.page ? C.muted2 : C.muted,
+              }}>
+                {item.label}
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       {/* Espaço flex */}
