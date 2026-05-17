@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
 import { Logo } from '../components/Logo'
+import modeloTreinamento from '../assets/modelo-treinamento.png'
 import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -186,19 +187,25 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
               {/* Thumbnail */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'linear-gradient(135deg, #050d1a 0%, #0a1628 50%, #0d1e35 100%)',
+                background: `url(${modeloTreinamento}) center center / cover no-repeat`,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'flex-start', justifyContent: 'center',
                 padding: '32px',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to right, rgba(5,13,26,0.85) 0%, rgba(5,13,26,0.40) 60%, rgba(5,13,26,0.20) 100%)',
+                  zIndex: 0,
+                }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
                   <Logo height={28} />
                 </div>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff', margin: '0 0 4px', maxWidth: '340px', lineHeight: 1.3 }}>
+                <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff', margin: '0 0 4px', maxWidth: '340px', lineHeight: 1.3, position: 'relative', zIndex: 1 }}>
                   Leitura e Interpretação de Projetos de{' '}
                   <span style={{ color: C.blue }}>Terraplanagem</span>
                 </h2>
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: '8px 0 0', maxWidth: '300px' }}>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: '8px 0 0', maxWidth: '300px', position: 'relative', zIndex: 1 }}>
                   Entenda plantas, cortes, perfis e volumes com eficiência.
                 </p>
               </div>
