@@ -15,7 +15,7 @@ const navGestao = [
 ]
 
 const navAdmin = [
-  { label: 'Matrículas',     page: ''                  },
+  { label: 'Matrículas',     page: 'matriculasAdmin'   },
   { label: 'Relatórios',     page: ''                  },
   { label: 'Indicadores',    page: 'indicadoresAdmin'  },
   { label: 'Centro de Custo',page: ''                  },
