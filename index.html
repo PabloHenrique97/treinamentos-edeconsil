@@ -6,10 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Treinamentos — Edeconsil</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/treinamentos-edeconsil/assets/index-DHK4bCso.js"></script>
+    <script>
+      // Proteção contra extensões que modificam o DOM
+      // antes do React inicializar
+      (function() {
+        var observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1 &&
+                  node.tagName &&
+                  node.id !== 'root' &&
+                  !node.closest('#root') &&
+                  (node.className || '').toString().includes('pin')) {
+                try { node.parentNode && node.parentNode.removeChild(node) } catch(e) {}
+              }
+            })
+          })
+        })
+        document.addEventListener('DOMContentLoaded', function() {
+          var root = document.getElementById('root')
+          if (root && root.parentNode) {
+            observer.observe(root.parentNode, { childList: true, subtree: false })
+          }
+        })
+      })()
+    </script>
+    <script type="module" crossorigin src="/treinamentos-edeconsil/assets/index-ChlPqkMI.js"></script>
     <link rel="stylesheet" crossorigin href="/treinamentos-edeconsil/assets/index-C1Q20q60.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root" data-extension-safe="true"></div>
   </body>
 </html>
