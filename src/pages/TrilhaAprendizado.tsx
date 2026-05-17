@@ -258,194 +258,6 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
   return (
     <div style={{ fontFamily:"'Inter',sans-serif", background: C.bg, color: C.text, display:'flex', height:'100vh', overflow:'hidden' }}>
 
-      {telaRotina && (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: C.bg,
-          zIndex: 100,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}>
-          {/* Topbar da tela de rotina */}
-          <div style={{
-            height: '52px',
-            background: C.surface,
-            borderBottom: `1px solid ${C.border}`,
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 32px',
-            gap: '8px',
-            flexShrink: 0,
-          }}>
-            <span
-              onClick={() => setTelaRotina(false)}
-              style={{ fontSize: '13px', color: C.muted, cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.color = C.blue}
-              onMouseLeave={e => e.currentTarget.style.color = C.muted}
-            >
-              Início
-            </span>
-            <span style={{ fontSize: '13px', color: C.muted }}>›</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: C.text }}>
-              Rotina de estudos
-            </span>
-          </div>
-
-          {/* Conteúdo centralizado */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px 20px',
-          }}>
-            {rotinaSalva ? (
-              /* Estado: rotina já definida */
-              <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-                <div style={{ fontSize: '56px', marginBottom: '16px' }}>🎯</div>
-                <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
-                  Minha rotina de estudos
-                </h1>
-                <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 32px' }}>
-                  Cadastre suas metas, acompanhe seu progresso e mantenha-se motivado.
-                </p>
-                <div style={{
-                  background: C.surface,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: '12px',
-                  padding: '20px 24px',
-                  marginBottom: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                  <div>
-                    <p style={{ fontSize: '12px', color: C.muted, margin: '0 0 4px' }}>Sua meta atual</p>
-                    <p style={{ fontSize: '20px', fontWeight: 700, color: C.blue, margin: 0 }}>
-                      {diasSemana} dia{diasSemana !== 1 ? 's' : ''} por semana
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setModalRotina(true)}
-                    style={{
-                      background: 'none',
-                      border: `1.5px solid ${C.border}`,
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: C.blue,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Editar
-                  </button>
-                </div>
-                <button
-                  onClick={() => setModalRotina(true)}
-                  style={{
-                    background: C.blue,
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '14px 32px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  + Atualizar rotina de estudos
-                </button>
-              </div>
-            ) : (
-              /* Estado: sem rotina definida */
-              <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-                <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
-                  Minha rotina de estudos
-                </h1>
-                <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 40px' }}>
-                  Cadastre suas metas, acompanhe seu progresso e mantenha-se motivado.
-                </p>
-
-                {/* Ilustração */}
-                <div style={{ fontSize: '80px', marginBottom: '24px', lineHeight: 1 }}>
-                  📚
-                </div>
-
-                {/* Carrossel de dicas (estático) */}
-                <div style={{
-                  background: C.surface,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: '12px',
-                  padding: '24px',
-                  marginBottom: '32px',
-                  maxWidth: '400px',
-                }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 10px' }}>
-                    Configure sua rotina com facilidade
-                  </h3>
-                  <p style={{ fontSize: '13px', color: C.muted2, margin: '0 0 20px', lineHeight: 1.6 }}>
-                    Clique em "Definir rotina de estudos", escolha quantos dias na semana
-                    pretende estudar e salve. Pronto! Agora seu progresso será contabilizado.
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
-                    {[0,1,2].map(i => (
-                      <div key={i} style={{
-                        width: i === 0 ? '20px' : '8px',
-                        height: '8px',
-                        borderRadius: '4px',
-                        background: i === 0 ? C.blue : C.border,
-                        transition: 'all 200ms',
-                      }} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Botão principal */}
-                <button
-                  onClick={() => setModalRotina(true)}
-                  style={{
-                    background: C.blue,
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '14px 32px',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 20px rgba(26,86,255,0.35)',
-                    transition: 'opacity 150ms',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                >
-                  + Definir rotina de estudos
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Modal por cima da tela de rotina */}
-          {modalRotina && (
-            <ModalDefinirRotina
-              dias={diasSemana}
-              onChangeDias={setDiasSemana}
-              onSalvar={() => {
-                setRotinaSalva(true)
-                setModalRotina(false)
-              }}
-              onFechar={() => setModalRotina(false)}
-              C={C as Record<string, string>}
-            />
-          )}
-        </div>
-      )}
-
       {/* SIDEBAR */}
       <Sidebar
         paginaAtiva="trilha"
@@ -462,7 +274,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
             { label: 'Certificados', ativo: false },
             { label: 'Biblioteca',   ativo: false },
-            { label: 'Trilhas',      ativo: true  },
+            { label: 'Trilhas',      ativo: !telaRotina, onClick: () => setTelaRotina(false) },
           ]}
           userName="João Silva"
           userRole="Aluno"
@@ -471,7 +283,169 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
         />
 
         {/* CONTEÚDO COM SCROLL */}
-        <div style={{ flex:1, overflowY:'auto', padding:'32px 40px' }}>
+        <div style={{ flex:1, overflowY:'auto' }}>
+
+          {telaRotina ? (
+
+            /* ── TELA ROTINA DE ESTUDOS ── */
+            <div>
+
+              {/* Breadcrumb */}
+              <div style={{
+                padding: '12px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderBottom: `1px solid ${C.border}`,
+                background: C.surface,
+              }}>
+                <span
+                  onClick={() => setTelaRotina(false)}
+                  style={{ fontSize: '13px', color: C.muted, cursor: 'pointer', transition: 'color 150ms' }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.blue}
+                  onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                >
+                  Início
+                </span>
+                <span style={{ fontSize: '13px', color: C.muted }}>›</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: C.text }}>
+                  Rotina de estudos
+                </span>
+              </div>
+
+              {/* Conteúdo centralizado */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '60px 32px',
+                minHeight: 'calc(100vh - 120px)',
+              }}>
+                {rotinaSalva ? (
+                  <div style={{ textAlign: 'center', maxWidth: '480px', width: '100%' }}>
+                    <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
+                      Minha rotina de estudos
+                    </h1>
+                    <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 32px' }}>
+                      Cadastre suas metas, acompanhe seu progresso e mantenha-se motivado.
+                    </p>
+                    <div style={{
+                      background: C.surface,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: '12px',
+                      padding: '20px 24px',
+                      marginBottom: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: '12px', color: C.muted, margin: '0 0 4px' }}>Sua meta atual</p>
+                        <p style={{ fontSize: '20px', fontWeight: 700, color: C.blue, margin: 0 }}>
+                          {diasSemana} dia{diasSemana !== 1 ? 's' : ''} por semana
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setModalRotina(true)}
+                        style={{
+                          background: 'none',
+                          border: `1.5px solid ${C.border}`,
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: C.blue,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Editar
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setModalRotina(true)}
+                      style={{
+                        background: C.blue,
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '14px 32px',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 20px rgba(26,86,255,0.30)',
+                      }}
+                    >
+                      + Atualizar rotina de estudos
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', maxWidth: '480px', width: '100%' }}>
+                    <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
+                      Minha rotina de estudos
+                    </h1>
+                    <p style={{ fontSize: '14px', color: C.muted, margin: '0 0 32px' }}>
+                      Cadastre suas metas, acompanhe seu progresso e mantenha-se motivado.
+                    </p>
+                    <div style={{ fontSize: '72px', marginBottom: '24px', lineHeight: 1 }}>
+                      📚
+                    </div>
+                    <div style={{
+                      background: C.surface,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: '12px',
+                      padding: '24px',
+                      marginBottom: '32px',
+                    }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 10px' }}>
+                        Configure sua rotina com facilidade
+                      </h3>
+                      <p style={{ fontSize: '13px', color: C.muted2, margin: '0 0 16px', lineHeight: 1.6 }}>
+                        Clique em "Definir rotina de estudos", escolha quantos dias na semana
+                        pretende estudar e salve. Pronto! Agora seu progresso será contabilizado.
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                        {[0,1,2].map(i => (
+                          <div key={i} style={{
+                            width: i === 0 ? '20px' : '8px',
+                            height: '8px',
+                            borderRadius: '4px',
+                            background: i === 0 ? C.blue : C.border,
+                          }} />
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setModalRotina(true)}
+                      style={{
+                        background: C.blue,
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '14px 32px',
+                        fontSize: '15px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 20px rgba(26,86,255,0.35)',
+                        transition: 'opacity 150ms',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      + Definir rotina de estudos
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          ) : (
+
+            /* ── CONTEÚDO NORMAL DA TRILHA ── */
+            <div style={{ padding: '32px 40px' }}>
 
           {/* Cabeçalho */}
           <div style={{ marginBottom:'24px' }}>
@@ -697,8 +671,25 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             )}
           </div>
 
+            </div>
+          )}
+
         </div>
       </main>
+
+      {/* Modal de definir rotina — sobre tudo */}
+      {modalRotina && (
+        <ModalDefinirRotina
+          dias={diasSemana}
+          onChangeDias={setDiasSemana}
+          onSalvar={() => {
+            setRotinaSalva(true)
+            setModalRotina(false)
+          }}
+          onFechar={() => setModalRotina(false)}
+          C={C as Record<string, string>}
+        />
+      )}
     </div>
   )
 }
