@@ -85,7 +85,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
             {/* Cursos em andamento */}
-            <div style={{ background: 'rgba(7,15,30,0.8)', border: `0.5px solid ${C.border}`, borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text }}>Em andamento</div>
               {cursosAndamento.map(c => (
                 <div key={c.titulo} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -113,7 +113,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
             </div>
 
             {/* Recomendados */}
-            <div style={{ background: 'rgba(7,15,30,0.8)', border: `0.5px solid ${C.border}`, borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text }}>Recomendados para você</div>
               {recomendados.map(r => (
                 <div
@@ -137,8 +137,8 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
 
           {/* ── DISCIPLINAS EM ANDAMENTO ── */}
           <div style={{
-            background: 'rgba(7,15,30,0.8)',
-            border: `0.5px solid ${C.border}`,
+            background: 'rgba(26,86,255,0.08)',
+            border: '0.5px solid rgba(26,86,255,0.20)',
             borderRadius: '12px',
             padding: '20px 24px',
           }}>
