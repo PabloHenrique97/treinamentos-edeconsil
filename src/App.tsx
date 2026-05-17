@@ -10,11 +10,12 @@ import { IndicadoresAdmin } from './pages/admin/IndicadoresAdmin'
 import { TurmasAdmin } from './pages/admin/TurmasAdmin'
 import { AlunosAdmin } from './pages/admin/AlunosAdmin'
 import { InstrutoresAdmin } from './pages/admin/InstrutoresAdmin'
+import { CertificadosAdmin } from './pages/admin/CertificadosAdmin'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -64,6 +65,12 @@ function AppContent() {
     )
     if (pagina === 'instrutoresAdmin') return (
       <InstrutoresAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => setLogado(false)}
+      />
+    )
+    if (pagina === 'certificadosAdmin') return (
+      <CertificadosAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={() => setLogado(false)}
       />
