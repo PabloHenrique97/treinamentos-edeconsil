@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { Logo } from '../components/Logo'
 import fundoTreinamento from '../assets/fundo-treinamento.png'
+import { useResponsive } from '../hooks/useResponsive'
 
 interface LoginProps {
   onLogin: (perfil: 'colaborador' | 'admin') => void
@@ -61,6 +62,8 @@ const diferenciais = [
 ]
 
 export default function Login({ onLogin }: LoginProps) {
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
   const [cpf, setCpf] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
@@ -83,9 +86,10 @@ export default function Login({ onLogin }: LoginProps) {
       position: 'relative',
       width: '100vw',
       height: '100vh',
-      overflow: 'hidden',
+      overflow: isSmall ? 'auto' : 'hidden',
       display: 'flex',
       fontFamily: "'Inter', sans-serif",
+      background: isSmall ? `url(${fundoTreinamento}) center center / cover no-repeat` : 'none',
     }}>
       <style>{`
         @keyframes spin {
@@ -107,12 +111,13 @@ export default function Login({ onLogin }: LoginProps) {
         }
       `}</style>
 
-      {/* PAINEL ESQUERDO */}
+      {/* PAINEL ESQUERDO — oculto em mobile/tablet */}
       <div style={{
         flex: 1,
         position: 'relative',
         background: `url(${fundoTreinamento}) center center / cover no-repeat`,
         overflow: 'hidden',
+        display: isSmall ? 'none' : 'block',
       }}>
         {/* Overlay */}
         <div style={{
@@ -251,19 +256,22 @@ export default function Login({ onLogin }: LoginProps) {
 
       {/* PAINEL DIREITO */}
       <div style={{
-        position: 'absolute',
-        right: '48px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '440px',
-        background: 'linear-gradient(160deg, rgba(10,22,40,0.95) 0%, rgba(5,13,26,0.98) 100%)',
+        position: isSmall ? 'relative' : 'absolute',
+        right: isSmall ? 'auto' : '48px',
+        top: isSmall ? 'auto' : '50%',
+        transform: isSmall ? 'none' : 'translateY(-50%)',
+        width: isSmall ? '100%' : '440px',
+        maxWidth: isSmall ? '460px' : 'none',
+        margin: isSmall ? 'auto' : '0',
+        background: 'linear-gradient(160deg, rgba(10,22,40,0.97) 0%, rgba(5,13,26,0.99) 100%)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid rgba(26,86,255,0.22)',
-        borderRadius: '28px',
-        padding: '48px 44px',
+        borderRadius: isSmall ? '20px' : '28px',
+        padding: isSmall ? '32px 24px' : '48px 44px',
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(26,86,255,0.10)',
         zIndex: 10,
+        alignSelf: isSmall ? 'center' : 'auto',
       }}>
         <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 340 }}>
 

@@ -4,8 +4,10 @@ import {
   Calendar, Trophy,
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
+import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
+import { useResponsive } from '../hooks/useResponsive'
 
 const cursoDados = {
   nome: 'Gestão de Obras e Construção Civil',
@@ -47,6 +49,8 @@ interface TrilhaAprendizadoProps {
 
 export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoProps) {
   const { C } = useTheme()
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
   const [abaAtiva, setAbaAtiva] = useState('Aprovadas')
   const [telaRotina, setTelaRotina] = useState(false)
   const [modalRotina, setModalRotina] = useState(false)
@@ -258,29 +262,41 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
   return (
     <div style={{ fontFamily:"'Inter',sans-serif", background: C.bg, color: C.text, display:'flex', height:'100vh', overflow:'hidden' }}>
 
-      {/* SIDEBAR */}
-      <Sidebar
-        paginaAtiva="trilha"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+      {/* SIDEBAR — apenas desktop */}
+      {!isSmall && (
+        <Sidebar paginaAtiva="trilha" onNavigate={onNavigate} onLogout={onLogout} />
+      )}
 
-      {/* MAIN */}
-      <main style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-
-        {/* TOPBAR */}
-        <Topbar
-          navItems={[
-            { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
-            { label: 'Certificados', ativo: false },
-            { label: 'Biblioteca',   ativo: false },
-            { label: 'Trilhas',      ativo: !telaRotina, onClick: () => setTelaRotina(false) },
-          ]}
+      {/* MENU MOBILE/TABLET */}
+      {isSmall && (
+        <MobileMenu
+          paginaAtiva="trilha"
+          onNavigate={onNavigate}
+          onLogout={onLogout}
           userName="João Silva"
           userRole="Aluno"
           userInitials="JS"
-          notificacoes={3}
         />
+      )}
+
+      {/* MAIN */}
+      <main style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', marginTop: isSmall ? '56px' : '0' }}>
+
+        {/* TOPBAR — apenas desktop */}
+        {!isSmall && (
+          <Topbar
+            navItems={[
+              { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
+              { label: 'Certificados', ativo: false },
+              { label: 'Biblioteca',   ativo: false },
+              { label: 'Trilhas',      ativo: !telaRotina, onClick: () => setTelaRotina(false) },
+            ]}
+            userName="João Silva"
+            userRole="Aluno"
+            userInitials="JS"
+            notificacoes={3}
+          />
+        )}
 
         {/* CONTEÚDO COM SCROLL */}
         <div style={{ flex:1, overflowY:'auto' }}>
@@ -445,7 +461,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
           ) : (
 
             /* ── CONTEÚDO NORMAL DA TRILHA ── */
-            <div style={{ padding: '32px 40px' }}>
+            <div style={{ padding: isSmall ? '16px' : '32px 40px' }}>
 
           {/* Cabeçalho */}
           <div style={{ marginBottom:'24px' }}>
@@ -488,7 +504,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
           </div>
 
           {/* Atalhos */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'36px', maxWidth:'700px' }}>
+          <div style={{ display:'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap:'12px', marginBottom:'36px', maxWidth:'700px' }}>
             <div style={{
               display:'flex', alignItems:'center', gap:'12px',
               padding:'16px 20px',
@@ -528,10 +544,10 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
           {/* DISCIPLINAS EM ANDAMENTO */}
           <div style={{ marginBottom:'40px' }}>
-            <h2 style={{ fontSize:'22px', fontWeight:700, color:C.text, margin:'0 0 20px' }}>
+            <h2 style={{ fontSize: isSmall ? '18px' : '22px', fontWeight:700, color:C.text, margin:'0 0 20px' }}>
               Disciplinas em andamento
             </h2>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+            <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'12px' }}>
               {disciplinasAndamento.map(d => (
                 <div key={d.id} style={{
                   background: C.surface,
@@ -606,7 +622,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             </div>
 
             {abaAtiva === 'Aprovadas' && (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', paddingBottom:'32px' }}>
+              <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'12px', paddingBottom:'32px' }}>
                 {disciplinasConcluidas.map(d => (
                   <div key={d.id} style={{
                     background: C.surface,

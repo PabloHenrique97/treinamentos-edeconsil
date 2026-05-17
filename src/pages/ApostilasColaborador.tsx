@@ -8,7 +8,9 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
+import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
+import { useResponsive } from '../hooks/useResponsive'
 
 type TipoMaterial = 'Livro' | 'Artigo' | 'Manual' | 'Norma' | 'E-book'
 
@@ -159,12 +161,12 @@ function IconeTipo({ tipo, size = 14, color }: { tipo: TipoMaterial; size?: numb
   return <Icon size={size} color={color} />
 }
 
-function ModalMaterial({ mat, onFechar, C }: { mat: Material; onFechar: () => void; C: Record<string, string> }) {
+function ModalMaterial({ mat, onFechar, C, isSmall = false }: { mat: Material; onFechar: () => void; C: Record<string, string>; isSmall?: boolean }) {
   const [favoritado, setFavoritado] = useState(false)
 
   return (
-    <div onClick={onFechar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '760px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}` }}>
+    <div onClick={onFechar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 1000, display: 'flex', alignItems: isSmall ? 'flex-end' : 'center', justifyContent: 'center', padding: isSmall ? '0' : '20px' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: isSmall ? '16px 16px 0 0' : '16px', width: '100%', maxWidth: isSmall ? '100%' : '760px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}`, maxHeight: isSmall ? '90vh' : 'none', overflowY: isSmall ? 'auto' : 'visible' }}>
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -181,7 +183,7 @@ function ModalMaterial({ mat, onFechar, C }: { mat: Material; onFechar: () => vo
         </div>
 
         {/* Conteúdo */}
-        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '200px 1fr' }}>
           {/* Capa */}
           <div style={{ background: C.surface2, padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${C.border}` }}>
             <div style={{ width: '140px' }}>
@@ -243,6 +245,8 @@ interface ApostilasColaboradorProps {
 
 export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColaboradorProps) {
   const { C } = useTheme()
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
   const [busca, setBusca] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todas as categorias')
   const [tipoFiltro, setTipoFiltro] = useState<'Todos' | TipoMaterial>('Todos')
@@ -286,29 +290,40 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
-      <Sidebar
-        paginaAtiva="apostilas"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+      {!isSmall && (
+        <Sidebar paginaAtiva="apostilas" onNavigate={onNavigate} onLogout={onLogout} />
+      )}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        <Topbar
-          navItems={[
-            { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard')  },
-            { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
-            { label: 'Certificados',ativo: false, onClick: () => onNavigate('certificadosColaborador') },
-            { label: 'Apostilas',   ativo: true                                            },
-            { label: 'Trilhas',     ativo: false, onClick: () => onNavigate('trilha')      },
-          ]}
+      {isSmall && (
+        <MobileMenu
+          paginaAtiva="apostilas"
+          onNavigate={onNavigate}
+          onLogout={onLogout}
           userName="João Silva"
           userRole="Aluno"
           userInitials="JS"
-          notificacoes={3}
         />
+      )}
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
+
+        {!isSmall && (
+          <Topbar
+            navItems={[
+              { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard')  },
+              { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
+              { label: 'Certificados',ativo: false, onClick: () => onNavigate('certificadosColaborador') },
+              { label: 'Apostilas',   ativo: true                                            },
+              { label: 'Trilhas',     ativo: false, onClick: () => onNavigate('trilha')      },
+            ]}
+            userName="João Silva"
+            userRole="Aluno"
+            userInitials="JS"
+            notificacoes={3}
+          />
+        )}
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: isSmall ? '16px' : '32px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Cabeçalho */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
@@ -329,7 +344,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
           </div>
 
           {/* Pills de tipo */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: isSmall ? 'auto' : 'visible', flexWrap: isSmall ? 'nowrap' : 'wrap', paddingBottom: isSmall ? '4px' : '0' }}>
             {(['Todos', ...tipos] as const).map(t => (
               <button
                 key={t}
@@ -366,7 +381,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
           </div>
 
           {/* Filtros */}
-          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: isSmall ? 'stretch' : 'center', gap: '10px', flexWrap: 'wrap', flexDirection: isSmall ? 'column' : 'row' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: C.muted, flexShrink: 0 }}>
               <Filter size={14} />
               <span style={{ fontSize: '12px', fontWeight: 600 }}>Filtros:</span>
@@ -395,7 +410,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
 
           {/* Grid de livros */}
           {visualizacao === 'grid' && materiaiFiltrados.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(4, 1fr)' : 'repeat(6, 1fr)', gap: isSmall ? '10px' : '16px' }}>
               {materiaisPagina.map(mat => (
                 <div
                   key={mat.id}
@@ -530,6 +545,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
           mat={modalMat}
           onFechar={() => setModalMat(null)}
           C={C as Record<string, string>}
+          isSmall={isSmall}
         />
       )}
     </div>

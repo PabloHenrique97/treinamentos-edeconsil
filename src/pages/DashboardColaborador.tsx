@@ -4,7 +4,9 @@ import {
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
+import { MobileMenu } from '../components/MobileMenu'
 import { useTheme } from '../contexts/ThemeContext'
+import { useResponsive } from '../hooks/useResponsive'
 
 const metricas = [
   { label: 'Cursos ativos',   valor: '8',   delta: '+2 este mês',   deltaColor: '#1a56ff' },
@@ -41,37 +43,52 @@ interface DashboardColaboradorProps {
 
 export function DashboardColaborador({ onLogout, onNavigate }: DashboardColaboradorProps) {
   const { C } = useTheme()
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
+
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
-      {/* SIDEBAR */}
-      <Sidebar
-        paginaAtiva="dashboard"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+      {/* SIDEBAR — apenas desktop */}
+      {!isSmall && (
+        <Sidebar paginaAtiva="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
+      )}
 
-      {/* MAIN */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Topbar */}
-        <Topbar
-          navItems={[
-            { label: 'Início',     ativo: true  },
-            { label: 'Notícias',   ativo: false },
-            { label: 'Biblioteca', ativo: false },
-          ]}
+      {/* MENU MOBILE/TABLET */}
+      {isSmall && (
+        <MobileMenu
+          paginaAtiva="dashboard"
+          onNavigate={onNavigate}
+          onLogout={onLogout}
           userName="Suporte TI"
           userRole="Colaborador"
           userInitials="SE"
-          notificacoes={3}
         />
+      )}
+
+      {/* MAIN */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
+
+        {/* Topbar — apenas desktop */}
+        {!isSmall && (
+          <Topbar
+            navItems={[
+              { label: 'Início',     ativo: true  },
+              { label: 'Notícias',   ativo: false },
+              { label: 'Biblioteca', ativo: false },
+            ]}
+            userName="Suporte TI"
+            userRole="Colaborador"
+            userInitials="SE"
+            notificacoes={3}
+          />
+        )}
 
         {/* Conteúdo */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isSmall ? '16px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Métricas */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
             {metricas.map(m => (
               <div key={m.label} style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '10px', padding: '14px 16px' }}>
                 <div style={{ fontSize: '10px', color: C.muted, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{m.label}</div>
@@ -82,7 +99,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
           </div>
 
           {/* Duas colunas */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: isSmall ? '12px' : '16px' }}>
 
             {/* Cursos em andamento */}
             <div style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -166,7 +183,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
             {/* Grid de cards */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
               gap: '12px',
             }}>
               {disciplinas.map(d => (

@@ -6,10 +6,12 @@ import {
   Clock, Award
 } from 'lucide-react'
 import { Sidebar } from '../components/Sidebar'
+import { MobileMenu } from '../components/MobileMenu'
 import { Logo } from '../components/Logo'
 import modeloTreinamento from '../assets/modelo-treinamento.png'
 import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
+import { useResponsive } from '../hooks/useResponsive'
 
 const curso = {
   titulo: 'Leitura e Interpretação de Projetos de Terraplanagem',
@@ -85,6 +87,8 @@ const aprendizados = [
 
 export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void }) {
   const { C } = useTheme()
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
   const [modulosAbertos, setModulosAbertos] = useState<number[]>([2])
   const [abaAtiva, setAbaAtiva] = useState('Sobre a Aula')
   const [tocando, setTocando] = useState(false)
@@ -98,29 +102,45 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
-      {/* SIDEBAR ESQUERDA */}
-      <Sidebar
-        paginaAtiva="meusCursos"
-        onNavigate={onNavigate}
-        onLogout={() => onNavigate('dashboard')}
-      />
+      {/* SIDEBAR — apenas desktop */}
+      {!isSmall && (
+        <Sidebar
+          paginaAtiva="meusCursos"
+          onNavigate={onNavigate}
+          onLogout={() => onNavigate('dashboard')}
+        />
+      )}
 
-      {/* ÁREA CENTRAL */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* TOPBAR */}
-        <Topbar
-          navItems={[
-            { label: 'Meus Cursos',  ativo: true  },
-            { label: 'Certificados', ativo: false },
-            { label: 'Biblioteca',   ativo: false },
-            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
-          ]}
+      {/* MENU MOBILE/TABLET */}
+      {isSmall && (
+        <MobileMenu
+          paginaAtiva="meusCursos"
+          onNavigate={onNavigate}
+          onLogout={() => onNavigate('dashboard')}
           userName="João Silva"
           userRole="Aluno"
           userInitials="JS"
-          notificacoes={3}
         />
+      )}
+
+      {/* ÁREA CENTRAL */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
+
+        {/* TOPBAR — apenas desktop */}
+        {!isSmall && (
+          <Topbar
+            navItems={[
+              { label: 'Meus Cursos',  ativo: true  },
+              { label: 'Certificados', ativo: false },
+              { label: 'Biblioteca',   ativo: false },
+              { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
+            ]}
+            userName="João Silva"
+            userRole="Aluno"
+            userInitials="JS"
+            notificacoes={3}
+          />
+        )}
 
         {/* CONTEÚDO COM SCROLL */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -138,7 +158,7 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
           </div>
 
           {/* Título + botão concluída */}
-          <div style={{ padding: '0 20px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexShrink: 0 }}>
+          <div style={{ padding: isSmall ? '0 12px 12px' : '0 20px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexShrink: 0, flexWrap: isSmall ? 'wrap' : 'nowrap' }}>
             <div>
               <h1 style={{ fontSize: '20px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
                 {curso.titulo}
@@ -270,8 +290,8 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
           </div>
 
           {/* ABAS + CONTEÚDO */}
-          <div style={{ padding: '16px 20px', flexShrink: 0 }}>
-            <div style={{ display: 'flex', gap: '0', borderBottom: `1px solid ${C.border}`, marginBottom: '16px' }}>
+          <div style={{ padding: isSmall ? '12px' : '16px 20px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '0', borderBottom: `1px solid ${C.border}`, marginBottom: '16px', overflowX: isSmall ? 'auto' : 'visible' }}>
               {abasSobre.map(aba => (
                 <button key={aba}
                   onClick={() => setAbaAtiva(aba)}
@@ -297,7 +317,7 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
             </div>
 
             {abaAtiva === 'Sobre a Aula' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 320px', gap: '20px' }}>
                 <div>
                   <p style={{ fontSize: '13px', color: C.muted2, lineHeight: 1.7, margin: '0 0 16px' }}>
                     Nesta aula você vai aprender a interpretar projetos de terraplanagem, identificando informações essenciais como curvas de nível, cortes, aterros, volumes e movimentações de terra.
@@ -346,11 +366,13 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
 
       {/* PAINEL DIREITO */}
       <aside style={{
-        width: '300px', flexShrink: 0,
+        width: isSmall ? '100%' : '300px', flexShrink: 0,
         background: C.surface,
-        borderLeft: `1px solid ${C.border}`,
+        borderLeft: isSmall ? 'none' : `1px solid ${C.border}`,
+        borderTop: isSmall ? `1px solid ${C.border}` : 'none',
         display: 'flex', flexDirection: 'column',
-        overflowY: 'auto',
+        overflowY: isSmall ? 'visible' : 'auto',
+        maxHeight: isSmall ? '320px' : 'none',
       }}>
 
         {/* Progresso do curso */}

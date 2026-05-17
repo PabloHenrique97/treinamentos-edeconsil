@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Award, BookOpen, ChevronRight, Search } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
+import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
+import { useResponsive } from '../hooks/useResponsive'
 
 /*
 interface CertificadoObtido {
@@ -68,34 +70,47 @@ interface CertificadosColaboradorProps {
 
 export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosColaboradorProps) {
   const { C } = useTheme()
+  const { isMobile, isTablet } = useResponsive()
+  const isSmall = isMobile || isTablet
   const [busca, setBusca] = useState('')
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
-      <Sidebar
-        paginaAtiva="certificados"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+      {!isSmall && (
+        <Sidebar paginaAtiva="certificados" onNavigate={onNavigate} onLogout={onLogout} />
+      )}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        <Topbar
-          navItems={[
-            { label: 'Início',       ativo: false, onClick: () => onNavigate('dashboard')  },
-            { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
-            { label: 'Certificados', ativo: true                                            },
-            { label: 'Biblioteca',   ativo: false                                           },
-            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha')      },
-          ]}
+      {isSmall && (
+        <MobileMenu
+          paginaAtiva="certificadosColaborador"
+          onNavigate={onNavigate}
+          onLogout={onLogout}
           userName="João Silva"
           userRole="Aluno"
           userInitials="JS"
-          notificacoes={3}
         />
+      )}
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
+
+        {!isSmall && (
+          <Topbar
+            navItems={[
+              { label: 'Início',       ativo: false, onClick: () => onNavigate('dashboard')  },
+              { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
+              { label: 'Certificados', ativo: true                                            },
+              { label: 'Biblioteca',   ativo: false                                           },
+              { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha')      },
+            ]}
+            userName="João Silva"
+            userRole="Aluno"
+            userInitials="JS"
+            notificacoes={3}
+          />
+        )}
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: isSmall ? '20px 16px' : '32px 40px' }}>
 
           {/* Cabeçalho */}
           <div style={{ marginBottom: '28px' }}>
@@ -152,7 +167,7 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
               </button>
 
               {/* Cards de passos */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', width: '100%', maxWidth: '680px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '12px', width: '100%', maxWidth: '680px' }}>
                 {[
                   { num: '01', titulo: 'Escolha um curso',    desc: 'Acesse "Meus Cursos" e escolha um treinamento da sua área',             icone: '📚' },
                   { num: '02', titulo: 'Conclua as aulas',    desc: 'Assista todas as videoaulas e complete as avaliações',                   icone: '🎯' },
