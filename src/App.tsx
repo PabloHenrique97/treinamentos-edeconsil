@@ -13,11 +13,12 @@ import { InstrutoresAdmin } from './pages/admin/InstrutoresAdmin'
 import { CertificadosAdmin } from './pages/admin/CertificadosAdmin'
 import { BibliotecaAdmin } from './pages/admin/BibliotecaAdmin'
 import { MatriculasAdmin } from './pages/admin/MatriculasAdmin'
+import { ConfiguracoesAdmin } from './pages/admin/ConfiguracoesAdmin'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -85,6 +86,12 @@ function AppContent() {
     )
     if (pagina === 'matriculasAdmin') return (
       <MatriculasAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => setLogado(false)}
+      />
+    )
+    if (pagina === 'configuracoesAdmin') return (
+      <ConfiguracoesAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={() => setLogado(false)}
       />

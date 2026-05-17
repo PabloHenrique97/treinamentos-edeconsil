@@ -20,7 +20,7 @@ const navAdmin = [
   { label: 'Indicadores',    page: 'indicadoresAdmin'  },
   { label: 'Centro de Custo',page: ''                  },
   { label: 'Notificações',   page: ''                  },
-  { label: 'Configurações',  page: ''                  },
+  { label: 'Configurações',  page: 'configuracoesAdmin' },
   { label: 'Permissões',     page: ''                  },
 ]
 
