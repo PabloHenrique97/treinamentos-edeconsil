@@ -14,11 +14,12 @@ import { CertificadosAdmin } from './pages/admin/CertificadosAdmin'
 import { BibliotecaAdmin } from './pages/admin/BibliotecaAdmin'
 import { MatriculasAdmin } from './pages/admin/MatriculasAdmin'
 import { ConfiguracoesAdmin } from './pages/admin/ConfiguracoesAdmin'
+import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -110,6 +111,13 @@ function AppContent() {
 
   if (pagina === 'trilha') return (
     <TrilhaAprendizado
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+    />
+  )
+
+  if (pagina === 'certificadosColaborador') return (
+    <CertificadosColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
       onLogout={() => setLogado(false)}
     />

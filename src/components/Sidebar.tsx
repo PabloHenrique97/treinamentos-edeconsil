@@ -9,7 +9,7 @@ import { Logo } from './Logo'
 const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
   { label: 'Meus Cursos',           page: 'meusCursos', icon: BookOpen         },
-  { label: 'Certificados',          page: '',           icon: Award            },
+  { label: 'Certificados',          page: 'certificadosColaborador', icon: Award },
   { label: 'EdeconQuiz',            page: '',           icon: ClipboardCheck   },
   { label: 'Apostilas',             page: '',           icon: FileText         },
   { label: 'Meu Progresso',         page: '',           icon: BarChart2        },
