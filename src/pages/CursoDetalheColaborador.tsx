@@ -275,6 +275,72 @@ export function CursoDetalheColaborador({
               ))}
             </div>
 
+            {/* ── GRAVAÇÕES DE LIVES ── */}
+            <div
+              style={{
+                background: C.surface,
+                border: `1px solid ${C.border}`,
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                cursor: 'pointer',
+                transition: 'all 150ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: C.text, flex: 1 }}>
+                Gravações de Lives
+              </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+
+            {/* ── PROVA ONLINE ── */}
+            <div
+              style={{
+                background: C.surface2,
+                border: `1px solid ${C.border}`,
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginTop: '8px',
+                marginBottom: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                opacity: 0.75,
+                cursor: 'not-allowed',
+              }}
+            >
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.border, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: C.text, margin: '0 0 3px' }}>
+                  Prova online
+                </p>
+                <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>
+                  Você está fora do período de realização, entre 23/05/2026 e 30/05/2026.
+                </p>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+
           </div>
         </div>
       </main>
