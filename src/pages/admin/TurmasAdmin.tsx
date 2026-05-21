@@ -15,6 +15,7 @@ const setores = [
   'Segurança do Trabalho',
   'Obras e Infraestrutura',
   'Equipamentos',
+  'Tecnologia da Informação',
 ]
 
 interface SubTurma {
@@ -163,6 +164,23 @@ const turmasMock: Turma[] = [
       { id:14, nome:'Oficina — Turma Mecânica', curso:'NR-12 — Segurança em Máquinas e Equipamentos', alunos:6, inicio:'15/04/2026', fim:'15/07/2026', status:'Em andamento', progresso:35 },
     ],
   },
+  {
+    id: 8,
+    cargo: 'Tecnologia da Informação',
+    setor: 'Administrativo',
+    icone: '💻',
+    cor: '#0891b2',
+    corBg: 'rgba(8,145,178,0.10)',
+    totalAlunos: 6,
+    cursosAtivos: 2,
+    turmasAbertas: 2,
+    progresso: 33,
+    responsavel: 'Pablo Henrique Sousa',
+    turmas: [
+      { id:15, nome:'TI — Turma Suporte',        curso:'Segurança da Informação e LGPD',         alunos:3, inicio:'01/05/2026', fim:'31/07/2026', status:'Em andamento', progresso:33 },
+      { id:16, nome:'TI — Turma Desenvolvimento', curso:'Gestão de Projetos e Metodologias Ágeis', alunos:3, inicio:'15/05/2026', fim:'15/08/2026', status:'Não iniciada', progresso:0  },
+    ],
+  },
 ]
 
 export function TurmasAdmin({ onNavigate, onLogout }: {
@@ -175,6 +193,57 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
   const [menuAberto, setMenuAberto] = useState<number | null>(null)
   const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
   const [expandido, setExpandido] = useState<number | null>(null)
+
+  const [modalNovaTurma, setModalNovaTurma] = useState(false)
+  const [novoNome, setNovoNome] = useState('')
+  const [novoCargo, setNovoCargo] = useState('')
+  const [novoSetor, setNovoSetor] = useState('')
+  const [novoResponsavel, setNovoResponsavel] = useState('')
+  const [novoCurso, setNovoCurso] = useState('')
+  const [novoInicio, setNovoInicio] = useState('')
+  const [novoFim, setNovoFim] = useState('')
+  const [novoAlunos, setNovoAlunos] = useState('')
+  const [novoIcone, setNovoIcone] = useState('🏷️')
+  const [novaCor, setNovaCor] = useState('#1a56ff')
+  const [erroForm, setErroForm] = useState('')
+
+  const iconesDisponiveis = ['🏗️','📦','👥','🛡️','📢','📐','⚙️','💻','📋','🏥','⚡','🚜','🛣️','♻️','📊']
+  const coresDisponiveis  = ['#1a56ff','#dc2626','#059669','#d97706','#7c3aed','#db2777','#0891b2','#f59e0b','#16a34a','#0284c7']
+
+  const salvarNovaTurma = () => {
+    if (!novoCargo.trim() || !novoResponsavel.trim() || !novoSetor || !novoCurso.trim() || !novoInicio || !novoFim) {
+      setErroForm('Preencha todos os campos obrigatórios.')
+      return
+    }
+    const novaEntrada: Turma = {
+      id: turmasMock.length + Date.now(),
+      cargo: novoCargo,
+      setor: novoSetor,
+      icone: novoIcone,
+      cor: novaCor,
+      corBg: `${novaCor}18`,
+      totalAlunos: parseInt(novoAlunos) || 0,
+      cursosAtivos: 1,
+      turmasAbertas: 1,
+      progresso: 0,
+      responsavel: novoResponsavel,
+      turmas: [{
+        id: Date.now(),
+        nome: novoNome || `${novoCargo} — Turma A`,
+        curso: novoCurso,
+        alunos: parseInt(novoAlunos) || 0,
+        inicio: novoInicio.split('-').reverse().join('/'),
+        fim: novoFim.split('-').reverse().join('/'),
+        status: 'Não iniciada',
+        progresso: 0,
+      }],
+    }
+    setNovoNome(''); setNovoCargo(''); setNovoSetor(''); setNovoResponsavel('')
+    setNovoCurso(''); setNovoInicio(''); setNovoFim(''); setNovoAlunos('')
+    setNovoIcone('🏷️'); setNovaCor('#1a56ff'); setErroForm('')
+    setModalNovaTurma(false)
+    alert(`Turma "${novaEntrada.cargo}" criada com sucesso! (Será salva no banco quando o backend estiver ativo)`)
+  }
 
   const turmasFiltradas = useMemo(() => {
     return turmasMock.filter(g => {
@@ -284,6 +353,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
             </p>
           </div>
           <button
+            onClick={() => setModalNovaTurma(true)}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', background: C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'opacity 150ms' }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
@@ -424,7 +494,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
                     style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', background: 'none', border: 'none', borderTop: `1px solid ${C.border}`, cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: C.blue, padding: '10px 0 0', justifyContent: 'center' }}
                   >
                     <ChevronDown size={14} style={{ transform: expandido === grupo.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms' }} />
-                    {expandido === grupo.id ? 'Ocultar turmas' : `Ver ${grupo.turmas.length} turma${grupo.turmas.length !== 1 ? 's' : ''}`}
+                    {expandido === grupo.id ? 'Ocultar cursos' : `Ver ${grupo.turmas.length} curso${grupo.turmas.length !== 1 ? 's' : ''}`}
                   </button>
 
                   {/* Sub-turmas expandidas */}
@@ -458,6 +528,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
 
             {/* Card Nova Turma */}
             <div
+              onClick={() => setModalNovaTurma(true)}
               style={{ background: C.surface, border: `2px dashed ${C.border}`, borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '32px', cursor: 'pointer', transition: 'all 150ms', minHeight: '200px' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.background = 'rgba(26,86,255,0.04)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface }}
@@ -523,6 +594,228 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
           onClick={() => setMenuAberto(null)}
           style={{ position: 'fixed', inset: 0, zIndex: 40 }}
         />
+      )}
+
+      {/* Modal Nova Turma */}
+      {modalNovaTurma && (
+        <div
+          onClick={() => setModalNovaTurma(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.60)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '560px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.4)', border: `1px solid ${C.border}`, maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            <div style={{ height: '4px', background: novaCor }} />
+
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>Nova Turma</h2>
+                <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>Preencha os dados para criar uma nova turma</p>
+              </div>
+              <button
+                onClick={() => setModalNovaTurma(false)}
+                style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', color: C.muted }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+              {erroForm && (
+                <div style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#ef4444' }}>
+                  ⚠️ {erroForm}
+                </div>
+              )}
+
+              {/* Ícone + Cor */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ícone</label>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px' }}>
+                    {iconesDisponiveis.map(ic => (
+                      <button
+                        key={ic}
+                        onClick={() => setNovoIcone(ic)}
+                        style={{ fontSize: '18px', width: '32px', height: '32px', borderRadius: '6px', border: `2px solid ${novoIcone === ic ? novaCor : 'transparent'}`, background: novoIcone === ic ? `${novaCor}18` : 'none', cursor: 'pointer', transition: 'all 150ms' }}
+                      >
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cor da turma</label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px' }}>
+                    {coresDisponiveis.map(cor => (
+                      <button
+                        key={cor}
+                        onClick={() => setNovaCor(cor)}
+                        style={{ width: '28px', height: '28px', borderRadius: '50%', background: cor, border: `3px solid ${novaCor === cor ? C.text : 'transparent'}`, cursor: 'pointer', outline: 'none', transition: 'all 150ms', boxShadow: novaCor === cor ? `0 0 0 2px ${C.bg}, 0 0 0 4px ${cor}` : 'none' }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Nome do grupo / cargo */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Nome do grupo / cargo <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  value={novoCargo}
+                  onChange={e => setNovoCargo(e.target.value)}
+                  placeholder="Ex: Tecnologia da Informação"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
+                  onFocus={e => e.target.style.borderColor = novaCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Setor */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Setor <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  value={novoSetor}
+                  onChange={e => setNovoSetor(e.target.value)}
+                  style={{ width: '100%', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: novoSetor ? C.text : C.muted, outline: 'none', cursor: 'pointer' }}
+                >
+                  <option value="">Selecione o setor</option>
+                  {setores.filter(s => s !== 'Todos os setores').map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Responsável */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Responsável <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  value={novoResponsavel}
+                  onChange={e => setNovoResponsavel(e.target.value)}
+                  placeholder="Nome do responsável pela turma"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
+                  onFocus={e => e.target.style.borderColor = novaCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Nome da turma */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nome da turma</label>
+                <input
+                  value={novoNome}
+                  onChange={e => setNovoNome(e.target.value)}
+                  placeholder={`Ex: ${novoCargo || 'Grupo'} — Turma A`}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
+                  onFocus={e => e.target.style.borderColor = novaCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+                <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>Se não informado, será gerado automaticamente</p>
+              </div>
+
+              {/* Curso vinculado */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Curso vinculado <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  value={novoCurso}
+                  onChange={e => setNovoCurso(e.target.value)}
+                  placeholder="Nome do curso desta turma"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
+                  onFocus={e => e.target.style.borderColor = novaCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Período */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Data de início <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={novoInicio}
+                    onChange={e => setNovoInicio(e.target.value)}
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', cursor: 'pointer' }}
+                    onFocus={e => e.target.style.borderColor = novaCor}
+                    onBlur={e => e.target.style.borderColor = C.border}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Data de término <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={novoFim}
+                    onChange={e => setNovoFim(e.target.value)}
+                    min={novoInicio}
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', cursor: 'pointer' }}
+                    onFocus={e => e.target.style.borderColor = novaCor}
+                    onBlur={e => e.target.style.borderColor = C.border}
+                  />
+                </div>
+              </div>
+
+              {/* Número de alunos */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Número de alunos estimado</label>
+                <input
+                  type="number"
+                  value={novoAlunos}
+                  onChange={e => setNovoAlunos(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
+                  onFocus={e => e.target.style.borderColor = novaCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Preview */}
+              {novoCargo && (
+                <div style={{ background: C.surface2, border: `1px solid ${novaCor}44`, borderRadius: '10px', padding: '14px', borderLeft: `4px solid ${novaCor}` }}>
+                  <p style={{ fontSize: '11px', fontWeight: 700, color: C.muted, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Preview do card</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${novaCor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                      {novoIcone}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>{novoCargo}</p>
+                      <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>{novoSetor || 'Setor não selecionado'} · {novoResponsavel || 'Responsável não informado'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${C.border}`, background: C.surface2, display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setModalNovaTurma(false); setErroForm('') }}
+                style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', fontWeight: 500, color: C.text, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarNovaTurma}
+                style={{ padding: '10px 24px', background: novaCor, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'opacity 150ms' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                ✓ Criar turma
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </LayoutAdmin>
   )
