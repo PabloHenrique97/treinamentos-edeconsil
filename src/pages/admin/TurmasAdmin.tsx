@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import {
   Plus, Search, Filter, MoreVertical,
   Users, Calendar, TrendingUp,
-  Edit, Trash2, Eye, Copy,
   ChevronDown, BookOpen,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -190,7 +189,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
   const { C } = useTheme()
   const [busca, setBusca] = useState('')
   const [setorFiltro, setSetorFiltro] = useState('Todos os setores')
-  const [menuAberto, setMenuAberto] = useState<number | null>(null)
+  const [menuAbertoId, setMenuAbertoId] = useState<number | null>(null)
   const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
   const [expandido, setExpandido] = useState<number | null>(null)
 
@@ -206,6 +205,21 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
   const [novoIcone, setNovoIcone] = useState('🏷️')
   const [novaCor, setNovaCor] = useState('#1a56ff')
   const [erroForm, setErroForm] = useState('')
+
+  const [modalEditarTurma, setModalEditarTurma] = useState(false)
+  const [turmaEditando, setTurmaEditando] = useState<Turma | null>(null)
+
+  const [editNome, setEditNome] = useState('')
+  const [editCargo, setEditCargo] = useState('')
+  const [editSetor, setEditSetor] = useState('')
+  const [editResponsavel, setEditResponsavel] = useState('')
+  const [editCurso, setEditCurso] = useState('')
+  const [editInicio, setEditInicio] = useState('')
+  const [editFim, setEditFim] = useState('')
+  const [editAlunos, setEditAlunos] = useState('')
+  const [editIcone, setEditIcone] = useState('🏷️')
+  const [editCor, setEditCor] = useState('#1a56ff')
+  const [erroFormEdicao, setErroFormEdicao] = useState('')
 
   const iconesDisponiveis = ['🏗️','📦','👥','🛡️','📢','📐','⚙️','💻','📋','🏥','⚡','🚜','🛣️','♻️','📊']
   const coresDisponiveis  = ['#1a56ff','#dc2626','#059669','#d97706','#7c3aed','#db2777','#0891b2','#f59e0b','#16a34a','#0284c7']
@@ -243,6 +257,40 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
     setNovoIcone('🏷️'); setNovaCor('#1a56ff'); setErroForm('')
     setModalNovaTurma(false)
     alert(`Turma "${novaEntrada.cargo}" criada com sucesso! (Será salva no banco quando o backend estiver ativo)`)
+  }
+
+  const abrirEdicao = (grupo: Turma) => {
+    setTurmaEditando(grupo)
+    setEditCargo(grupo.cargo)
+    setEditSetor(grupo.setor)
+    setEditResponsavel(grupo.responsavel)
+    setEditIcone(grupo.icone)
+    setEditCor(grupo.cor)
+    setEditAlunos(grupo.totalAlunos.toString())
+    const primeiraTurma = grupo.turmas[0]
+    setEditNome(primeiraTurma?.nome ?? '')
+    setEditCurso(primeiraTurma?.curso ?? '')
+    const converterData = (data: string) => {
+      if (!data || !data.includes('/')) return ''
+      const [d, m, y] = data.split('/')
+      return `${y}-${m}-${d}`
+    }
+    setEditInicio(converterData(primeiraTurma?.inicio ?? ''))
+    setEditFim(converterData(primeiraTurma?.fim ?? ''))
+    setErroFormEdicao('')
+    setMenuAbertoId(null)
+    setModalEditarTurma(true)
+  }
+
+  const salvarEdicao = () => {
+    if (!editCargo.trim() || !editResponsavel.trim() || !editSetor) {
+      setErroFormEdicao('Preencha todos os campos obrigatórios.')
+      return
+    }
+    setModalEditarTurma(false)
+    setTurmaEditando(null)
+    setErroFormEdicao('')
+    alert(`Turma "${editCargo}" atualizada com sucesso!\n(Será salva no banco quando o backend estiver ativo)`)
   }
 
   const turmasFiltradas = useMemo(() => {
@@ -425,29 +473,84 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
                         </span>
                       </div>
                     </div>
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                    {/* Botão 3 pontos */}
+                    <div style={{ position: 'relative' }}>
                       <button
-                        onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === grupo.id ? null : grupo.id) }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: C.muted, borderRadius: '6px' }}
+                        onClick={e => {
+                          e.stopPropagation()
+                          setMenuAbertoId(menuAbertoId === grupo.id ? null : grupo.id)
+                        }}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: '4px', color: C.muted, borderRadius: '6px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'background 150ms',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.surface2}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
                       >
-                        <MoreVertical size={16} />
+                        <MoreVertical size={16} color={C.muted} />
                       </button>
-                      {menuAberto === grupo.id && (
-                        <div style={{ position: 'absolute', right: 0, top: '100%', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', minWidth: '140px', zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
+
+                      {/* Dropdown menu */}
+                      {menuAbertoId === grupo.id && (
+                        <div style={{
+                          position: 'absolute', right: 0, top: '100%',
+                          background: C.surface,
+                          border: `1px solid ${C.border}`,
+                          borderRadius: '10px',
+                          minWidth: '160px',
+                          zIndex: 100,
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                          overflow: 'hidden',
+                          marginTop: '4px',
+                        }}>
                           {[
-                            { icon: Eye,    label: 'Visualizar'            },
-                            { icon: Edit,   label: 'Editar'                },
-                            { icon: Copy,   label: 'Duplicar'              },
-                            { icon: Trash2, label: 'Excluir', danger: true },
-                          ].map(a => (
+                            {
+                              icon: '✏️',
+                              label: 'Editar turma',
+                              action: () => abrirEdicao(grupo),
+                              danger: false,
+                            },
+                            {
+                              icon: '➕',
+                              label: 'Adicionar curso',
+                              action: () => setMenuAbertoId(null),
+                              danger: false,
+                            },
+                            {
+                              icon: '📋',
+                              label: 'Ver relatório',
+                              action: () => setMenuAbertoId(null),
+                              danger: false,
+                            },
+                            {
+                              icon: '🗑️',
+                              label: 'Excluir turma',
+                              action: () => {
+                                setMenuAbertoId(null)
+                                if (window.confirm(`Tem certeza que deseja excluir a turma "${grupo.cargo}"?`)) {
+                                  alert('Exclusão registrada. Será processada quando o backend estiver ativo.')
+                                }
+                              },
+                              danger: true,
+                            },
+                          ].map(item => (
                             <div
-                              key={a.label}
-                              onClick={e => { e.stopPropagation(); setMenuAberto(null) }}
-                              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 14px', cursor: 'pointer', fontSize: '13px', color: a.danger ? '#ef4444' : C.text, transition: 'background 100ms' }}
-                              onMouseEnter={e => e.currentTarget.style.background = a.danger ? 'rgba(239,68,68,0.08)' : 'rgba(26,86,255,0.06)'}
+                              key={item.label}
+                              onClick={e => { e.stopPropagation(); item.action() }}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '10px',
+                                padding: '10px 14px', cursor: 'pointer',
+                                fontSize: '13px',
+                                color: item.danger ? '#ef4444' : C.text,
+                                transition: 'background 100ms',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = item.danger ? 'rgba(239,68,68,0.08)' : `rgba(26,86,255,0.06)`}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
-                              <a.icon size={13} /> {a.label}
+                              <span style={{ fontSize: '14px' }}>{item.icon}</span>
+                              {item.label}
                             </div>
                           ))}
                         </div>
@@ -589,10 +692,10 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
       </div>
 
       {/* Fechar menu ao clicar fora */}
-      {menuAberto !== null && (
+      {menuAbertoId !== null && (
         <div
-          onClick={() => setMenuAberto(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          onClick={() => setMenuAbertoId(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99 }}
         />
       )}
 
@@ -813,6 +916,222 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
               >
                 ✓ Criar turma
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Editar Turma */}
+      {modalEditarTurma && turmaEditando && (
+        <div
+          onClick={() => setModalEditarTurma(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.60)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background:C.surface, borderRadius:'16px', width:'100%', maxWidth:'560px', overflow:'hidden', boxShadow:'0 32px 80px rgba(0,0,0,0.4)', border:`1px solid ${C.border}`, maxHeight:'90vh', overflowY:'auto' }}
+          >
+            {/* Faixa colorida */}
+            <div style={{ height:'4px', background:editCor }} />
+
+            {/* Header */}
+            <div style={{ padding:'20px 24px', borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                <div style={{ width:'40px', height:'40px', borderRadius:'10px', background:`${editCor}18`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px' }}>
+                  {editIcone}
+                </div>
+                <div>
+                  <h2 style={{ fontSize:'16px', fontWeight:700, color:C.text, margin:'0 0 2px' }}>
+                    Editar Turma
+                  </h2>
+                  <p style={{ fontSize:'12px', color:C.muted, margin:0 }}>
+                    {turmaEditando.cargo}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setModalEditarTurma(false)}
+                style={{ background:'none', border:`1px solid ${C.border}`, borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', color:C.muted }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Formulário */}
+            <div style={{ padding:'24px', display:'flex', flexDirection:'column', gap:'14px' }}>
+
+              {erroFormEdicao && (
+                <div style={{ background:'rgba(239,68,68,0.10)', border:'1px solid rgba(239,68,68,0.25)', borderRadius:'8px', padding:'10px 14px', fontSize:'13px', color:'#ef4444' }}>
+                  ⚠️ {erroFormEdicao}
+                </div>
+              )}
+
+              {/* Ícone + Cor */}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px' }}>
+                <div>
+                  <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Ícone</label>
+                  <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', padding:'10px' }}>
+                    {iconesDisponiveis.map(ic => (
+                      <button key={ic} onClick={() => setEditIcone(ic)}
+                        style={{ fontSize:'18px', width:'32px', height:'32px', borderRadius:'6px', border:`2px solid ${editIcone===ic ? editCor : 'transparent'}`, background:editIcone===ic ? `${editCor}18` : 'none', cursor:'pointer', transition:'all 150ms' }}>
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Cor da turma</label>
+                  <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', padding:'10px' }}>
+                    {coresDisponiveis.map(cor => (
+                      <button key={cor} onClick={() => setEditCor(cor)}
+                        style={{ width:'28px', height:'28px', borderRadius:'50%', background:cor, border:`3px solid ${editCor===cor ? C.text : 'transparent'}`, cursor:'pointer', outline:'none', transition:'all 150ms', boxShadow:editCor===cor?`0 0 0 2px ${C.bg}, 0 0 0 4px ${cor}`:'none' }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Nome do grupo / cargo */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Nome do grupo / cargo <span style={{ color:'#ef4444' }}>*</span>
+                </label>
+                <input value={editCargo} onChange={e => setEditCargo(e.target.value)}
+                  placeholder="Ex: Tecnologia da Informação"
+                  style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none' }}
+                  onFocus={e => e.target.style.borderColor = editCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Setor */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Setor <span style={{ color:'#ef4444' }}>*</span>
+                </label>
+                <select value={editSetor} onChange={e => setEditSetor(e.target.value)}
+                  style={{ width:'100%', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:editSetor?C.text:C.muted, outline:'none', cursor:'pointer' }}>
+                  <option value="">Selecione o setor</option>
+                  {setores.filter(s => s !== 'Todos os setores').map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Responsável */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Responsável <span style={{ color:'#ef4444' }}>*</span>
+                </label>
+                <input value={editResponsavel} onChange={e => setEditResponsavel(e.target.value)}
+                  placeholder="Nome do responsável"
+                  style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none' }}
+                  onFocus={e => e.target.style.borderColor = editCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Nome da turma */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Nome da turma principal
+                </label>
+                <input value={editNome} onChange={e => setEditNome(e.target.value)}
+                  placeholder="Nome da turma"
+                  style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none' }}
+                  onFocus={e => e.target.style.borderColor = editCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Curso vinculado */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Curso vinculado principal
+                </label>
+                <input value={editCurso} onChange={e => setEditCurso(e.target.value)}
+                  placeholder="Nome do curso"
+                  style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none' }}
+                  onFocus={e => e.target.style.borderColor = editCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Período */}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px' }}>
+                <div>
+                  <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Data de início</label>
+                  <input type="date" value={editInicio} onChange={e => setEditInicio(e.target.value)}
+                    style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none', cursor:'pointer' }}
+                    onFocus={e => e.target.style.borderColor = editCor}
+                    onBlur={e => e.target.style.borderColor = C.border}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Data de término</label>
+                  <input type="date" value={editFim} onChange={e => setEditFim(e.target.value)} min={editInicio}
+                    style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none', cursor:'pointer' }}
+                    onFocus={e => e.target.style.borderColor = editCor}
+                    onBlur={e => e.target.style.borderColor = C.border}
+                  />
+                </div>
+              </div>
+
+              {/* Alunos */}
+              <div>
+                <label style={{ fontSize:'11px', fontWeight:700, color:C.muted, display:'block', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                  Número de alunos
+                </label>
+                <input type="number" value={editAlunos} onChange={e => setEditAlunos(e.target.value)}
+                  placeholder="0" min="0"
+                  style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', background:C.surface2, border:`1px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', color:C.text, outline:'none' }}
+                  onFocus={e => e.target.style.borderColor = editCor}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+
+              {/* Preview */}
+              {editCargo && (
+                <div style={{ background:C.surface2, border:`1px solid ${editCor}44`, borderRadius:'10px', padding:'14px', borderLeft:`4px solid ${editCor}` }}>
+                  <p style={{ fontSize:'11px', fontWeight:700, color:C.muted, margin:'0 0 8px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                    Preview do card
+                  </p>
+                  <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                    <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${editCor}18`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>
+                      {editIcone}
+                    </div>
+                    <div>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px' }}>{editCargo}</p>
+                      <p style={{ fontSize:'11px', color:C.muted, margin:0 }}>
+                        {editSetor || 'Setor não selecionado'} · {editResponsavel || 'Responsável não informado'}
+                        {editAlunos ? ` · ${editAlunos} alunos` : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding:'16px 24px', borderTop:`1px solid ${C.border}`, background:C.surface2, display:'flex', gap:'10px', justifyContent:'space-between', alignItems:'center' }}>
+              <p style={{ fontSize:'11px', color:C.muted, margin:0 }}>
+                * Campos obrigatórios
+              </p>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button
+                  onClick={() => { setModalEditarTurma(false); setErroFormEdicao('') }}
+                  style={{ padding:'10px 20px', background:'none', border:`1.5px solid ${C.border}`, borderRadius:'8px', fontSize:'13px', fontWeight:500, color:C.text, cursor:'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={salvarEdicao}
+                  style={{ padding:'10px 24px', background:editCor, border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', gap:'6px', transition:'opacity 150ms' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity='0.88'}
+                  onMouseLeave={e => e.currentTarget.style.opacity='1'}
+                >
+                  ✓ Salvar alterações
+                </button>
+              </div>
             </div>
           </div>
         </div>
