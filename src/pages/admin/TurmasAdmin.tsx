@@ -1,120 +1,167 @@
 import { useState, useMemo } from 'react'
 import {
   Plus, Search, Filter, MoreVertical,
-  Users, Clock, Calendar, TrendingUp,
+  Users, Calendar, TrendingUp,
   Edit, Trash2, Eye, Copy,
   ChevronDown, BookOpen,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 
-const cargos = [
-  'Todos os cargos',
-  'Engenheiro de Obras',
-  'Técnico de Segurança',
-  'Encarregado',
-  'Operador de Máquinas',
+const setores = [
+  'Todos os setores',
+  'Gestão e Suprimentos',
   'Administrativo',
-  'Gestor de Projetos',
+  'Segurança do Trabalho',
+  'Obras e Infraestrutura',
+  'Equipamentos',
 ]
 
-const statusOpcoes = ['Todos', 'Aberta', 'Em andamento', 'Encerrada']
-
-interface Turma {
+interface SubTurma {
   id: number
   nome: string
   curso: string
-  cargo: string
-  instrutor: string
+  alunos: number
   inicio: string
   fim: string
-  status: 'Aberta' | 'Em andamento' | 'Encerrada'
-  vagas: number
-  matriculados: number
-  cor: string
+  status: 'Em andamento' | 'Não iniciada' | 'Encerrada'
+  progresso: number
+}
+
+interface Turma {
+  id: number
+  cargo: string
+  setor: string
   icone: string
+  cor: string
+  corBg: string
+  totalAlunos: number
+  cursosAtivos: number
+  turmasAbertas: number
+  progresso: number
+  responsavel: string
+  turmas: SubTurma[]
 }
 
 const turmasMock: Turma[] = [
   {
     id: 1,
-    nome: 'Turma NR-35 — Maio/2025',
-    curso: 'NR-35 — Trabalho em Altura',
-    cargo: 'Técnico de Segurança',
-    instrutor: 'Eng. Roberto Alves',
-    inicio: '05/05/2025', fim: '30/05/2025',
-    status: 'Em andamento', vagas: 30, matriculados: 28,
-    cor: '#dc2626', icone: '🪖',
+    cargo: 'Coordenação de Suprimentos',
+    setor: 'Gestão e Suprimentos',
+    icone: '📦',
+    cor: '#059669',
+    corBg: 'rgba(5,150,105,0.10)',
+    totalAlunos: 12,
+    cursosAtivos: 3,
+    turmasAbertas: 2,
+    progresso: 45,
+    responsavel: 'Antônio Carlos',
+    turmas: [
+      { id:1, nome:'Coord. Suprimentos — Turma A', curso:'Coordenação de Suprimentos', alunos:8, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:45 },
+      { id:2, nome:'Coord. Suprimentos — Turma B', curso:'Gestão de Almoxarifado PGI-CSU-002', alunos:4, inicio:'01/05/2026', fim:'31/07/2026', status:'Não iniciada', progresso:0 },
+    ],
   },
   {
     id: 2,
-    nome: 'Turma SIPAT — Maio/2025',
-    curso: 'SIPAT — Segurança no Canteiro de Obras',
-    cargo: 'Encarregado',
-    instrutor: 'Tec. Ana Souza',
-    inicio: '12/05/2025', fim: '20/05/2025',
-    status: 'Em andamento', vagas: 25, matriculados: 22,
-    cor: '#d97706', icone: '🛡️',
+    cargo: 'Recursos Humanos',
+    setor: 'Administrativo',
+    icone: '👥',
+    cor: '#db2777',
+    corBg: 'rgba(219,39,119,0.10)',
+    totalAlunos: 8,
+    cursosAtivos: 2,
+    turmasAbertas: 1,
+    progresso: 62,
+    responsavel: 'Ana Paula Rodrigues',
+    turmas: [
+      { id:3, nome:'RH — Turma Única', curso:'Gestão de Pessoas e Liderança', alunos:8, inicio:'15/03/2026', fim:'15/06/2026', status:'Em andamento', progresso:62 },
+    ],
   },
   {
     id: 3,
-    nome: 'Turma Gestão ISO — Junho/2025',
-    curso: 'Gestão da Qualidade ISO 9001',
-    cargo: 'Gestor de Projetos',
-    instrutor: 'Eng. Marcos Lima',
-    inicio: '02/06/2025', fim: '30/06/2025',
-    status: 'Aberta', vagas: 20, matriculados: 8,
-    cor: '#7c3aed', icone: '📋',
+    cargo: 'Segurança do Trabalho',
+    setor: 'Segurança do Trabalho',
+    icone: '🛡️',
+    cor: '#dc2626',
+    corBg: 'rgba(220,38,38,0.10)',
+    totalAlunos: 18,
+    cursosAtivos: 5,
+    turmasAbertas: 3,
+    progresso: 78,
+    responsavel: 'Juliana Ferreira Costa',
+    turmas: [
+      { id:4, nome:'SESMT — Turma A', curso:'NR-35 — Trabalho em Altura', alunos:8, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:78 },
+      { id:5, nome:'SESMT — Turma B', curso:'SIPAT — Segurança no Canteiro de Obras', alunos:6, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:55 },
+      { id:6, nome:'SESMT — Turma C', curso:'NR-10 — Segurança em Instalações Elétricas', alunos:4, inicio:'01/05/2026', fim:'31/07/2026', status:'Não iniciada', progresso:0 },
+    ],
   },
   {
     id: 4,
-    nome: 'Turma Leitura Projetos — Abril/2025',
-    curso: 'Leitura e Interpretação de Projetos',
-    cargo: 'Engenheiro de Obras',
-    instrutor: 'Eng. Carlos Mota',
-    inicio: '07/04/2025', fim: '30/04/2025',
-    status: 'Encerrada', vagas: 20, matriculados: 20,
-    cor: '#1a56ff', icone: '📐',
+    cargo: 'Serviços Gerais',
+    setor: 'Obras e Infraestrutura',
+    icone: '🏗️',
+    cor: '#0891b2',
+    corBg: 'rgba(8,145,178,0.10)',
+    totalAlunos: 22,
+    cursosAtivos: 3,
+    turmasAbertas: 2,
+    progresso: 38,
+    responsavel: 'Roberto Silva Pereira',
+    turmas: [
+      { id:7, nome:'Serviços Gerais — Turma A', curso:'Segurança no Canteiro de Obras', alunos:14, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:38 },
+      { id:8, nome:'Serviços Gerais — Turma B', curso:'Primeiros Socorros no Trabalho', alunos:8, inicio:'15/05/2026', fim:'15/08/2026', status:'Não iniciada', progresso:0 },
+    ],
   },
   {
     id: 5,
-    nome: 'Turma Escavadeiras — Maio/2025',
-    curso: 'Operação de Escavadeiras Hidráulicas',
-    cargo: 'Operador de Máquinas',
-    instrutor: 'Tec. Paulo Vieira',
-    inicio: '19/05/2025', fim: '16/06/2025',
-    status: 'Aberta', vagas: 15, matriculados: 6,
-    cor: '#059669', icone: '🏗️',
+    cargo: 'Comunicação',
+    setor: 'Administrativo',
+    icone: '📢',
+    cor: '#7c3aed',
+    corBg: 'rgba(124,58,237,0.10)',
+    totalAlunos: 6,
+    cursosAtivos: 2,
+    turmasAbertas: 1,
+    progresso: 54,
+    responsavel: 'Camila Souza Barbosa',
+    turmas: [
+      { id:9, nome:'Comunicação — Turma Única', curso:'Comunicação Corporativa e Marketing Digital', alunos:6, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:54 },
+    ],
   },
   {
     id: 6,
-    nome: 'Turma Pavimentação — Maio/2025',
-    curso: 'Pavimentação Asfáltica — Fundamentos',
-    cargo: 'Encarregado',
-    instrutor: 'Eng. Fábio Costa',
-    inicio: '26/05/2025', fim: '27/06/2025',
-    status: 'Aberta', vagas: 18, matriculados: 11,
-    cor: '#0891b2', icone: '🛣️',
+    cargo: 'Engenharia',
+    setor: 'Obras e Infraestrutura',
+    icone: '📐',
+    cor: '#1a56ff',
+    corBg: 'rgba(26,86,255,0.10)',
+    totalAlunos: 16,
+    cursosAtivos: 4,
+    turmasAbertas: 3,
+    progresso: 71,
+    responsavel: 'Eng. Carlos Mendes',
+    turmas: [
+      { id:10, nome:'Engenharia — Turma A', curso:'Leitura e Interpretação de Projetos', alunos:6, inicio:'01/03/2026', fim:'31/05/2026', status:'Em andamento', progresso:88 },
+      { id:11, nome:'Engenharia — Turma B', curso:'Gestão da Qualidade ISO 9001', alunos:6, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:42 },
+      { id:12, nome:'Engenharia — Turma C', curso:'Topografia Aplicada à Construção Civil', alunos:4, inicio:'01/05/2026', fim:'31/07/2026', status:'Não iniciada', progresso:0 },
+    ],
   },
   {
     id: 7,
-    nome: 'Turma Liderança — Abril/2025',
-    curso: 'Liderança para Encarregados de Obras',
-    cargo: 'Encarregado',
-    instrutor: 'Psic. Juliana Ramos',
-    inicio: '14/04/2025', fim: '09/05/2025',
-    status: 'Em andamento', vagas: 22, matriculados: 19,
-    cor: '#db2777', icone: '👷',
-  },
-  {
-    id: 8,
-    nome: 'Turma Excel Obras — Junho/2025',
-    curso: 'Excel para Gestão de Obras',
-    cargo: 'Administrativo',
-    instrutor: 'Tec. Sandra Neves',
-    inicio: '09/06/2025', fim: '04/07/2025',
-    status: 'Aberta', vagas: 25, matriculados: 3,
-    cor: '#1a56ff', icone: '📊',
+    cargo: 'Manutenções - Oficina',
+    setor: 'Equipamentos',
+    icone: '⚙️',
+    cor: '#f59e0b',
+    corBg: 'rgba(245,158,11,0.10)',
+    totalAlunos: 14,
+    cursosAtivos: 4,
+    turmasAbertas: 2,
+    progresso: 49,
+    responsavel: 'André Santos Machado',
+    turmas: [
+      { id:13, nome:'Oficina — Turma Elétrica', curso:'NR-10 — Segurança em Instalações Elétricas', alunos:8, inicio:'01/04/2026', fim:'30/06/2026', status:'Em andamento', progresso:58 },
+      { id:14, nome:'Oficina — Turma Mecânica', curso:'NR-12 — Segurança em Máquinas e Equipamentos', alunos:6, inicio:'15/04/2026', fim:'15/07/2026', status:'Em andamento', progresso:35 },
+    ],
   },
 ]
 
@@ -124,31 +171,29 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
 }) {
   const { C } = useTheme()
   const [busca, setBusca] = useState('')
-  const [cargoFiltro, setCargoFiltro] = useState('Todos os cargos')
-  const [statusFiltro, setStatusFiltro] = useState('Todos')
+  const [setorFiltro, setSetorFiltro] = useState('Todos os setores')
   const [menuAberto, setMenuAberto] = useState<number | null>(null)
   const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
+  const [expandido, setExpandido] = useState<number | null>(null)
 
   const turmasFiltradas = useMemo(() => {
-    return turmasMock.filter(t => {
-      const matchBusca = t.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                         t.curso.toLowerCase().includes(busca.toLowerCase()) ||
-                         t.instrutor.toLowerCase().includes(busca.toLowerCase())
-      const matchCargo  = cargoFiltro  === 'Todos os cargos' || t.cargo  === cargoFiltro
-      const matchStatus = statusFiltro === 'Todos'           || t.status === statusFiltro
-      return matchBusca && matchCargo && matchStatus
+    return turmasMock.filter(g => {
+      const matchBusca = g.cargo.toLowerCase().includes(busca.toLowerCase()) ||
+                         g.setor.toLowerCase().includes(busca.toLowerCase()) ||
+                         g.responsavel.toLowerCase().includes(busca.toLowerCase())
+      const matchSetor = setorFiltro === 'Todos os setores' || g.setor === setorFiltro
+      return matchBusca && matchSetor
     })
-  }, [busca, cargoFiltro, statusFiltro])
+  }, [busca, setorFiltro])
 
-  const totalAbertas     = turmasMock.filter(t => t.status === 'Aberta').length
-  const totalAndamento   = turmasMock.filter(t => t.status === 'Em andamento').length
-  const totalMatriculados = turmasMock.reduce((s, t) => s + t.matriculados, 0)
-  const totalVagas       = turmasMock.reduce((s, t) => s + t.vagas, 0)
+  const totalAlunos    = turmasMock.reduce((s, g) => s + g.totalAlunos, 0)
+  const totalSubTurmas = turmasMock.reduce((s, g) => s + g.turmas.length, 0)
+  const turmasAbertas  = turmasMock.reduce((s, g) => s + g.turmasAbertas, 0)
 
-  const corStatus = (s: string) => ({
-    'Aberta':       { bg: 'rgba(26,86,255,0.12)',   color: '#1a56ff', border: 'rgba(26,86,255,0.25)'   },
+  const corSubStatus = (s: string) => ({
     'Em andamento': { bg: 'rgba(16,185,129,0.12)',  color: '#10b981', border: 'rgba(16,185,129,0.25)'  },
-    'Encerrada':    { bg: 'rgba(107,114,128,0.12)', color: '#6b7280', border: 'rgba(107,114,128,0.25)' },
+    'Não iniciada': { bg: 'rgba(107,114,128,0.12)', color: '#6b7280', border: 'rgba(107,114,128,0.25)' },
+    'Encerrada':    { bg: 'rgba(239,68,68,0.12)',   color: '#ef4444', border: 'rgba(239,68,68,0.25)'   },
   }[s] ?? { bg: C.surface2, color: C.muted, border: C.border })
 
   function SelectFiltro({ value, onChange, options }: {
@@ -181,8 +226,6 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
       </div>
     )
   }
-
-  const ocupacao = (t: Turma) => Math.round((t.matriculados / t.vagas) * 100)
 
   return (
     <LayoutAdmin
@@ -237,7 +280,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Turmas</h1>
             <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
-              {turmasFiltradas.length} de {turmasMock.length} turmas
+              {turmasFiltradas.length} de {turmasMock.length} grupos
             </p>
           </div>
           <button
@@ -252,10 +295,10 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
         {/* Métricas */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
           {[
-            { label: 'Total de Turmas',    valor: turmasMock.length,                   icone: BookOpen,    cor: C.blue    },
-            { label: 'Turmas Abertas',     valor: totalAbertas,                        icone: Calendar,    cor: '#1a56ff' },
-            { label: 'Em Andamento',       valor: totalAndamento,                      icone: TrendingUp,  cor: '#10b981' },
-            { label: 'Alunos Matriculados',valor: `${totalMatriculados}/${totalVagas}`, icone: Users,       cor: '#f59e0b' },
+            { label: 'Grupos de Cargo',    valor: turmasMock.length,  icone: BookOpen,   cor: C.blue    },
+            { label: 'Turmas Cadastradas', valor: totalSubTurmas,     icone: Calendar,   cor: '#1a56ff' },
+            { label: 'Turmas em Aberto',   valor: turmasAbertas,      icone: TrendingUp, cor: '#10b981' },
+            { label: 'Total de Alunos',    valor: totalAlunos,        icone: Users,      cor: '#f59e0b' },
           ].map(m => (
             <div key={m.label} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: `${m.cor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -275,11 +318,10 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
             <Filter size={14} />
             <span style={{ fontSize: '12px', fontWeight: 600 }}>Filtros:</span>
           </div>
-          <SelectFiltro value={cargoFiltro}  onChange={setCargoFiltro}  options={cargos}       />
-          <SelectFiltro value={statusFiltro} onChange={setStatusFiltro} options={statusOpcoes} />
-          {(cargoFiltro !== 'Todos os cargos' || statusFiltro !== 'Todos') && (
+          <SelectFiltro value={setorFiltro} onChange={setSetorFiltro} options={setores} />
+          {setorFiltro !== 'Todos os setores' && (
             <button
-              onClick={() => { setCargoFiltro('Todos os cargos'); setStatusFiltro('Todos') }}
+              onClick={() => setSetorFiltro('Todos os setores')}
               style={{ background: 'none', border: 'none', fontSize: '12px', color: C.blue, cursor: 'pointer', fontWeight: 600 }}
             >
               Limpar filtros
@@ -293,33 +335,34 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
         {/* Grid de cards */}
         {visualizacao === 'grid' ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {turmasFiltradas.map(turma => (
+            {turmasFiltradas.map(grupo => (
               <div
-                key={turma.id}
-                style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative', cursor: 'pointer' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                key={grupo.id}
+                style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'box-shadow 150ms' }}
               >
-                <div style={{ height: '4px', background: turma.cor }} />
+                <div style={{ height: '4px', background: grupo.cor }} />
                 <div style={{ padding: '16px' }}>
                   {/* Header */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${turma.cor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
-                        {turma.icone}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: grupo.corBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
+                        {grupo.icone}
                       </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', background: corStatus(turma.status).bg, color: corStatus(turma.status).color, border: `0.5px solid ${corStatus(turma.status).border}`, borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700 }}>
-                        {turma.status}
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: C.text, margin: '0 0 4px', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{grupo.cargo}</p>
+                        <span style={{ fontSize: '10px', fontWeight: 600, color: grupo.cor, background: grupo.corBg, border: `0.5px solid ${grupo.cor}60`, borderRadius: '6px', padding: '2px 7px', display: 'inline-block' }}>
+                          {grupo.setor}
+                        </span>
                       </div>
                     </div>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
                       <button
-                        onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === turma.id ? null : turma.id) }}
+                        onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === grupo.id ? null : grupo.id) }}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: C.muted, borderRadius: '6px' }}
                       >
                         <MoreVertical size={16} />
                       </button>
-                      {menuAberto === turma.id && (
+                      {menuAberto === grupo.id && (
                         <div style={{ position: 'absolute', right: 0, top: '100%', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', minWidth: '140px', zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
                           {[
                             { icon: Eye,    label: 'Visualizar'            },
@@ -334,8 +377,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
                               onMouseEnter={e => e.currentTarget.style.background = a.danger ? 'rgba(239,68,68,0.08)' : 'rgba(26,86,255,0.06)'}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
-                              <a.icon size={13} />
-                              {a.label}
+                              <a.icon size={13} /> {a.label}
                             </div>
                           ))}
                         </div>
@@ -343,49 +385,73 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
                     </div>
                   </div>
 
-                  {/* Nome e curso */}
-                  <p style={{ fontSize: '14px', fontWeight: 700, color: C.text, margin: '0 0 4px', lineHeight: 1.4 }}>{turma.nome}</p>
-                  <p style={{ fontSize: '12px', color: C.muted, margin: '0 0 12px', lineHeight: 1.4 }}>{turma.curso}</p>
-
-                  {/* Tag cargo */}
-                  <div style={{ marginBottom: '14px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 600, color: C.blue, background: 'rgba(26,86,255,0.10)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '6px', padding: '2px 8px' }}>
-                      {turma.cargo}
-                    </span>
+                  {/* Responsável */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: grupo.corBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: grupo.cor, flexShrink: 0 }}>
+                      {grupo.responsavel.split(' ')[0][0]}{grupo.responsavel.split(' ').filter(Boolean).slice(-1)[0]?.[0] ?? ''}
+                    </div>
+                    <span style={{ fontSize: '11px', color: C.muted }}>{grupo.responsavel}</span>
                   </div>
 
                   {/* Stats */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
                     {[
-                      { icon: Users,    val: `${turma.matriculados}/${turma.vagas}`, label: 'Alunos'   },
-                      { icon: Calendar, val: turma.inicio,                           label: 'Início'   },
-                      { icon: Clock,    val: turma.fim,                              label: 'Término'  },
+                      { val: grupo.totalAlunos,   label: 'Alunos'  },
+                      { val: grupo.cursosAtivos,  label: 'Cursos'  },
+                      { val: grupo.turmasAbertas, label: 'Turmas'  },
                     ].map(s => (
                       <div key={s.label} style={{ background: C.surface2, borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: C.text }}>{s.val}</div>
+                        <div style={{ fontSize: '16px', fontWeight: 700, color: C.text }}>{s.val}</div>
                         <div style={{ fontSize: '10px', color: C.muted }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Instrutor */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(26,86,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: C.blue, flexShrink: 0 }}>
-                      {turma.instrutor.split(' ').slice(-1)[0][0]}
+                  {/* Barra de progresso */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11px', color: C.muted }}>Progresso médio</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: grupo.cor }}>{grupo.progresso}%</span>
                     </div>
-                    <span style={{ fontSize: '11px', color: C.muted }}>{turma.instrutor}</span>
+                    <div style={{ background: grupo.corBg, borderRadius: '4px', height: '4px' }}>
+                      <div style={{ background: grupo.cor, height: '4px', borderRadius: '4px', width: `${grupo.progresso}%`, transition: 'width 0.5s' }} />
+                    </div>
                   </div>
 
-                  {/* Barra de ocupação */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '11px', color: C.muted }}>Ocupação</span>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: ocupacao(turma) >= 80 ? '#10b981' : C.blue }}>{ocupacao(turma)}%</span>
+                  {/* Botão expandir */}
+                  <button
+                    onClick={() => setExpandido(expandido === grupo.id ? null : grupo.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', background: 'none', border: 'none', borderTop: `1px solid ${C.border}`, cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: C.blue, padding: '10px 0 0', justifyContent: 'center' }}
+                  >
+                    <ChevronDown size={14} style={{ transform: expandido === grupo.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms' }} />
+                    {expandido === grupo.id ? 'Ocultar turmas' : `Ver ${grupo.turmas.length} turma${grupo.turmas.length !== 1 ? 's' : ''}`}
+                  </button>
+
+                  {/* Sub-turmas expandidas */}
+                  {expandido === grupo.id && (
+                    <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {grupo.turmas.map(t => (
+                        <div key={t.id} style={{ background: C.surface2, borderRadius: '8px', padding: '10px 12px', borderLeft: `3px solid ${corSubStatus(t.status).color}` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3px', gap: '8px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: C.text, flex: 1 }}>{t.nome}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: corSubStatus(t.status).color, background: corSubStatus(t.status).bg, border: `0.5px solid ${corSubStatus(t.status).border}`, borderRadius: '4px', padding: '1px 6px', flexShrink: 0 }}>
+                              {t.status}
+                            </span>
+                          </div>
+                          <p style={{ fontSize: '11px', color: C.muted, margin: '0 0 6px', lineHeight: 1.4 }}>{t.curso}</p>
+                          <div style={{ display: 'flex', gap: '12px', fontSize: '10px', color: C.muted }}>
+                            <span>👥 {t.alunos} alunos</span>
+                            <span>📅 {t.inicio} – {t.fim}</span>
+                          </div>
+                          {t.status === 'Em andamento' && (
+                            <div style={{ marginTop: '6px', background: 'rgba(16,185,129,0.12)', borderRadius: '3px', height: '3px' }}>
+                              <div style={{ background: '#10b981', height: '3px', borderRadius: '3px', width: `${t.progresso}%` }} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div style={{ background: 'rgba(26,86,255,0.10)', borderRadius: '4px', height: '4px' }}>
-                      <div style={{ background: ocupacao(turma) >= 80 ? '#10b981' : C.blue, height: '4px', borderRadius: '4px', width: `${ocupacao(turma)}%`, transition: 'width 0.5s' }} />
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -409,35 +475,28 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
         ) : (
           /* Visualização lista */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 90px 90px 90px', gap: '12px', padding: '8px 16px', fontSize: '11px', fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              <span>Turma</span><span>Cargo</span><span>Instrutor</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 80px 80px', gap: '12px', padding: '8px 16px', fontSize: '11px', fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span>Cargo</span><span>Setor</span><span>Responsável</span>
               <span style={{ textAlign: 'center' }}>Alunos</span>
-              <span style={{ textAlign: 'center' }}>Ocupação</span>
-              <span style={{ textAlign: 'center' }}>Status</span>
+              <span style={{ textAlign: 'center' }}>Turmas</span>
+              <span style={{ textAlign: 'center' }}>Progresso</span>
             </div>
-            {turmasFiltradas.map(turma => (
+            {turmasFiltradas.map(grupo => (
               <div
-                key={turma.id}
-                style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 90px 90px 90px', gap: '12px', alignItems: 'center', transition: 'background 150ms', cursor: 'pointer' }}
+                key={grupo.id}
+                style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 80px 80px', gap: '12px', alignItems: 'center', transition: 'background 150ms', cursor: 'pointer', borderLeft: `3px solid ${grupo.cor}` }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.04)'}
                 onMouseLeave={e => e.currentTarget.style.background = C.surface}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${turma.cor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>{turma.icone}</div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{turma.nome}</p>
-                    <p style={{ fontSize: '11px', color: C.muted, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{turma.curso}</p>
-                  </div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: grupo.corBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>{grupo.icone}</div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{grupo.cargo}</p>
                 </div>
-                <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{turma.cargo}</span>
-                <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{turma.instrutor}</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: C.text, textAlign: 'center' }}>{turma.matriculados}/{turma.vagas}</span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: ocupacao(turma) >= 80 ? '#10b981' : C.blue, textAlign: 'center' }}>{ocupacao(turma)}%</span>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <span style={{ background: corStatus(turma.status).bg, color: corStatus(turma.status).color, border: `0.5px solid ${corStatus(turma.status).border}`, borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700 }}>
-                    {turma.status}
-                  </span>
-                </div>
+                <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{grupo.setor}</span>
+                <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{grupo.responsavel}</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: C.text, textAlign: 'center' }}>{grupo.totalAlunos}</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: C.text, textAlign: 'center' }}>{grupo.turmas.length}</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: grupo.cor, textAlign: 'center' }}>{grupo.progresso}%</span>
               </div>
             ))}
           </div>
@@ -449,7 +508,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: {
             <p style={{ fontSize: '15px', fontWeight: 600, color: C.text, margin: 0 }}>Nenhuma turma encontrada</p>
             <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>Tente ajustar os filtros de busca</p>
             <button
-              onClick={() => { setBusca(''); setCargoFiltro('Todos os cargos'); setStatusFiltro('Todos') }}
+              onClick={() => { setBusca(''); setSetorFiltro('Todos os setores') }}
               style={{ background: C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', marginTop: '4px' }}
             >
               Limpar filtros
