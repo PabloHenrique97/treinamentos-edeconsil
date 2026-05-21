@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Award, ClipboardCheck,
-  FileText, BarChart2, GitBranch,
+  FileText, GitBranch,
   MessageSquare, LogOut, ChevronRight
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Certificados',          page: 'certificadosColaborador', icon: Award },
   { label: 'EdeconQuiz',            page: '',           icon: ClipboardCheck   },
   { label: 'Apostilas',             page: 'apostilas',  icon: FileText         },
-  { label: 'Meu Progresso',         page: '',           icon: BarChart2        },
+  { label: 'Mensagens',              page: 'mensagens',  icon: MessageSquare    },
   { label: 'Trilhas de Aprendizado',page: 'trilha',     icon: GitBranch        },
 ]
 

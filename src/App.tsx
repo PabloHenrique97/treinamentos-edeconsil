@@ -18,6 +18,7 @@ import { MatriculasAdmin } from './pages/admin/MatriculasAdmin'
 import { ConfiguracoesAdmin } from './pages/admin/ConfiguracoesAdmin'
 import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
+import { MensagensColaborador } from './pages/MensagensColaborador'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
@@ -83,7 +84,7 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -234,6 +235,13 @@ function AppContent() {
 
   if (pagina === 'apostilas') return (
     <ApostilasColaborador
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+    />
+  )
+
+  if (pagina === 'mensagens') return (
+    <MensagensColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
       onLogout={() => setLogado(false)}
     />
