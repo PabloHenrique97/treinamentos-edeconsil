@@ -4,6 +4,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
+import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
 
 interface MeusCursosListaProps {
   onNavigate: (page: string, extra?: Record<string, unknown>) => void
@@ -13,6 +14,7 @@ interface MeusCursosListaProps {
 
 export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCursosListaProps) {
   const { C } = useTheme()
+  const progresso = useProgressoColaborador()
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'Todos' | 'Em andamento' | 'Concluído' | 'Não iniciado'>('Todos')
 
@@ -46,6 +48,10 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Meus Cursos</h1>
             <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
               {cursosFiltrados.length} curso{cursosFiltrados.length !== 1 ? 's' : ''} disponível{cursosFiltrados.length !== 1 ? 'is' : ''}
+            </p>
+            <p style={{ fontSize: '12px', color: C.muted, margin: '4px 0 0' }}>
+              {progresso.aulasConcluidas} de {progresso.totalAulas} aulas concluídas
+              · {progresso.percentualProgresso}% do progresso total
             </p>
           </div>
 

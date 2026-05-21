@@ -7,13 +7,7 @@ import { Topbar } from '../components/Topbar'
 import { MobileMenu } from '../components/MobileMenu'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
-
-const metricas = [
-  { label: 'Cursos ativos',   valor: '8',   delta: '+2 este mês',   deltaColor: '#1a56ff' },
-  { label: 'Concluídos',      valor: '3',   delta: '37% concluído', deltaColor: '#10b981' },
-  { label: 'Certificados',    valor: '3',   delta: 'Ver todos',     deltaColor: '#f59e0b' },
-  { label: 'Horas estudadas', valor: '24h', delta: 'Este mês',      deltaColor: '#1a56ff' },
-]
+import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
 
 const cursosAndamento = [
   { icon: '🪖', titulo: 'NR-35 — Trabalho em Altura',    pct: 68, cor: '#1a56ff' },
@@ -37,6 +31,14 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
+  const progresso = useProgressoColaborador()
+
+  const metricas = [
+    { label: 'Cursos ativos',   valor: String(progresso.cursosAtivos),          delta: '+2 este mês',                              deltaColor: '#1a56ff' },
+    { label: 'Concluídos',      valor: String(progresso.cursosConcluidos),       delta: `${progresso.percentualProgresso}% concluído`, deltaColor: '#10b981' },
+    { label: 'Certificados',    valor: String(progresso.cursosConcluidos),       delta: 'Ver todos',                                deltaColor: '#f59e0b' },
+    { label: 'Horas estudadas', valor: `${progresso.horasEstudadas}h`,           delta: 'Este mês',                                 deltaColor: '#1a56ff' },
+  ]
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>

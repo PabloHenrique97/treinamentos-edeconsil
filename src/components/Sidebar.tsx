@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Logo } from './Logo'
+import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
 
 const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
@@ -33,6 +34,7 @@ interface SidebarProps {
 
 export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
   const { C } = useTheme()
+  const progresso = useProgressoColaborador()
   return (
     <aside style={{
       width: '220px',
@@ -179,7 +181,7 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
             <svg viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)', width: '44px', height: '44px' }}>
               <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="5" />
               <circle cx="22" cy="22" r="18" fill="none" stroke={C.blue} strokeWidth="5"
-                strokeDasharray={`${2 * Math.PI * 18 * 0.27} ${2 * Math.PI * 18 * 0.73}`}
+                strokeDasharray={`${2 * Math.PI * 18 * (progresso.percentualProgresso / 100)} ${2 * Math.PI * 18 * (1 - progresso.percentualProgresso / 100)}`}
                 strokeLinecap="round" />
             </svg>
             <div style={{
@@ -187,16 +189,16 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '9px', fontWeight: 700, color: C.blue,
             }}>
-              27%
+              {progresso.percentualProgresso}%
             </div>
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: C.text, lineHeight: 1 }}>12</span>
-              <span style={{ fontSize: '13px', color: C.muted }}>de 44</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{progresso.aulasConcluidas}</span>
+              <span style={{ fontSize: '13px', color: C.muted }}>de {progresso.totalAulas}</span>
             </div>
             <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>
-              disciplinas concluídas
+              aulas concluídas
             </div>
           </div>
         </div>
