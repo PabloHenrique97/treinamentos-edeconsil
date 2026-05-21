@@ -19,6 +19,7 @@ import { ConfiguracoesAdmin } from './pages/admin/ConfiguracoesAdmin'
 import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
+import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
@@ -84,7 +85,7 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
@@ -242,6 +243,13 @@ function AppContent() {
 
   if (pagina === 'mensagens') return (
     <MensagensColaborador
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+    />
+  )
+
+  if (pagina === 'anotacoes') return (
+    <AnotacoesColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
       onLogout={() => setLogado(false)}
     />

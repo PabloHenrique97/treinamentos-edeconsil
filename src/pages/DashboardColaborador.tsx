@@ -174,7 +174,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
 
               {/* Card 1 — Minhas Anotações */}
               <div
-                onClick={() => onNavigate('meusCursos')}
+                onClick={() => onNavigate('anotacoes')}
                 style={{
                   background: C.surface,
                   border: `1px solid ${C.border}`,
