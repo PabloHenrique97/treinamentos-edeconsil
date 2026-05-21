@@ -271,6 +271,224 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
             </div>
           </div>
 
+          {/* ── ACESSOS RÁPIDOS ── */}
+          <div style={{
+            marginTop: '32px',
+            paddingBottom: '32px',
+          }}>
+
+            {/* Título da seção */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ width: '40px', height: '3px', background: C.blue, borderRadius: '2px', marginBottom: '10px' }} />
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: 700,
+                color: C.text,
+                margin: 0,
+              }}>
+                Acessos rápidos
+              </h2>
+            </div>
+
+            {/* Grid 2x2 de cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+              gap: '16px',
+            }}>
+
+              {/* Card 1 — Minhas Anotações */}
+              <div
+                onClick={() => onNavigate('meusCursos')}
+                style={{
+                  background: C.surface,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: '12px',
+                  padding: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 200ms',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = C.blue
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>Minhas anotações</p>
+                  <p style={{ fontSize: '13px', color: C.muted, margin: 0, lineHeight: 1.5 }}>
+                    Consulte suas anotações escritas durante as aulas de suas disciplinas.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto', paddingTop: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.blue }}>Acessar</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Card 2 — Apostilas */}
+              <div
+                onClick={() => onNavigate('apostilas')}
+                style={{
+                  background: C.surface,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: '12px',
+                  padding: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 200ms',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = C.blue
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>Apostilas</p>
+                  <p style={{ fontSize: '13px', color: C.muted, margin: 0, lineHeight: 1.5 }}>
+                    Conheça nossa biblioteca virtual e acesse nosso acervo digital de materiais.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto', paddingTop: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.blue }}>Acessar</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Card 3 — Certificados */}
+              <div
+                onClick={() => onNavigate('certificadosColaborador')}
+                style={{
+                  background: C.surface,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: '12px',
+                  padding: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 200ms',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = C.blue
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="6"/>
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                  </svg>
+                </div>
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>Certificados</p>
+                  <p style={{ fontSize: '13px', color: C.muted, margin: 0, lineHeight: 1.5 }}>
+                    Acesse seus certificados conquistados ao concluir os cursos da plataforma.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto', paddingTop: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.blue }}>Acessar</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Card 4 — Trilha de Aprendizado */}
+              <div
+                onClick={() => onNavigate('trilha')}
+                style={{
+                  background: C.surface,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: '12px',
+                  padding: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 200ms',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = C.blue
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>Trilha de Aprendizado</p>
+                  <p style={{ fontSize: '13px', color: C.muted, margin: 0, lineHeight: 1.5 }}>
+                    Acompanhe seu progresso e evolua pelas trilhas definidas para seu cargo.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto', paddingTop: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.blue }}>Acessar</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </main>
     </div>
