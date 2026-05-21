@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 import Login from './pages/Login'
 import { DashboardColaborador } from './pages/DashboardColaborador'
 import { DashboardAdmin } from './pages/DashboardAdmin'
-import { MeusCursos } from './pages/MeusCursos'
+import { MeusCursosLista } from './pages/MeusCursosLista'
+import { CursoDetalheColaborador } from './pages/CursoDetalheColaborador'
+import { VideoAulaColaborador } from './pages/VideoAulaColaborador'
 import { TrilhaAprendizado } from './pages/TrilhaAprendizado'
 import { CursosAdmin } from './pages/admin/CursosAdmin'
 import { CursoDetalheAdmin } from './pages/admin/CursoDetalheAdmin'
@@ -81,12 +83,15 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
   const [logado, setLogado] = useState(false)
   const [perfil, setPerfil] = useState<Perfil>('colaborador')
   const [pagina, setPagina] = useState<Pagina>('dashboard')
+  const [cursoAtivoId, setCursoAtivoId] = useState<string>('nr35')
+  const [moduloAtivoId, setModuloAtivoId] = useState<number>(3)
+  const [aulaAtivaId, setAulaAtivaId] = useState<number>(10)
 
   if (!logado) {
     return (
@@ -167,9 +172,51 @@ function AppContent() {
     )
   }
 
-  if (pagina === 'meusCursos') {
-    return <MeusCursos onNavigate={(page) => setPagina(page as Pagina)} />
-  }
+  if (pagina === 'meusCursos' || pagina === 'meusCursosLista') return (
+    <MeusCursosLista
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+      onAbrirCurso={(id) => {
+        setCursoAtivoId(id)
+        setPagina('cursoDetalhe')
+      }}
+    />
+  )
+
+  if (pagina === 'cursoDetalhe') return (
+    <CursoDetalheColaborador
+      cursoId={cursoAtivoId}
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+      onVoltarLista={() => setPagina('meusCursos')}
+      onAbrirAula={(id, modId, aulId) => {
+        setCursoAtivoId(id)
+        setModuloAtivoId(modId)
+        setAulaAtivaId(aulId)
+        setPagina('videoAula')
+      }}
+    />
+  )
+
+  if (pagina === 'videoAula') return (
+    <VideoAulaColaborador
+      cursoId={cursoAtivoId}
+      moduloId={moduloAtivoId}
+      aulaId={aulaAtivaId}
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => setLogado(false)}
+      onVoltarLista={() => setPagina('meusCursos')}
+      onVoltarDetalhe={(id) => {
+        setCursoAtivoId(id)
+        setPagina('cursoDetalhe')
+      }}
+      onTrocarAula={(id, modId, aulId) => {
+        setCursoAtivoId(id)
+        setModuloAtivoId(modId)
+        setAulaAtivaId(aulId)
+      }}
+    />
+  )
 
   if (pagina === 'trilha') return (
     <TrilhaAprendizado
