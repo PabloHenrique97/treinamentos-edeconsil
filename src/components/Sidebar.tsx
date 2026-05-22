@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Logo } from './Logo'
-import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
+import { useProgressoReal } from '../hooks/useProgressoReal'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 const navItems = [
@@ -35,7 +35,7 @@ interface SidebarProps {
 
 export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
   const { C } = useTheme()
-  const progresso = useProgressoColaborador()
+  const progresso = useProgressoReal()
   const { nome, iniciais, perfil } = useUsuarioLogado()
   return (
     <aside style={{
@@ -183,7 +183,7 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
             <svg viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)', width: '44px', height: '44px' }}>
               <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="5" />
               <circle cx="22" cy="22" r="18" fill="none" stroke={C.blue} strokeWidth="5"
-                strokeDasharray={`${2 * Math.PI * 18 * (progresso.percentualProgresso / 100)} ${2 * Math.PI * 18 * (1 - progresso.percentualProgresso / 100)}`}
+                strokeDasharray={`${2 * Math.PI * 18 * (progresso.percentual / 100)} ${2 * Math.PI * 18 * (1 - progresso.percentual / 100)}`}
                 strokeLinecap="round" />
             </svg>
             <div style={{
@@ -191,7 +191,7 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '9px', fontWeight: 700, color: C.blue,
             }}>
-              {progresso.percentualProgresso}%
+              {progresso.percentual}%
             </div>
           </div>
           <div>

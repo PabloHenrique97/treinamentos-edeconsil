@@ -219,7 +219,7 @@ export const cursosMockColaborador: CursoMock[] = [
     totalAulas: 5,
     aulasConcluidas: 0,
     progresso: 0,
-    status: 'Não iniciado',
+    status: 'Em andamento',
     cor: '#0d9488',
     icone: '📦',
     notaMinimaAprovacao: 70,
@@ -240,7 +240,7 @@ export const cursosMockColaborador: CursoMock[] = [
             duracao: '~48 min', status: 'Incompleta', progresso: 0,
             videoUrl: '/treinamentos-edeconsil/videos/coord-suprimentos/aula-01.mp4',
             videoDisponivel: true,
-            materiais: [{ nome: '01 - Apresentação da Coordenação de Suprimentos.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/videos/coord-suprimentos/01-apresentacao-coord-suprimentos.pptx' }],
+            materiais: [{ nome: '01 - Apresentação da Coordenação de Suprimentos.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/materiais/coord-suprimentos/01 - Apresentação da Coordenação de Suprimentos.pptx' }],
           },
           {
             id: 2, numero: 2,
@@ -249,7 +249,7 @@ export const cursosMockColaborador: CursoMock[] = [
             duracao: '~48 min', status: 'Incompleta', progresso: 0,
             videoUrl: '/treinamentos-edeconsil/videos/coord-suprimentos/aula-02.mp4',
             videoDisponivel: true,
-            materiais: [{ nome: '02 - Aquisição e Almoxarifado PGI-CSU-002.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/videos/coord-suprimentos/02-aquisicao-almoxarifado.pptx' }],
+            materiais: [{ nome: '02 - Aquisição e Almoxarifado PGI-CSU-002.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/materiais/coord-suprimentos/02 - Aquisição e Almoxarifado PGI-CSU-002.pptx' }],
           },
           {
             id: 3, numero: 3,
@@ -258,7 +258,7 @@ export const cursosMockColaborador: CursoMock[] = [
             duracao: '~48 min', status: 'Incompleta', progresso: 0,
             videoUrl: '/treinamentos-edeconsil/videos/coord-suprimentos/aula-03.mp4',
             videoDisponivel: true,
-            materiais: [{ nome: '03 - Controle de Produtos e Serviços Fornecidos Externamente PG-CSU-001.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/videos/coord-suprimentos/03-controle-produtos-servicos.pptx' }],
+            materiais: [{ nome: '03 - Controle de Produtos e Serviços fornecidos Externamente PG-CSU-001.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/materiais/coord-suprimentos/03 - Controle de Produtos e Serviços fornecidos Externamente PG-CSU-001.pptx' }],
           },
           {
             id: 4, numero: 4,
@@ -267,7 +267,7 @@ export const cursosMockColaborador: CursoMock[] = [
             duracao: '~48 min', status: 'Incompleta', progresso: 0,
             videoUrl: '/treinamentos-edeconsil/videos/coord-suprimentos/aula-04.mp4',
             videoDisponivel: true,
-            materiais: [{ nome: '04 - Recebimento de Notas Fiscais PGI-CSU-001.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/videos/coord-suprimentos/04-recebimento-notas-fiscais.pptx' }],
+            materiais: [{ nome: '04 - Recebimento de Notas Fiscais PGI-CSU-001.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/materiais/coord-suprimentos/04 - Recebimento de Notas Fiscais PGI-CSU-001.pptx' }],
           },
           {
             id: 5, numero: 5,
@@ -276,7 +276,7 @@ export const cursosMockColaborador: CursoMock[] = [
             duracao: '~48 min', status: 'Incompleta', progresso: 0,
             videoUrl: '/treinamentos-edeconsil/videos/coord-suprimentos/aula-05.mp4',
             videoDisponivel: true,
-            materiais: [{ nome: '05 - Recebimento e Entrega de Ferramentas de Manutenção Mecânica PGI-CSU-003.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/videos/coord-suprimentos/05-recebimento-entrega-ferramentas.pptx' }],
+            materiais: [{ nome: '05 - Recebimento e Entrega de ferramentas de manutenção mecanica PGI-CSU-003.pptx', tipo: 'pptx', tamanho: '—', url: '/treinamentos-edeconsil/materiais/coord-suprimentos/05 - Recebimento e Entrega de ferramentas de manutenção mecanica PGI-CSU-003.pptx' }],
           },
         ],
       },

@@ -312,11 +312,75 @@ export function VideoAulaColaborador({
                 </div>
               )}
 
-              {abaAtiva !== 'sobre' && (
+              {abaAtiva === 'materiais' && (
+                <div style={{ paddingBottom: '20px' }}>
+                  <p style={{ fontSize: '13px', color: C.muted, marginBottom: '12px' }}>
+                    Materiais disponíveis para esta aula:
+                  </p>
+                  {aulaAtiva.materiais && aulaAtiva.materiais.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {aulaAtiva.materiais.map((mat, i) => (
+                        <a
+                          key={i}
+                          href={mat.url}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            padding: '12px 14px',
+                            background: C.surface2,
+                            borderRadius: '10px',
+                            border: `1px solid ${C.border}`,
+                            textDecoration: 'none',
+                            transition: 'all 150ms',
+                            cursor: 'pointer',
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = C.blue
+                            e.currentTarget.style.background = `rgba(26,86,255,0.06)`
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = C.border
+                            e.currentTarget.style.background = C.surface2
+                          }}
+                        >
+                          <div style={{
+                            width: '36px', height: '36px', borderRadius: '8px',
+                            background: 'rgba(26,86,255,0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0,
+                          }}>
+                            <FileText size={18} color={C.blue} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{
+                              fontSize: '13px', fontWeight: 600, color: C.text,
+                              margin: '0 0 2px',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            }}>
+                              {mat.nome}
+                            </p>
+                            <p style={{ fontSize: '11px', color: C.muted, margin: 0, textTransform: 'uppercase' }}>
+                              {mat.tipo}
+                            </p>
+                          </div>
+                          <Download size={16} color={C.blue} />
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '13px', color: C.muted }}>
+                      Nenhum material disponível para esta aula.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {(abaAtiva === 'anotacoes' || abaAtiva === 'perguntas') && (
                 <div style={{ padding: '20px', background: C.surface2, borderRadius: '10px', border: `1px dashed ${C.border}`, textAlign: 'center', marginBottom: '20px' }}>
                   <p style={{ fontSize: '14px', color: C.muted, margin: 0 }}>
-                    {abaAtiva === 'materiais' ? 'Nenhum material adicional para esta aula.' :
-                     abaAtiva === 'anotacoes' ? 'Suas anotações aparecerão aqui.' :
+                    {abaAtiva === 'anotacoes' ? 'Suas anotações aparecerão aqui.' :
                      'As perguntas desta aula aparecerão aqui.'}
                   </p>
                 </div>

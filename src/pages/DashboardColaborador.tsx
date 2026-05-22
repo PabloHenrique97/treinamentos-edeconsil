@@ -7,14 +7,9 @@ import { Topbar } from '../components/Topbar'
 import { MobileMenu } from '../components/MobileMenu'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
-import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
+import { useProgressoReal } from '../hooks/useProgressoReal'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
-const cursosAndamento = [
-  { icon: '🪖', titulo: 'NR-35 — Trabalho em Altura',    pct: 68, cor: '#1a56ff' },
-  { icon: '🛡️', titulo: 'SIPAT — Segurança no Trabalho', pct: 35, cor: '#1a56ff' },
-  { icon: '📋', titulo: 'Gestão da Qualidade ISO 9001',  pct: 12, cor: '#f59e0b' },
-]
 
 const recomendados = [
   { cor: '#1a56ff', titulo: 'Liderança em Obras',        info: '32 aulas · 10 matérias' },
@@ -32,15 +27,15 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
-  const progresso = useProgressoColaborador()
+  const progressoReal = useProgressoReal()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
 
   const metricas = [
-    { label: 'Cursos ativos',   valor: String(progresso.cursosAtivos),          delta: '+2 este mês',                              deltaColor: '#1a56ff' },
-    { label: 'Concluídos',      valor: String(progresso.cursosConcluidos),       delta: `${progresso.percentualProgresso}% concluído`, deltaColor: '#10b981' },
-    { label: 'Certificados',    valor: String(progresso.cursosConcluidos),       delta: 'Ver todos',                                deltaColor: '#f59e0b' },
-    { label: 'Horas estudadas', valor: `${progresso.horasEstudadas}h`,           delta: 'Este mês',                                 deltaColor: '#1a56ff' },
+    { label: 'Cursos ativos',   valor: String(progressoReal.totalCursos),        delta: '+2 este mês',                                  deltaColor: '#1a56ff' },
+    { label: 'Concluídos',      valor: String(progressoReal.cursosConcluidos),   delta: `${progressoReal.percentual}% concluído`,        deltaColor: '#10b981' },
+    { label: 'Certificados',    valor: String(progressoReal.cursosConcluidos),   delta: 'Ver todos',                                    deltaColor: '#f59e0b' },
+    { label: 'Horas estudadas', valor: `${progressoReal.horasEstudadas}h`,       delta: 'Este mês',                                     deltaColor: '#1a56ff' },
   ]
 
   return (
@@ -101,20 +96,60 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
             {/* Cursos em andamento */}
             <div style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text }}>Em andamento</div>
-              {cursosAndamento.map(c => (
-                <div key={c.titulo} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(26,86,255,0.15)', border: '0.5px solid rgba(26,86,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
-                    {c.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '12px', fontWeight: 500, color: C.text, marginBottom: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.titulo}</div>
-                    <div style={{ background: 'rgba(26,86,255,0.12)', borderRadius: '4px', height: '4px' }}>
-                      <div style={{ background: c.cor, height: '4px', borderRadius: '4px', width: `${c.pct}%` }} />
+              {progressoReal.cursosEmAndamento.length > 0 ? (
+                progressoReal.cursosEmAndamento.map(curso => (
+                  <div key={curso.id} style={{
+                    display: 'flex', alignItems: 'center',
+                    gap: '12px', padding: '10px 0',
+                    borderBottom: `1px solid ${C.border}`,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => onNavigate('meusCursos')}
+                  >
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '8px',
+                      background: `${curso.cor}18`,
+                      display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: '16px', flexShrink: 0,
+                    }}>
+                      {curso.icone}
                     </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: '13px', fontWeight: 600, color: C.text,
+                        margin: '0 0 4px',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {curso.titulo}
+                      </p>
+                      <div style={{
+                        background: `rgba(26,86,255,0.10)`,
+                        borderRadius: '4px', height: '4px',
+                      }}>
+                        <div style={{
+                          background: curso.progresso >= 70 ? '#10b981' : C.blue,
+                          height: '4px', borderRadius: '4px',
+                          width: `${curso.progresso}%`,
+                          transition: 'width 0.5s',
+                        }} />
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '13px', fontWeight: 700,
+                      color: curso.progresso >= 70 ? '#10b981' : C.blue,
+                      flexShrink: 0,
+                    }}>
+                      {curso.progresso}%
+                    </span>
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: c.cor, flexShrink: 0 }}>{c.pct}%</div>
+                ))
+              ) : (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
+                    Nenhum curso em andamento
+                  </p>
                 </div>
-              ))}
+              )}
 
               <button
                 onClick={() => onNavigate('videoAula')}
