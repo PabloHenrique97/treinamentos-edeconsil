@@ -74,6 +74,7 @@ export const cursosAPI = {
     return apiRequest(`/cursos${query}`)
   },
   buscarPorSlug: (slug: string) => apiRequest(`/cursos/${slug}`),
+  aulas: (slug: string) => apiRequest<unknown[]>(`/cursos/${slug}/aulas`),
   meusCursos: () => apiRequest('/meus-cursos'),
   me: () => apiRequest('/me'),
 }

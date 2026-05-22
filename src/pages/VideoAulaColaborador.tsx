@@ -38,8 +38,9 @@ export function VideoAulaColaborador({
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [tocando, setTocando] = useState(false)
-  const [progresso] = useState(0)
-  const [tempoTotal] = useState('32:16')
+  const [progresso, setProgresso] = useState(0)
+  const [tempoAtual, setTempoAtual] = useState('0:00')
+  const [tempoTotal, setTempoTotal] = useState('0:00')
   const [velocidade, setVelocidade] = useState(1.25)
   const [menuVelocidade, setMenuVelocidade] = useState(false)
   const [mutado, setMutado] = useState(false)
@@ -67,6 +68,16 @@ export function VideoAulaColaborador({
   const concluida = aulasConcluidas.includes(aulaAtiva.id) || aulaAtiva.status === 'Concluída'
   const totalConcluidas = aulasConcluidas.length + curso.aulasConcluidas
   const progressoGeral = Math.round((totalConcluidas / curso.totalAulas) * 100)
+
+  const onTimeUpdate = () => {
+    const v = videoRef.current
+    if (!v) return
+    const total = v.duration || 0
+    setProgresso(total > 0 ? (v.currentTime / total) * 100 : 0)
+    const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+    setTempoAtual(fmt(v.currentTime))
+    setTempoTotal(fmt(total))
+  }
 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -140,73 +151,95 @@ export function VideoAulaColaborador({
 
             {/* Player */}
             <div style={{ padding: '0 20px', flexShrink: 0 }}>
-              <div style={{
-                background: `url(${modeloTreinamento}) center center / cover no-repeat`,
-                borderRadius: '12px', overflow: 'hidden',
-                border: `1px solid ${C.border}`,
-                position: 'relative',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                aspectRatio: '16/7',
-              }}>
-                {/* Overlay */}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(5,13,26,0.88) 0%, rgba(5,13,26,0.45) 60%, rgba(5,13,26,0.20) 100%)', zIndex: 0 }} />
-
-                {/* Conteúdo sobre o overlay */}
-                <div style={{ position: 'relative', zIndex: 1, padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', height: '100%', width: '100%' }}>
-                  <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '24px', objectFit: 'contain', marginBottom: '14px', opacity: 0.85 }} />
-                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff', margin: '0 0 6px', maxWidth: '360px', lineHeight: 1.3 }}>
-                    {aulaAtiva.titulo}
-                  </h2>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.60)', margin: 0 }}>
-                    {moduloAtivo.titulo.split(' - ')[1] ?? moduloAtivo.titulo}
-                  </p>
-                </div>
-
-                {/* Botão Play central */}
-                <button
-                  onClick={togglePlay}
-                  style={{ position: 'relative', zIndex: 2, width: '56px', height: '56px', borderRadius: '50%', background: C.blue, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 14px rgba(26,86,255,0.18)`, transition: 'all 200ms' }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  {tocando ? <Pause size={22} color="#fff" /> : <Play size={22} color="#fff" style={{ marginLeft: '2px' }} />}
-                </button>
-
-                {/* Barra de controles */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(to top, rgba(5,13,26,0.95), transparent)', zIndex: 2 }}>
-                  <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', height: '4px', marginBottom: '10px', cursor: 'pointer', position: 'relative' }}>
-                    <div style={{ background: C.blue, height: '4px', borderRadius: '4px', width: `${progresso}%` }} />
-                    <div style={{ position: 'absolute', top: '50%', left: `${progresso}%`, transform: 'translate(-50%,-50%)', width: '12px', height: '12px', background: '#fff', borderRadius: '50%' }} />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                      {tocando ? <Pause size={16} /> : <Play size={16} />}
+              {aulaAtiva.videoUrl && aulaAtiva.videoDisponivel ? (
+                /* ── Player de vídeo real ── */
+                <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${C.border}`, position: 'relative' }}>
+                  <video
+                    ref={videoRef}
+                    src={aulaAtiva.videoUrl}
+                    style={{ width: '100%', display: 'block', maxHeight: '480px', background: '#000' }}
+                    onTimeUpdate={onTimeUpdate}
+                    onLoadedMetadata={onTimeUpdate}
+                    onEnded={() => setTocando(false)}
+                    onClick={togglePlay}
+                    muted={mutado}
+                    controls={false}
+                    playsInline
+                  />
+                  {/* Botão play central — visível quando pausado */}
+                  {!tocando && (
+                    <button
+                      onClick={togglePlay}
+                      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 2, width: '56px', height: '56px', borderRadius: '50%', background: C.blue, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 14px rgba(26,86,255,0.18)`, transition: 'all 200ms' }}
+                      onMouseEnter={e => e.currentTarget.style.transform = 'translate(-50%,-50%) scale(1.08)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'translate(-50%,-50%)'}
+                    >
+                      <Play size={22} color="#fff" style={{ marginLeft: '2px' }} />
                     </button>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><SkipForward size={16} /></button>
-                    <button onClick={() => setMutado(!mutado)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                      {mutado ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                    </button>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>12:47 / {tempoTotal}</span>
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
-                      <button onClick={() => setMenuVelocidade(!menuVelocidade)} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>
-                        {velocidade}x
+                  )}
+                  {/* Barra de controles */}
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(to top, rgba(5,13,26,0.95), transparent)', zIndex: 2 }}>
+                    <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', height: '4px', marginBottom: '10px', cursor: 'pointer', position: 'relative' }}>
+                      <div style={{ background: C.blue, height: '4px', borderRadius: '4px', width: `${progresso}%` }} />
+                      <div style={{ position: 'absolute', top: '50%', left: `${progresso}%`, transform: 'translate(-50%,-50%)', width: '12px', height: '12px', background: '#fff', borderRadius: '50%' }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
+                        {tocando ? <Pause size={16} /> : <Play size={16} />}
                       </button>
-                      {menuVelocidade && (
-                        <div style={{ position: 'absolute', bottom: '100%', right: 0, background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '4px' }}>
-                          {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
-                            <button key={v} onClick={() => { setVelocidade(v); setMenuVelocidade(false) }}
-                              style={{ display: 'block', width: '100%', padding: '7px 16px', background: velocidade === v ? `rgba(26,86,255,0.12)` : 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: velocidade === v ? C.blue : C.text, fontWeight: velocidade === v ? 700 : 400, textAlign: 'left', fontFamily: "'Inter',sans-serif" }}>
-                              {v}x
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Settings size={15} /></button>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Maximize size={15} /></button>
+                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><SkipForward size={16} /></button>
+                      <button onClick={() => setMutado(!mutado)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
+                        {mutado ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                      </button>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{tempoAtual} / {tempoTotal}</span>
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+                        <button onClick={() => setMenuVelocidade(!menuVelocidade)} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>
+                          {velocidade}x
+                        </button>
+                        {menuVelocidade && (
+                          <div style={{ position: 'absolute', bottom: '100%', right: 0, background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '4px' }}>
+                            {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
+                              <button key={v} onClick={() => { setVelocidade(v); setMenuVelocidade(false); if (videoRef.current) videoRef.current.playbackRate = v }}
+                                style={{ display: 'block', width: '100%', padding: '7px 16px', background: velocidade === v ? `rgba(26,86,255,0.12)` : 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: velocidade === v ? C.blue : C.text, fontWeight: velocidade === v ? 700 : 400, textAlign: 'left', fontFamily: "'Inter',sans-serif" }}>
+                                {v}x
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Settings size={15} /></button>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Maximize size={15} /></button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* ── Placeholder quando vídeo indisponível ── */
+                <div style={{
+                  background: `url(${modeloTreinamento}) center center / cover no-repeat`,
+                  borderRadius: '12px', overflow: 'hidden',
+                  border: `1px solid ${C.border}`,
+                  position: 'relative',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  aspectRatio: '16/7',
+                }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,13,26,0.75)', zIndex: 0 }} />
+                  <div style={{ position: 'relative', zIndex: 1, padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', height: '100%', width: '100%' }}>
+                    <img src={logoEdeconsil} alt="Edeconsil" style={{ height: '24px', objectFit: 'contain', marginBottom: '14px', opacity: 0.85 }} />
+                    <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff', margin: '0 0 6px', maxWidth: '360px', lineHeight: 1.3 }}>
+                      {aulaAtiva.titulo}
+                    </h2>
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.60)', margin: 0 }}>
+                      {moduloAtivo.titulo.split(' - ')[1] ?? moduloAtivo.titulo}
+                    </p>
+                  </div>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: 600, margin: 0 }}>Vídeo em preparação</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Abas */}
