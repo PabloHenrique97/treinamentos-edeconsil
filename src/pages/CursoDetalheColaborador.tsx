@@ -17,10 +17,11 @@ interface CursoDetalheColaboradorProps {
   onLogout: () => void
   onVoltarLista: () => void
   onAbrirAula: (cursoId: string, moduloId: number, aulaId: number) => void
+  onAbrirProva: (cursoId: string) => void
 }
 
 export function CursoDetalheColaborador({
-  cursoId, onNavigate, onLogout, onVoltarLista, onAbrirAula
+  cursoId, onNavigate, onLogout, onVoltarLista, onAbrirAula, onAbrirProva
 }: CursoDetalheColaboradorProps) {
   const { C } = useTheme()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
@@ -312,8 +313,9 @@ export function CursoDetalheColaborador({
 
             {/* ── PROVA ONLINE ── */}
             <div
+              onClick={() => onAbrirProva(curso.id)}
               style={{
-                background: C.surface2,
+                background: C.surface,
                 border: `1px solid ${C.border}`,
                 borderRadius: '12px',
                 padding: '16px 20px',
@@ -322,27 +324,42 @@ export function CursoDetalheColaborador({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
-                opacity: 0.75,
-                cursor: 'not-allowed',
+                cursor: 'pointer',
+                transition: 'all 150ms',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = C.blue
+                e.currentTarget.style.background  = `rgba(26,86,255,0.04)`
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = C.border
+                e.currentTarget.style.background  = C.surface
               }}
             >
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.border, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '50%',
+                background: 'rgba(26,86,255,0.12)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke={C.blue} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: C.text, margin: '0 0 3px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>
                   Prova online
                 </p>
                 <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>
-                  Você está fora do período de realização, entre 23/05/2026 e 30/05/2026.
+                  20 questões · 30 minutos · Nota mínima {curso.notaMinimaAprovacao}%
                 </p>
               </div>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
               </svg>
             </div>
 

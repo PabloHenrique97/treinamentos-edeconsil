@@ -20,7 +20,9 @@ import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
 import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
+import { ProvaOnline } from './pages/ProvaOnline'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { cursosMockColaborador } from './data/cursosMock'
 import { getUsuario, sessaoAtiva, limparSessao } from './services/authStorage'
 import './App.css'
 
@@ -86,7 +88,7 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
   // Limpar sessões antigas (sem campo 'id' no usuário)
@@ -104,6 +106,8 @@ function AppContent() {
   const [cursoAtivoId, setCursoAtivoId] = useState<string>('coord-suprimentos')
   const [moduloAtivoId, setModuloAtivoId] = useState<number>(1)
   const [aulaAtivaId, setAulaAtivaId] = useState<number>(1)
+  const [cursoProvaSlug, setCursoProvaSlug]     = useState('coord-suprimentos')
+  const [cursoProvaTitulo, setCursoProvaTitulo] = useState('Coordenação de Suprimentos')
 
   const handleLogout = () => {
     limparSessao()
@@ -189,6 +193,19 @@ function AppContent() {
     )
   }
 
+  if (pagina === 'prova') return (
+    <ProvaOnline
+      cursoSlug={cursoProvaSlug}
+      cursoTitulo={cursoProvaTitulo}
+      onNavigate={(p) => setPagina(p as Pagina)}
+      onLogout={() => { limparSessao(); setLogado(false) }}
+      onVoltarDetalhe={() => {
+        setCursoAtivoId(cursoProvaSlug)
+        setPagina('cursoDetalhe')
+      }}
+    />
+  )
+
   if (pagina === 'meusCursos' || pagina === 'meusCursosLista') return (
     <MeusCursosLista
       onNavigate={(p) => setPagina(p as Pagina)}
@@ -211,6 +228,14 @@ function AppContent() {
         setModuloAtivoId(modId)
         setAulaAtivaId(aulId)
         setPagina('videoAula')
+      }}
+      onAbrirProva={(cursoId) => {
+        setCursoProvaSlug(cursoId)
+        setCursoProvaTitulo(
+          cursosMockColaborador.find(c => c.id === cursoId || c.slug === cursoId)?.titulo
+          ?? 'Avaliação Final'
+        )
+        setPagina('prova')
       }}
     />
   )

@@ -86,6 +86,17 @@ export const progressoAPI = {
     apiRequest(`/progresso/${cursoId}`),
 }
 
+export const provaAPI = {
+  buscar: (slug: string) =>
+    apiRequest(`/cursos/${slug}/prova`),
+
+  submeter: (slug: string, respostas: Record<string, string>) =>
+    apiRequest(`/cursos/${slug}/prova/submeter`, {
+      method: 'POST',
+      body: JSON.stringify({ respostas }),
+    }),
+}
+
 export const bibliotecaAPI = {
   listar: (status?: string) => {
     const query = status ? `?status=${status}` : ''
