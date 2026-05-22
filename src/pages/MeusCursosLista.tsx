@@ -6,6 +6,7 @@ import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
 import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
 import { cursosAPI } from '../services/api'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 interface MeusCursosListaProps {
   onNavigate: (page: string, extra?: Record<string, unknown>) => void
@@ -16,6 +17,7 @@ interface MeusCursosListaProps {
 export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCursosListaProps) {
   const { C } = useTheme()
   const progresso = useProgressoColaborador()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'Todos' | 'Em andamento' | 'Concluído' | 'Não iniciado'>('Todos')
   const [cursosApi, setCursosApi] = useState<any[]>([])
@@ -55,7 +57,7 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
             { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
             { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
           ]}
-          userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+          userName={nome} userRole={perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'} userInitials={iniciais} notificacoes={3}
         />
         <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
 

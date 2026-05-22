@@ -6,6 +6,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext'
 import { Logo } from './Logo'
 import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
@@ -35,6 +36,7 @@ interface SidebarProps {
 export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
   const { C } = useTheme()
   const progresso = useProgressoColaborador()
+  const { nome, iniciais, perfil } = useUsuarioLogado()
   return (
     <aside style={{
       width: '220px',
@@ -244,13 +246,13 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
           fontSize: '12px', fontWeight: 700, color: C.blue,
           flexShrink: 0,
         }}>
-          SE
+          {iniciais}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '12px', fontWeight: 500, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Suporte TI
+            {nome}
           </div>
-          <div style={{ fontSize: '10px', color: C.muted }}>Colaborador</div>
+          <div style={{ fontSize: '10px', color: C.muted }}>{perfil === 'admin' ? 'Administrador' : 'Colaborador'}</div>
         </div>
         <div
           onClick={onLogout}

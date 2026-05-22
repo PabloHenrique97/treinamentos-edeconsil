@@ -6,6 +6,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
@@ -29,6 +30,8 @@ export function VideoAulaColaborador({
   onVoltarLista, onVoltarDetalhe, onTrocarAula
 }: VideoAulaColaboradorProps) {
   const { C } = useTheme()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const curso = cursosMockColaborador.find(c => c.id === cursoId) ?? cursosMockColaborador[0]
   const moduloAtivo = curso.modulos.find(m => m.id === moduloId) ?? curso.modulos[0]
   const aulaAtiva = moduloAtivo.aulas.find(a => a.id === aulaId) ?? moduloAtivo.aulas[0]
@@ -76,7 +79,7 @@ export function VideoAulaColaborador({
             { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
             { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
           ]}
-          userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
         />
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 

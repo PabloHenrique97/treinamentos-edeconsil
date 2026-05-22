@@ -5,6 +5,7 @@ import { Sidebar } from '../components/Sidebar'
 import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
 import { useResponsive } from '../hooks/useResponsive'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 /*
 interface CertificadoObtido {
@@ -72,6 +73,8 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [busca, setBusca] = useState('')
 
   return (
@@ -86,9 +89,9 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
           paginaAtiva="certificadosColaborador"
           onNavigate={onNavigate}
           onLogout={onLogout}
-          userName="João Silva"
-          userRole="Aluno"
-          userInitials="JS"
+          userName={nome}
+          userRole={roleDisplay}
+          userInitials={iniciais}
         />
       )}
 

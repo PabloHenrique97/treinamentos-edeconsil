@@ -8,6 +8,7 @@ import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 const cursoDados = {
   nome: 'Gestão de Obras e Construção Civil',
@@ -51,6 +52,8 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [abaAtiva, setAbaAtiva] = useState('Aprovadas')
   const [telaRotina, setTelaRotina] = useState(false)
   const [modalRotina, setModalRotina] = useState(false)
@@ -273,9 +276,9 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
           paginaAtiva="trilha"
           onNavigate={onNavigate}
           onLogout={onLogout}
-          userName="João Silva"
-          userRole="Aluno"
-          userInitials="JS"
+          userName={nome}
+          userRole={roleDisplay}
+          userInitials={iniciais}
         />
       )}
 

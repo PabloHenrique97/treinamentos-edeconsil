@@ -8,6 +8,7 @@ import { MobileMenu } from '../components/MobileMenu'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
 import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 const cursosAndamento = [
   { icon: '🪖', titulo: 'NR-35 — Trabalho em Altura',    pct: 68, cor: '#1a56ff' },
@@ -32,6 +33,8 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
   const progresso = useProgressoColaborador()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
 
   const metricas = [
     { label: 'Cursos ativos',   valor: String(progresso.cursosAtivos),          delta: '+2 este mês',                              deltaColor: '#1a56ff' },
@@ -54,9 +57,9 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
           paginaAtiva="dashboard"
           onNavigate={onNavigate}
           onLogout={onLogout}
-          userName="Suporte TI"
-          userRole="Colaborador"
-          userInitials="SE"
+          userName={nome}
+          userRole={roleDisplay}
+          userInitials={iniciais}
         />
       )}
 
@@ -71,9 +74,9 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
               { label: 'Notícias',   ativo: false },
               { label: 'Biblioteca', ativo: false },
             ]}
-            userName="Suporte TI"
-            userRole="Colaborador"
-            userInitials="SE"
+            userName={nome}
+            userRole={roleDisplay}
+            userInitials={iniciais}
             notificacoes={3}
           />
         )}

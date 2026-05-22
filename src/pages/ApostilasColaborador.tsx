@@ -7,6 +7,7 @@ import {
   ClipboardList, Tablet
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { MobileMenu } from '../components/MobileMenu'
 import { Topbar } from '../components/Topbar'
@@ -247,6 +248,8 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [busca, setBusca] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todas as categorias')
   const [tipoFiltro, setTipoFiltro] = useState<'Todos' | TipoMaterial>('Todos')
@@ -299,9 +302,9 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
           paginaAtiva="apostilas"
           onNavigate={onNavigate}
           onLogout={onLogout}
-          userName="João Silva"
-          userRole="Aluno"
-          userInitials="JS"
+          userName={nome}
+          userRole={roleDisplay}
+          userInitials={iniciais}
         />
       )}
 

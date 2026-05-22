@@ -89,6 +89,12 @@ type Perfil = 'colaborador' | 'admin'
 type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
+  // Limpar sessões antigas (sem campo 'id' no usuário)
+  const usuarioAtual = getUsuario<{ id?: string; nome?: string }>()
+  if (usuarioAtual && !usuarioAtual.id) {
+    limparSessao()
+  }
+
   const [logado, setLogado] = useState(() => sessaoAtiva())
   const [perfil, setPerfil] = useState<Perfil>(() => {
     const u = getUsuario<{ perfil: string }>()

@@ -5,6 +5,7 @@ import {
   FileText
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
@@ -54,6 +55,8 @@ interface AnotacoesColaboradorProps {
 
 export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColaboradorProps) {
   const { C } = useTheme()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>(anotacoesIniciais)
   const [busca, setBusca] = useState('')
   const [cursoBusca, setCursoBusca] = useState('Todas as disciplinas')
@@ -143,7 +146,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
               { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard') },
               { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
             ]}
-            userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+            userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
           />
           <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>
 
@@ -283,7 +286,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
             { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard') },
             { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
           ]}
-          userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
         />
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>

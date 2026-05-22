@@ -1,6 +1,7 @@
 import { Bell, MessageSquare, Search, ChevronRight } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 interface TopbarItem {
   label: string
@@ -18,12 +19,16 @@ interface TopbarProps {
 
 export function Topbar({
   navItems,
-  userName = 'João Silva',
-  userRole = 'Aluno',
-  userInitials = 'JS',
+  userName,
+  userRole,
+  userInitials,
   notificacoes = 3,
 }: TopbarProps) {
   const { C } = useTheme()
+  const { nome, iniciais, perfil } = useUsuarioLogado()
+  const displayName     = nome     || userName     || 'Usuário'
+  const displayInitials = iniciais || userInitials || 'U'
+  const displayRole     = userRole || (perfil === 'admin' ? 'Administrador' : 'Colaborador')
 
   return (
     <div style={{
@@ -131,11 +136,11 @@ export function Topbar({
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '10px', fontWeight: 700, color: '#fff',
         }}>
-          {userInitials}
+          {displayInitials}
         </div>
         <div>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: C.text }}>{userName}</div>
-          <div style={{ fontSize: '9px', color: C.green }}>● {userRole}</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: C.text }}>{displayName}</div>
+          <div style={{ fontSize: '9px', color: C.green }}>● {displayRole}</div>
         </div>
         <ChevronRight size={12} color={C.muted} />
       </div>

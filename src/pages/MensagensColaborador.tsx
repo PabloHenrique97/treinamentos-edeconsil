@@ -5,6 +5,7 @@ import {
   CheckCheck,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 
@@ -111,6 +112,8 @@ interface MensagensColaboradorProps {
 
 export function MensagensColaborador({ onNavigate, onLogout }: MensagensColaboradorProps) {
   const { C } = useTheme()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [conversas, setConversas] = useState<Conversa[]>(conversasMock)
   const [conversaAtiva, setConversaAtiva] = useState<Conversa>(conversasMock[0])
   const [textoBusca, setTextoBusca] = useState('')
@@ -206,7 +209,7 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
             { label: 'Certificados', ativo: false, onClick: () => onNavigate('certificadosColaborador') },
             { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
           ]}
-          userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
         />
 
         {/* Container do chat */}

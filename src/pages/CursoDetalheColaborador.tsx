@@ -6,6 +6,7 @@ import {
   Check, Clock,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
@@ -22,6 +23,8 @@ export function CursoDetalheColaborador({
   cursoId, onNavigate, onLogout, onVoltarLista, onAbrirAula
 }: CursoDetalheColaboradorProps) {
   const { C } = useTheme()
+  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
+  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const curso = cursosMockColaborador.find(c => c.id === cursoId) ?? cursosMockColaborador[0]
   const [modulos, setModulos] = useState(curso.modulos)
 
@@ -47,7 +50,7 @@ export function CursoDetalheColaborador({
             { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
             { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
           ]}
-          userName="João Silva" userRole="Aluno" userInitials="JS" notificacoes={3}
+          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
         />
         <div style={{ flex: 1, overflowY: 'auto' }}>
 
