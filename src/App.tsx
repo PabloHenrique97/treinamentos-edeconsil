@@ -21,6 +21,7 @@ import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
 import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { getUsuario, sessaoAtiva, limparSessao } from './services/authStorage'
 import './App.css'
 
 class ErrorBoundary extends React.Component<
@@ -88,12 +89,20 @@ type Perfil = 'colaborador' | 'admin'
 type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'matriculasAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas'
 
 function AppContent() {
-  const [logado, setLogado] = useState(false)
-  const [perfil, setPerfil] = useState<Perfil>('colaborador')
+  const [logado, setLogado] = useState(() => sessaoAtiva())
+  const [perfil, setPerfil] = useState<Perfil>(() => {
+    const u = getUsuario<{ perfil: string }>()
+    return u?.perfil === 'admin' ? 'admin' : 'colaborador'
+  })
   const [pagina, setPagina] = useState<Pagina>('dashboard')
   const [cursoAtivoId, setCursoAtivoId] = useState<string>('nr35')
   const [moduloAtivoId, setModuloAtivoId] = useState<number>(3)
   const [aulaAtivaId, setAulaAtivaId] = useState<number>(10)
+
+  const handleLogout = () => {
+    limparSessao()
+    setLogado(false)
+  }
 
   if (!logado) {
     return (
@@ -108,68 +117,68 @@ function AppContent() {
     if (pagina === 'cursosAdmin') return (
       <CursosAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'cursoDetalheAdmin') return (
       <CursoDetalheAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
         onVoltar={() => setPagina('cursosAdmin')}
       />
     )
     if (pagina === 'indicadoresAdmin') return (
       <IndicadoresAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'turmasAdmin') return (
       <TurmasAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'alunosAdmin') return (
       <AlunosAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'instrutoresAdmin') return (
       <InstrutoresAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'certificadosAdmin') return (
       <CertificadosAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'bibliotecaAdmin') return (
       <BibliotecaAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'matriculasAdmin') return (
       <MatriculasAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     if (pagina === 'configuracoesAdmin') return (
       <ConfiguracoesAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
     return (
       <DashboardAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
-        onLogout={() => setLogado(false)}
+        onLogout={handleLogout}
       />
     )
   }
@@ -177,7 +186,7 @@ function AppContent() {
   if (pagina === 'meusCursos' || pagina === 'meusCursosLista') return (
     <MeusCursosLista
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
       onAbrirCurso={(id) => {
         setCursoAtivoId(id)
         setPagina('cursoDetalhe')
@@ -189,7 +198,7 @@ function AppContent() {
     <CursoDetalheColaborador
       cursoId={cursoAtivoId}
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
       onVoltarLista={() => setPagina('meusCursos')}
       onAbrirAula={(id, modId, aulId) => {
         setCursoAtivoId(id)
@@ -206,7 +215,7 @@ function AppContent() {
       moduloId={moduloAtivoId}
       aulaId={aulaAtivaId}
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
       onVoltarLista={() => setPagina('meusCursos')}
       onVoltarDetalhe={(id) => {
         setCursoAtivoId(id)
@@ -223,41 +232,41 @@ function AppContent() {
   if (pagina === 'trilha') return (
     <TrilhaAprendizado
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
     />
   )
 
   if (pagina === 'certificadosColaborador') return (
     <CertificadosColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
     />
   )
 
   if (pagina === 'apostilas') return (
     <ApostilasColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
     />
   )
 
   if (pagina === 'mensagens') return (
     <MensagensColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
     />
   )
 
   if (pagina === 'anotacoes') return (
     <AnotacoesColaborador
       onNavigate={(p) => setPagina(p as Pagina)}
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
     />
   )
 
   return (
     <DashboardColaborador
-      onLogout={() => setLogado(false)}
+      onLogout={handleLogout}
       onNavigate={(page) => setPagina(page as Pagina)}
     />
   )

@@ -6,19 +6,13 @@ import {
 import { Logo } from '../components/Logo'
 import fundoTreinamento from '../assets/fundo-treinamento.png'
 import { useResponsive } from '../hooks/useResponsive'
+import { authAPI } from '../services/api'
+import { salvarSessao } from '../services/authStorage'
 
 interface LoginProps {
   onLogin: (perfil: 'colaborador' | 'admin') => void
 }
 
-function mascararCPF(valor: string) {
-  return valor
-    .replace(/\D/g, '')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-    .replace(/(-\d{2})\d+?$/, '$1')
-}
 
 const IconGoogle = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -64,21 +58,39 @@ const diferenciais = [
 export default function Login({ onLogin }: LoginProps) {
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
-  const [cpf, setCpf] = useState('')
+  const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [lembrar, setLembrar] = useState(true)
   const [loading, setLoading] = useState(false)
-  const [focusCpf, setFocusCpf] = useState(false)
+  const [erroLogin, setErroLogin] = useState('')
+  const [focusEmail, setFocusEmail] = useState(false)
   const [focusSenha, setFocusSenha] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setErroLogin('')
+
+    if (!email.trim() || !senha.trim()) {
+      setErroLogin('Preencha o e-mail e a senha.')
+      return
+    }
+
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1200))
-    setLoading(false)
-    const isAdmin = cpf === '000.000.000-00' && senha === 'admin123'
-    onLogin(isAdmin ? 'admin' : 'colaborador')
+    try {
+      const resposta = await authAPI.login(email.trim(), senha.trim())
+      salvarSessao(resposta.token, resposta.usuario)
+      if (resposta.usuario.perfil === 'admin' || resposta.usuario.perfil === 'instrutor') {
+        onLogin('admin')
+      } else {
+        onLogin('colaborador')
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao fazer login'
+      setErroLogin(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -302,36 +314,34 @@ export default function Login({ onLogin }: LoginProps) {
             na Universidade Corporativa.
           </p>
 
-          {/* Campo CPF */}
+          {/* Campo E-mail */}
           <div>
-            <label htmlFor="cpf" style={{
+            <label htmlFor="email" style={{
               display: 'block', fontSize: 13, fontWeight: 500,
               color: '#ccddee', margin: '0 0 8px',
-            }}>CPF</label>
+            }}>E-mail</label>
             <div style={{ position: 'relative' }}>
               <User size={16} color="#8899aa" style={{
                 position: 'absolute', left: 14, top: '50%',
                 transform: 'translateY(-50%)', pointerEvents: 'none',
               }} />
               <input
-                id="cpf"
-                type="text"
-                inputMode="numeric"
-                value={cpf}
-                onChange={e => setCpf(mascararCPF(e.target.value))}
-                onFocus={() => setFocusCpf(true)}
-                onBlur={() => setFocusCpf(false)}
-                placeholder="000.000.000-00"
-                maxLength={14}
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onFocus={() => setFocusEmail(true)}
+                onBlur={() => setFocusEmail(false)}
+                placeholder="seu@email.com"
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   padding: '15px 16px 15px 44px',
                   background: '#0d1f3c',
-                  border: `1px solid ${focusCpf ? '#1a56ff' : '#1a56ff33'}`,
+                  border: `1px solid ${focusEmail ? '#1a56ff' : '#1a56ff33'}`,
                   borderRadius: 10, color: '#fff', fontSize: 15,
                   outline: 'none', transition: 'all 200ms',
-                  boxShadow: focusCpf ? '0 0 0 3px #1a56ff22' : 'none',
+                  boxShadow: focusEmail ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
                 }}
               />
@@ -427,6 +437,24 @@ export default function Login({ onLogin }: LoginProps) {
               Esqueci minha senha
             </a>
           </div>
+
+          {/* Erro de login */}
+          {erroLogin && (
+            <div style={{
+              background: 'rgba(239,68,68,0.12)',
+              border: '1px solid rgba(239,68,68,0.30)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '13px',
+              color: '#ef4444',
+              marginTop: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              ⚠️ {erroLogin}
+            </div>
+          )}
 
           {/* Botão Entrar */}
           <button
