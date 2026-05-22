@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Search, BookOpen, Clock, Check } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosMockColaborador } from '../data/cursosMock'
 import { useProgressoColaborador } from '../hooks/useProgressoColaborador'
+import { cursosAPI } from '../services/api'
 
 interface MeusCursosListaProps {
   onNavigate: (page: string, extra?: Record<string, unknown>) => void
@@ -17,14 +18,30 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
   const progresso = useProgressoColaborador()
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'Todos' | 'Em andamento' | 'Concluído' | 'Não iniciado'>('Todos')
+  const [cursosApi, setCursosApi] = useState<any[]>([])
+  const [loadingApi, setLoadingApi] = useState(true)
+
+  useEffect(() => {
+    cursosAPI.meusCursos()
+      .then((data: any) => {
+        setCursosApi(data)
+        setLoadingApi(false)
+      })
+      .catch((err: Error) => {
+        console.warn('API indisponível, usando dados mock:', err.message)
+        setLoadingApi(false)
+      })
+  }, [])
+
+  const fonteDados = cursosApi.length > 0 ? cursosApi : cursosMockColaborador
 
   const cursosFiltrados = useMemo(() => {
-    return cursosMockColaborador.filter(c => {
-      const matchBusca = c.titulo.toLowerCase().includes(busca.toLowerCase()) || c.categoria.toLowerCase().includes(busca.toLowerCase())
+    return fonteDados.filter((c: any) => {
+      const matchBusca = c.titulo.toLowerCase().includes(busca.toLowerCase()) || c.categoria?.toLowerCase().includes(busca.toLowerCase())
       const matchStatus = filtroStatus === 'Todos' || c.status === filtroStatus
       return matchBusca && matchStatus
     })
-  }, [busca, filtroStatus])
+  }, [busca, filtroStatus, fonteDados])
 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -81,8 +98,16 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
             </div>
           </div>
 
+          {/* Loading API */}
+          {loadingApi && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px', gap: '12px' }}>
+              <div style={{ width: '24px', height: '24px', border: `3px solid ${C.border}`, borderTopColor: C.blue, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <span style={{ fontSize: '14px', color: C.muted }}>Carregando seus cursos...</span>
+            </div>
+          )}
+
           {/* Grid de cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {!loadingApi && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             {cursosFiltrados.map(curso => (
               <div
                 key={curso.id}
@@ -157,9 +182,9 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
                 </div>
               </div>
             ))}
-          </div>
+          </div>}
 
-          {cursosFiltrados.length === 0 && (
+          {!loadingApi && cursosFiltrados.length === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: '12px' }}>
               <span style={{ fontSize: '36px' }}>🔍</span>
               <p style={{ fontSize: '15px', fontWeight: 600, color: C.text, margin: 0 }}>Nenhum curso encontrado</p>

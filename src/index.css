@@ -25,3 +25,5 @@ body {
   padding-bottom: 4px;
 }
 .pills-scroll::-webkit-scrollbar { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }

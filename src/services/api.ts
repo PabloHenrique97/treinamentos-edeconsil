@@ -74,6 +74,8 @@ export const cursosAPI = {
     return apiRequest(`/cursos${query}`)
   },
   buscarPorSlug: (slug: string) => apiRequest(`/cursos/${slug}`),
+  meusCursos: () => apiRequest('/meus-cursos'),
+  me: () => apiRequest('/me'),
 }
 
 export const progressoAPI = {
