@@ -28,6 +28,7 @@ export interface ModuloMock {
 
 export interface CursoMock {
   id: string
+  slug?: string
   titulo: string
   subtitulo: string
   descricao: string
@@ -59,6 +60,7 @@ export interface CursoMock {
 export const cursosMockColaborador: CursoMock[] = [
   {
     id: 'nr35',
+    slug: 'nr35',
     titulo: 'NR-35 — Trabalho em Altura',
     subtitulo: 'Capacitação obrigatória conforme NR-35',
     descricao: 'Capacitação obrigatória para atividades em altura conforme norma regulamentadora NR-35.',
@@ -141,6 +143,7 @@ export const cursosMockColaborador: CursoMock[] = [
   },
   {
     id: 'sipat',
+    slug: 'sipat',
     titulo: 'SIPAT — Segurança no Canteiro de Obras',
     subtitulo: 'Semana Interna de Prevenção de Acidentes',
     descricao: 'Boas práticas de segurança e prevenção de acidentes no ambiente de obra.',
@@ -204,6 +207,7 @@ export const cursosMockColaborador: CursoMock[] = [
   },
   {
     id: 'coord-suprimentos',
+    slug: 'coord-suprimentos',
     titulo: 'Coordenação de Suprimentos',
     subtitulo: 'Processos e procedimentos da Coordenação de Suprimentos',
     descricao: 'Treinamento completo sobre os processos internos da Coordenação de Suprimentos da Edeconsil, cobrindo aquisição, almoxarifado, controle de fornecedores, notas fiscais e ferramentas.',
@@ -280,6 +284,7 @@ export const cursosMockColaborador: CursoMock[] = [
   },
   {
     id: 'iso9001',
+    slug: 'iso9001',
     titulo: 'Gestão da Qualidade ISO 9001',
     subtitulo: 'Sistema de Gestão da Qualidade na Construção Civil',
     descricao: 'Fundamentos do sistema de gestão da qualidade e sua aplicação na construção civil.',

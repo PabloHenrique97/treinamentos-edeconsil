@@ -32,7 +32,9 @@ export function VideoAulaColaborador({
   const { C } = useTheme()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
-  const curso = cursosMockColaborador.find(c => c.id === cursoId) ?? cursosMockColaborador[0]
+  const curso = cursosMockColaborador.find(c => c.id === cursoId || c.slug === cursoId)
+    ?? cursosMockColaborador.find(c => c.id === 'coord-suprimentos')
+    ?? cursosMockColaborador[0]
   const moduloAtivo = curso.modulos.find(m => m.id === moduloId) ?? curso.modulos[0]
   const aulaAtiva = moduloAtivo.aulas.find(a => a.id === aulaId) ?? moduloAtivo.aulas[0]
 

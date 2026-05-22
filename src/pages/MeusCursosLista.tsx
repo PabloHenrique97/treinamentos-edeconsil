@@ -113,7 +113,7 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
             {cursosFiltrados.map(curso => (
               <div
                 key={curso.id}
-                onClick={() => onAbrirCurso(curso.id)}
+                onClick={() => onAbrirCurso(curso.slug ?? curso.id)}
                 style={{
                   background: C.surface, border: `1px solid ${C.border}`,
                   borderRadius: '12px', overflow: 'hidden',

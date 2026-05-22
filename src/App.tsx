@@ -101,9 +101,9 @@ function AppContent() {
     return u?.perfil === 'admin' ? 'admin' : 'colaborador'
   })
   const [pagina, setPagina] = useState<Pagina>('dashboard')
-  const [cursoAtivoId, setCursoAtivoId] = useState<string>('nr35')
-  const [moduloAtivoId, setModuloAtivoId] = useState<number>(3)
-  const [aulaAtivaId, setAulaAtivaId] = useState<number>(10)
+  const [cursoAtivoId, setCursoAtivoId] = useState<string>('coord-suprimentos')
+  const [moduloAtivoId, setModuloAtivoId] = useState<number>(1)
+  const [aulaAtivaId, setAulaAtivaId] = useState<number>(1)
 
   const handleLogout = () => {
     limparSessao()
