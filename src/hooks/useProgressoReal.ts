@@ -51,6 +51,27 @@ export function useProgressoReal() {
 
     const horasEstudadas = Math.round((aulasConcluidas * 30) / 60)
 
+    // Extrair as 3 primeiras aulas do curso da turma para exibir no card "Em andamento"
+    const aulasEmAndamento = fonteDados
+      .flatMap(curso =>
+        curso.modulos.flatMap(modulo =>
+          modulo.aulas.map(aula => ({
+            id:        `${curso.id}-${aula.id}`,
+            cursoId:   curso.id,
+            cursoSlug: (curso as any).slug ?? curso.id,
+            moduloId:  modulo.id,
+            aulaId:    aula.id,
+            titulo:    aula.titulo,
+            progresso: aula.progresso,
+            status:    aula.status,
+            cor:       curso.cor,
+            icone:     curso.icone,
+          }))
+        )
+      )
+      .slice(0, 3)
+
+    // Manter cursosEmAndamento para compatibilidade
     const cursosEmAndamento = fonteDados
       .filter(c => c.status === 'Em andamento' || c.aulasConcluidas > 0)
       .slice(0, 3)
@@ -74,6 +95,7 @@ export function useProgressoReal() {
       percentual,
       horasEstudadas,
       cursosEmAndamento,
+      aulasEmAndamento,
       slugCursoTurma,
     }
   }, [usuario?.cargo])

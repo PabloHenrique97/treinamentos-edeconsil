@@ -96,57 +96,86 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
             {/* Cursos em andamento */}
             <div style={{ background: 'rgba(26,86,255,0.08)', border: '0.5px solid rgba(26,86,255,0.20)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text }}>Em andamento</div>
-              {progressoReal.cursosEmAndamento.length > 0 ? (
-                progressoReal.cursosEmAndamento.map(curso => (
-                  <div key={curso.id} style={{
-                    display: 'flex', alignItems: 'center',
-                    gap: '12px', padding: '10px 0',
-                    borderBottom: `1px solid ${C.border}`,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => onNavigate('meusCursos')}
+              {progressoReal.aulasEmAndamento.length > 0 ? (
+                progressoReal.aulasEmAndamento.map((aula, idx) => (
+                  <div
+                    key={aula.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 0',
+                      borderBottom: idx < progressoReal.aulasEmAndamento.length - 1
+                        ? `1px solid ${C.border}`
+                        : 'none',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => onNavigate('meusCursos')}
                   >
                     <div style={{
-                      width: '32px', height: '32px', borderRadius: '8px',
-                      background: `${curso.cor}18`,
-                      display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: '16px', flexShrink: 0,
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: `${aula.cor}18`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      flexShrink: 0,
                     }}>
-                      {curso.icone}
+                      {aula.icone}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{
-                        fontSize: '13px', fontWeight: 600, color: C.text,
-                        margin: '0 0 4px',
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: C.text,
+                        margin: '0 0 5px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}>
-                        {curso.titulo}
+                        {aula.titulo}
                       </p>
                       <div style={{
                         background: `rgba(26,86,255,0.10)`,
-                        borderRadius: '4px', height: '4px',
+                        borderRadius: '4px',
+                        height: '4px',
                       }}>
                         <div style={{
-                          background: curso.progresso >= 70 ? '#10b981' : C.blue,
-                          height: '4px', borderRadius: '4px',
-                          width: `${curso.progresso}%`,
+                          background: aula.progresso >= 100
+                            ? '#10b981'
+                            : aula.progresso > 0
+                            ? aula.cor
+                            : `rgba(26,86,255,0.30)`,
+                          height: '4px',
+                          borderRadius: '4px',
+                          width: `${aula.progresso}%`,
                           transition: 'width 0.5s',
+                          minWidth: aula.progresso > 0 ? '4px' : '0',
                         }} />
                       </div>
                     </div>
                     <span style={{
-                      fontSize: '13px', fontWeight: 700,
-                      color: curso.progresso >= 70 ? '#10b981' : C.blue,
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      color: aula.progresso >= 100
+                        ? '#10b981'
+                        : aula.progresso > 0
+                        ? aula.cor
+                        : C.muted,
                       flexShrink: 0,
+                      minWidth: '36px',
+                      textAlign: 'right' as const,
                     }}>
-                      {curso.progresso}%
+                      {aula.progresso}%
                     </span>
                   </div>
                 ))
               ) : (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
                   <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
-                    Nenhum curso em andamento
+                    Nenhuma aula disponível
                   </p>
                 </div>
               )}
