@@ -73,6 +73,8 @@ export const usuariosAPI = {
       method: 'POST',
       body: JSON.stringify({ alunos }),
     }),
+  deletar: (id: string) =>
+    apiRequest(`/usuarios/${id}`, { method: 'DELETE' }),
 }
 
 export const cursosAPI = {

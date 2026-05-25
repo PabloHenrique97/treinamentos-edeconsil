@@ -1,9 +1,20 @@
-import { useState } from 'react'
-import { usuariosAPI } from '../../services/api'
+import { useState, useCallback } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 
+interface FormAluno {
+  nome:            string
+  cpf:             string
+  data_nascimento: string
+  matricula:       string
+  cargo:           string
+  setor:           string
+  centro_custo:    string
+  ramal:           string
+  celular:         string
+}
+
 interface CadastroAlunoProps {
-  onFechar: () => void
+  onFechar:  () => void
   onSucesso: (usuario: any) => void
 }
 
@@ -18,47 +29,53 @@ const TURMAS = [
   'Tecnologia da Informação',
 ]
 
+const FORM_INICIAL: FormAluno = {
+  nome: '', cpf: '', data_nascimento: '',
+  matricula: '', cargo: '', setor: '',
+  centro_custo: '', ramal: '', celular: '',
+}
+
 export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
   const { C } = useTheme()
-  const [form, setForm] = useState({
-    nome: '', cpf: '', data_nascimento: '',
-    matricula: '', cargo: '', setor: '',
-    centro_custo: '', ramal: '', celular: '',
-  })
+  const [form, setForm]         = useState<FormAluno>(FORM_INICIAL)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro]         = useState('')
   const [sucesso, setSucesso]   = useState<any>(null)
 
-  const set = (key: keyof typeof form, val: string) =>
-    setForm(prev => ({ ...prev, [key]: val }))
+  const handleChange = useCallback((campo: keyof FormAluno) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm(prev => ({ ...prev, [campo]: e.target.value }))
+    }, [])
+
+  const stopKeys = useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
 
   const handleSalvar = async () => {
     setErro('')
     const cpfLimpo = form.cpf.replace(/\D/g, '')
-    if (!form.nome.trim())     { setErro('Nome é obrigatório'); return }
-    if (cpfLimpo.length !== 11){ setErro('CPF deve ter 11 dígitos'); return }
-    if (!form.data_nascimento) { setErro('Data de nascimento é obrigatória'); return }
-    if (!form.cargo.trim())    { setErro('Cargo é obrigatório'); return }
-    if (!form.setor)           { setErro('Selecione o Setor / Turma'); return }
+    if (!form.nome.trim())      { setErro('Nome é obrigatório.'); return }
+    if (cpfLimpo.length !== 11) { setErro('CPF deve ter 11 dígitos.'); return }
+    if (!form.data_nascimento)  { setErro('Data de nascimento é obrigatória.'); return }
+    if (!form.setor)            { setErro('Selecione o Setor / Turma.'); return }
 
     setSalvando(true)
     try {
-      const resultado = await usuariosAPI.criar({
-        nome:            form.nome,
+      const { usuariosAPI } = await import('../../services/api')
+      const resultado = await (usuariosAPI as any).criar({
+        nome:            form.nome.trim(),
         cpf:             cpfLimpo,
         data_nascimento: form.data_nascimento,
-        matricula:       form.matricula   || null,
-        cargo:           form.setor,       // setor/turma define os cursos (backend busca turma por cargo)
+        matricula:       form.matricula    || null,
+        cargo:           form.setor,
         setor:           form.setor,
+        cargo_funcional: form.cargo        || null,
         centro_custo:    form.centro_custo || null,
-        ramal:           form.ramal       || null,
-        celular:         form.celular     || null,
-        cargo_funcional: form.cargo,
+        ramal:           form.ramal        || null,
+        celular:         form.celular      || null,
       }) as any
       setSucesso(resultado)
       onSucesso(resultado.usuario)
     } catch (err: any) {
-      setErro(err.message ?? 'Erro ao cadastrar aluno')
+      setErro(err.message ?? 'Erro ao cadastrar aluno.')
     } finally {
       setSalvando(false)
     }
@@ -68,54 +85,49 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
     width: '100%', boxSizing: 'border-box',
     padding: '10px 14px', background: C.surface2,
     border: `1px solid ${C.border}`, borderRadius: '8px',
-    fontSize: '13px', color: C.text, outline: 'none',
+    fontSize: '13px', color: C.text, outline: 'none', fontFamily: 'inherit',
   }
 
-  const Campo = ({
-    label, field, type = 'text', placeholder = '', required = false,
-  }: { label: string; field: keyof typeof form; type?: string; placeholder?: string; required?: boolean }) => (
-    <div style={{ marginBottom: '14px' }}>
-      <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
-      </label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={e => set(field, e.target.value)}
-        onKeyDown={e => e.stopPropagation()}
-        placeholder={placeholder}
-        style={inputStyle}
-        onFocus={e => (e.target.style.borderColor = C.blue)}
-        onBlur={e  => (e.target.style.borderColor = C.border)}
-      />
-    </div>
-  )
+  const labelStyle: React.CSSProperties = {
+    fontSize: '11px', fontWeight: 700, color: C.muted,
+    display: 'block', marginBottom: '5px',
+    textTransform: 'uppercase', letterSpacing: '0.5px',
+  }
 
+  // ── TELA DE SUCESSO ──
   if (sucesso) {
     return (
-      <div style={{ padding: '24px', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
+      <div style={{ padding: '32px', textAlign: 'center' }}>
+        <div style={{ fontSize: '52px', marginBottom: '12px' }}>✅</div>
+        <h3 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>
           Aluno cadastrado com sucesso!
         </h3>
         <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px', margin: '16px 0', textAlign: 'left' }}>
-          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Nome:</strong> {sucesso.usuario.nome}</p>
-          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>CPF:</strong> {sucesso.usuario.cpf}</p>
-          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Cargo:</strong> {form.cargo || '—'}</p>
-          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Setor / Turma:</strong> {sucesso.usuario.setor ?? sucesso.usuario.cargo}</p>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: C.blue, margin: 0 }}><strong>Senha inicial:</strong> {sucesso.senha_inicial}</p>
-          <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>{sucesso.instrucoes}</p>
+          {[
+            { label: 'Nome',          valor: sucesso.usuario?.nome },
+            { label: 'CPF',           valor: sucesso.usuario?.cpf },
+            { label: 'Cargo',         valor: form.cargo || '—' },
+            { label: 'Setor / Turma', valor: sucesso.usuario?.setor ?? sucesso.usuario?.cargo },
+          ].map(i => (
+            <p key={i.label} style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}>
+              <strong>{i.label}:</strong> {i.valor}
+            </p>
+          ))}
+          <p style={{ fontSize: '13px', fontWeight: 700, color: C.blue, margin: '10px 0 0', padding: '10px', background: `rgba(26,86,255,0.08)`, borderRadius: '8px' }}>
+            🔑 Senha inicial: <span style={{ fontFamily: 'monospace', fontSize: '15px' }}>{sucesso.senha_inicial}</span>
+          </p>
+          <p style={{ fontSize: '11px', color: C.muted, margin: '6px 0 0' }}>{sucesso.instrucoes}</p>
         </div>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button
-            onClick={() => { setSucesso(null); setForm({ nome: '', cpf: '', data_nascimento: '', matricula: '', cargo: '', setor: '', centro_custo: '', ramal: '', celular: '' }); setErro('') }}
-            style={{ padding: '10px 20px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}
+            onClick={() => { setSucesso(null); setForm(FORM_INICIAL); setErro('') }}
+            style={{ padding: '10px 20px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
           >
-            Cadastrar outro
+            + Cadastrar outro
           </button>
           <button
             onClick={onFechar}
-            style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}
+            style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer' }}
           >
             Fechar
           </button>
@@ -124,62 +136,163 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
     )
   }
 
+  // ── FORMULÁRIO ──
   return (
     <div style={{ padding: '24px' }}>
       {erro && (
-        <div style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#ef4444', marginBottom: '14px' }}>
+        <div style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#ef4444', marginBottom: '16px' }}>
           ⚠️ {erro}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-        <div style={{ gridColumn: '1/-1' }}>
-          <Campo label="Nome completo" field="nome" placeholder="Nome do colaborador" required />
-        </div>
-        <Campo label="CPF (apenas números)" field="cpf" placeholder="00000000000" required />
-        <Campo label="Data de nascimento" field="data_nascimento" type="date" required />
-        <Campo label="Matrícula" field="matricula" placeholder="Ex: MAT-001" />
-        <div style={{ gridColumn: '1/-1', marginBottom: '14px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Cargo <span style={{ color: '#ef4444' }}>*</span>
-          </label>
+      {/* Nome */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Nome completo <span style={{ color: '#ef4444' }}>*</span></label>
+        <input
+          type="text"
+          value={form.nome}
+          onChange={handleChange('nome')}
+          onKeyDown={stopKeys}
+          placeholder="Nome completo do colaborador"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = C.blue)}
+          onBlur={e  => (e.target.style.borderColor = C.border)}
+          autoComplete="off"
+        />
+      </div>
+
+      {/* CPF + Data nascimento */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+        <div>
+          <label style={labelStyle}>CPF (apenas números) <span style={{ color: '#ef4444' }}>*</span></label>
           <input
             type="text"
-            value={form.cargo}
-            onChange={e => set('cargo', e.target.value)}
-            onKeyDown={e => e.stopPropagation()}
-            placeholder="Ex: Engenheiro Civil, Técnico de Segurança..."
+            value={form.cpf}
+            onChange={e => setForm(prev => ({ ...prev, cpf: e.target.value.replace(/\D/g, '').slice(0, 11) }))}
+            onKeyDown={stopKeys}
+            placeholder="00000000000"
+            maxLength={11}
+            inputMode="numeric"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = C.blue)}
+            onBlur={e  => (e.target.style.borderColor = C.border)}
+            autoComplete="off"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Data de nascimento <span style={{ color: '#ef4444' }}>*</span></label>
+          <input
+            type="date"
+            value={form.data_nascimento}
+            onChange={handleChange('data_nascimento')}
+            onKeyDown={stopKeys}
             style={inputStyle}
             onFocus={e => (e.target.style.borderColor = C.blue)}
             onBlur={e  => (e.target.style.borderColor = C.border)}
           />
         </div>
-        <div style={{ gridColumn: '1/-1', marginBottom: '14px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Setor / Turma <span style={{ color: '#ef4444' }}>*</span>
-          </label>
-          <select
-            value={form.setor}
-            onChange={e => set('setor', e.target.value)}
-            onKeyDown={e => e.stopPropagation()}
-            style={{ ...inputStyle, cursor: 'pointer', color: form.setor ? C.text : C.muted }}
+      </div>
+
+      {/* Matrícula */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Matrícula</label>
+        <input
+          type="text"
+          value={form.matricula}
+          onChange={handleChange('matricula')}
+          onKeyDown={stopKeys}
+          placeholder="Ex: MAT-001"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = C.blue)}
+          onBlur={e  => (e.target.style.borderColor = C.border)}
+          autoComplete="off"
+        />
+      </div>
+
+      {/* Cargo (texto livre) */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Cargo</label>
+        <input
+          type="text"
+          value={form.cargo}
+          onChange={handleChange('cargo')}
+          onKeyDown={stopKeys}
+          placeholder="Ex: Engenheiro Civil, Técnico de Segurança..."
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = C.blue)}
+          onBlur={e  => (e.target.style.borderColor = C.border)}
+          autoComplete="off"
+        />
+      </div>
+
+      {/* Setor / Turma */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Setor / Turma <span style={{ color: '#ef4444' }}>*</span></label>
+        <select
+          value={form.setor}
+          onChange={handleChange('setor')}
+          onKeyDown={stopKeys}
+          style={{ ...inputStyle, cursor: 'pointer', color: form.setor ? C.text : C.muted }}
+          onFocus={e => (e.target.style.borderColor = C.blue)}
+          onBlur={e  => (e.target.style.borderColor = C.border)}
+        >
+          <option value="">Selecione o setor / turma</option>
+          {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
+          Define os cursos disponíveis para o aluno
+        </p>
+      </div>
+
+      {/* Ramal + Celular */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+        <div>
+          <label style={labelStyle}>Ramal</label>
+          <input
+            type="text"
+            value={form.ramal}
+            onChange={handleChange('ramal')}
+            onKeyDown={stopKeys}
+            placeholder="Ex: 1234"
+            style={inputStyle}
             onFocus={e => (e.target.style.borderColor = C.blue)}
             onBlur={e  => (e.target.style.borderColor = C.border)}
-          >
-            <option value="">Selecione o setor / turma</option>
-            {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
-            Define os cursos disponíveis para o aluno
-          </p>
+            autoComplete="off"
+          />
         </div>
-        <Campo label="Ramal" field="ramal" placeholder="Ex: 1234" />
-        <Campo label="Celular" field="celular" placeholder="Ex: 85999999999" />
-        <div style={{ gridColumn: '1/-1' }}>
-          <Campo label="Centro de custo" field="centro_custo" placeholder="Ex: CC-001" />
+        <div>
+          <label style={labelStyle}>Celular</label>
+          <input
+            type="text"
+            value={form.celular}
+            onChange={handleChange('celular')}
+            onKeyDown={stopKeys}
+            placeholder="Ex: 85999999999"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = C.blue)}
+            onBlur={e  => (e.target.style.borderColor = C.border)}
+            autoComplete="off"
+          />
         </div>
       </div>
 
+      {/* Centro de Custo */}
+      <div style={{ marginBottom: '20px' }}>
+        <label style={labelStyle}>Centro de Custo</label>
+        <input
+          type="text"
+          value={form.centro_custo}
+          onChange={handleChange('centro_custo')}
+          onKeyDown={stopKeys}
+          placeholder="Ex: CC-001"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = C.blue)}
+          onBlur={e  => (e.target.style.borderColor = C.border)}
+          autoComplete="off"
+        />
+      </div>
+
+      {/* Info senha */}
       <div style={{ background: 'rgba(26,86,255,0.06)', border: '1px solid rgba(26,86,255,0.20)', borderRadius: '8px', padding: '12px 14px', marginBottom: '20px' }}>
         <p style={{ fontSize: '12px', color: C.blue, margin: 0, fontWeight: 600 }}>
           💡 Senha inicial gerada automaticamente
@@ -189,13 +302,19 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
         </p>
       </div>
 
+      {/* Botões */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-        <button onClick={onFechar}
-          style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>
+        <button
+          onClick={onFechar}
+          style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer' }}
+        >
           Cancelar
         </button>
-        <button onClick={handleSalvar} disabled={salvando}
-          style={{ padding: '10px 24px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: salvando ? 'not-allowed' : 'pointer', opacity: salvando ? 0.7 : 1, fontFamily: "'Inter',sans-serif" }}>
+        <button
+          onClick={handleSalvar}
+          disabled={salvando}
+          style={{ padding: '10px 24px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: salvando ? 'not-allowed' : 'pointer', opacity: salvando ? 0.7 : 1 }}
+        >
           {salvando ? 'Cadastrando...' : '✓ Cadastrar aluno'}
         </button>
       </div>

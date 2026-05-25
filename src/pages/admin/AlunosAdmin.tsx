@@ -4,6 +4,7 @@ import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, TrendingUp, X, UserPlus } from 'lucide-react'
 import { CadastroAluno } from './CadastroAluno'
 import { ImportarAlunosModal } from '../../components/admin/ImportarAlunosModal'
+import { usuariosAPI } from '../../services/api'
 
 interface Aluno {
   id: number
@@ -84,8 +85,10 @@ interface AlunosAdminProps {
 export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const { C } = useTheme()
 
-  const [modalCadastro, setModalCadastro] = useState(false)
-  const [modalImportar, setModalImportar] = useState(false)
+  const [modalCadastro, setModalCadastro]         = useState(false)
+  const [modalImportar, setModalImportar]         = useState(false)
+  const [alunoExcluindo, setAlunoExcluindo]       = useState<any>(null)
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
   const [busca, setBusca] = useState('')
   const [cargoFiltro, setCargoFiltro] = useState('Todos')
   const [crFiltro, setCrFiltro] = useState('')
@@ -331,6 +334,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
               <col style={{ width: '120px' }} />
               <col style={{ width: '80px' }} />
               <col style={{ width: '100px' }} />
+              <col style={{ width: '160px' }} />
             </colgroup>
             <thead>
               <tr style={{ background: C.surface }}>
@@ -367,12 +371,15 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                 <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: C.muted, textAlign: 'left', borderBottom: `1px solid ${C.border}` }}>
                   Status
                 </th>
+                <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: C.muted, textAlign: 'left', borderBottom: `1px solid ${C.border}` }}>
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               {alunosPagina.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
+                  <td colSpan={8} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
                     Nenhum aluno encontrado com os filtros aplicados.
                   </td>
                 </tr>
@@ -463,6 +470,21 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                       {aluno.status}
                     </span>
                   </td>
+
+                  {/* Ações */}
+                  <td style={{ padding: '12px 12px', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        title="Excluir aluno"
+                        onClick={() => { setAlunoExcluindo(aluno); setConfirmandoExclusao(true) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '5px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: C.muted, cursor: 'pointer', transition: 'all 150ms' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                      >
+                        🗑️ Excluir
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -523,6 +545,51 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
           </div>
         </div>
       )}
+      {/* Modal Confirmação de Exclusão */}
+      {confirmandoExclusao && alunoExcluindo && (
+        <div
+          onClick={() => setConfirmandoExclusao(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.60)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, borderRadius: '14px', padding: '28px', maxWidth: '420px', width: '100%', border: `1px solid ${C.border}`, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', textAlign: 'center' }}
+          >
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 8px' }}>
+              Excluir aluno?
+            </h3>
+            <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 20px' }}>
+              Tem certeza que deseja excluir <strong style={{ color: C.text }}>{alunoExcluindo.nome}</strong>?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                onClick={() => { setConfirmandoExclusao(false); setAlunoExcluindo(null) }}
+                style={{ padding: '10px 20px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await (usuariosAPI as any).deletar(alunoExcluindo.id)
+                    setConfirmandoExclusao(false)
+                    setAlunoExcluindo(null)
+                    window.location.reload()
+                  } catch (e: any) {
+                    alert('Erro ao excluir: ' + (e.message ?? 'Tente novamente'))
+                  }
+                }}
+                style={{ padding: '10px 20px', background: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
+              >
+                Sim, excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal Importar Planilha */}
       {modalImportar && (
         <div
