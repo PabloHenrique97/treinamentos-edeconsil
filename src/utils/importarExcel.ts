@@ -4,6 +4,7 @@ export interface AlunoImportado {
   nome:             string
   cpf:              string
   cargo:            string
+  setor:            string | null  // coluna H — Setor/Turma (opcional)
   data_admissao:    string | null
   matricula:        string | null
   data_nascimento:  string | null
@@ -101,25 +102,27 @@ export function lerPlanilhaExcel(arquivo: File): Promise<AlunoImportado[]> {
           const matriculaRaw    = linha[4]
           const dataNascRaw     = linha[5]
           const centroCustoRaw  = linha[6]
+          const setorRaw        = linha[7]  // coluna H — Setor/Turma (opcional)
 
           const cpfLimpo        = limparCpf(cpfRaw)
           const data_admissao   = converterData(admissaoRaw)
           const data_nascimento = converterData(dataNascRaw)
           const matricula       = matriculaRaw ? String(matriculaRaw).trim() : null
           const centro_custo    = centroCustoRaw ? String(centroCustoRaw).trim() : null
+          const setor           = setorRaw ? String(setorRaw).trim() : null
           const senhaInicial    = dataNascimentoParaSenha(data_nascimento)
 
           const erros: string[] = []
           if (!nome)                   erros.push('Nome vazio')
           if (cpfLimpo.length !== 11)  erros.push(`CPF inválido: "${cpfRaw}" (${cpfLimpo.length} dígitos)`)
           if (!/^\d+$/.test(cpfLimpo)) erros.push('CPF contém letras')
-          if (!cargo)                  erros.push('Cargo/turma vazio')
           if (!data_nascimento)        erros.push('Data de nascimento inválida ou ausente')
 
           alunos.push({
             nome,
             cpf:            cpfRaw ? String(cpfRaw) : '',
             cargo,
+            setor,
             data_admissao,
             matricula,
             data_nascimento,

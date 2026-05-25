@@ -71,16 +71,18 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const carregarAlunos = useCallback(async () => {
     setCarregando(true)
     try {
-      const data = await usuariosAPI.listar({ limite: '500', perfil: 'colaborador' }) as any[]
-      const normalizados: Aluno[] = (data ?? []).map((u: any) => ({
-        id:       String(u.id),
-        nome:     u.nome ?? '—',
-        email:    u.email ?? '—',
-        cr:       u.cr ?? '—',
-        cargo:    u.cargo ?? '—',
-        setor:    u.setor ?? u.cargo ?? '—',
+      const resp = await usuariosAPI.listar({ limite: '500', perfil: 'colaborador' }) as any
+      // API retorna { usuarios: [], total: N } — não um array direto
+      const lista: any[] = Array.isArray(resp) ? resp : (resp?.usuarios ?? [])
+      const normalizados: Aluno[] = lista.map((u: any) => ({
+        id:        String(u.id),
+        nome:      u.nome ?? '—',
+        email:     u.email ?? '—',
+        cr:        u.cr ?? '—',
+        cargo:     u.cargo ?? '—',
+        setor:     u.setor ?? '—',
         matricula: u.matricula ?? '—',
-        status:   u.status === 'ativo' || u.status === 'Ativo' ? 'Ativo' : 'Inativo',
+        status:    u.status === 'ativo' || u.status === 'Ativo' ? 'Ativo' : 'Inativo',
       }))
       setAlunos(normalizados)
     } catch (e) {
@@ -116,7 +118,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
         a.nome.toLowerCase().includes(busca.toLowerCase()) ||
         a.email.toLowerCase().includes(busca.toLowerCase())
       const crOk     = crFiltro === '' || a.cr.toLowerCase().includes(crFiltro.toLowerCase())
-      const setorOk  = setorFiltro === 'Todos' || a.setor === setorFiltro || a.cargo === setorFiltro
+      const setorOk  = setorFiltro === 'Todos' || a.setor === setorFiltro
       const statusOk = statusFiltro === 'Todos' || a.status === statusFiltro
       return buscaOk && crOk && setorOk && statusOk
     })

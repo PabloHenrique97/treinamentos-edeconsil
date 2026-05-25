@@ -77,6 +77,7 @@ export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModal
         nome:            a.nome,
         cpf:             a.cpfLimpo,
         cargo:           a.cargo,
+        setor:           a.setor,       // coluna H — Setor/Turma
         data_nascimento: a.data_nascimento,
         data_admissao:   a.data_admissao,
         matricula:       a.matricula,
@@ -98,9 +99,10 @@ export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModal
   const baixarTemplate = () => {
     import('xlsx').then(XLSX => {
       const dados = [
-        ['Nome', 'CPF', 'Cargo', 'Admissão', 'Mat', 'Dat. Nasc', 'Centro de Custo'],
-        ['João da Silva', '12345678901', 'Coordenação de Suprimentos', '01/03/2024', 'MAT-001', '15/06/1990', 'CC-001'],
-        ['Maria Oliveira', '98765432100', 'Recursos Humanos', '15/01/2023', 'MAT-002', '22/09/1985', 'CC-002'],
+        ['Nome', 'CPF', 'Cargo', 'Admissão', 'Mat', 'Dat. Nasc', 'Centro de Custo', 'Setor/Turma'],
+        ['João da Silva', '12345678901', 'VIGIA', '01/03/2024', 'MAT-001', '15/06/1990', 'CC-001', 'Serviços Gerais'],
+        ['Maria Oliveira', '98765432100', 'ANALISTA ADMINISTRATIVO I', '15/01/2023', 'MAT-002', '22/09/1985', 'CC-002', 'Recursos Humanos'],
+        ['Carlos Santos', '11122233344', 'TECNICO ADMINISTRATIVO I', '10/05/2023', 'MAT-003', '08/03/1988', '', 'Coordenação de Suprimentos'],
       ]
       const ws = XLSX.utils.aoa_to_sheet(dados)
       const wb = XLSX.utils.book_new()
@@ -167,15 +169,16 @@ export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModal
           <p style={{ fontSize:'12px', fontWeight:700, color:C.text, margin:'0 0 10px', textTransform:'uppercase', letterSpacing:'0.5px' }}>
             Colunas esperadas na planilha:
           </p>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'6px' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'6px 6px' }}>
             {[
               { col:'A', label:'Nome',          obrig:true  },
               { col:'B', label:'CPF',           obrig:true  },
-              { col:'C', label:'Cargo',         obrig:true  },
+              { col:'C', label:'Cargo',         obrig:false },
               { col:'D', label:'Admissão',      obrig:false },
               { col:'E', label:'Mat',           obrig:false },
               { col:'F', label:'Dat. Nasc',     obrig:true  },
               { col:'G', label:'Centro Custo',  obrig:false },
+              { col:'H', label:'Setor/Turma',   obrig:false },
             ].map(c => (
               <div key={c.col} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 8px', background:C.surface, borderRadius:'6px', border:`0.5px solid ${C.border}` }}>
                 <span style={{ fontSize:'10px', fontWeight:800, color:'#fff', background:C.blue, borderRadius:'4px', padding:'1px 5px' }}>{c.col}</span>
@@ -185,7 +188,7 @@ export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModal
             ))}
           </div>
           <p style={{ fontSize:'11px', color:C.muted, margin:'8px 0 0' }}>
-            * Obrigatório · A senha inicial do aluno será gerada a partir da Dat. Nasc (DDMMAAAA)
+            * Obrigatório · Col. H (Setor/Turma) define o grupo do aluno e cria matrículas automáticas nos cursos
           </p>
         </div>
 
