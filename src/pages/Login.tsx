@@ -576,15 +576,6 @@ export default function Login({ onLogin }: LoginProps) {
             </button>
           </div>
 
-          {/* Ajuda de acesso */}
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color: '#8899aa', margin: '0 0 4px' }}>
-              CPF: apenas números · Senha: data de nascimento (DDMMAAAA)
-            </p>
-            <p style={{ fontSize: 12, color: '#8899aa66', margin: 0 }}>
-              Administrador: CPF 00000000000
-            </p>
-          </div>
 
           {/* Rodapé do card */}
           <div style={{
