@@ -67,28 +67,26 @@ export default function Login({ onLogin }: LoginProps) {
   const [focusCpf, setFocusCpf]   = useState(false)
   const [focusSenha, setFocusSenha] = useState(false)
 
-  const formatarCPF = (valor: string) => valor.replace(/\D/g, '').slice(0, 11)
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setErroLogin('')
 
     const cpfLimpo = cpf.replace(/\D/g, '')
 
-    if (cpfLimpo === '00000000000') {
-      if (!senha.trim()) {
-        setErroLogin('Digite a senha.')
-        return
-      }
-    } else {
-      if (cpfLimpo.length !== 11) {
-        setErroLogin('CPF deve ter 11 dígitos.')
-        return
-      }
-      if (senha.length !== 8 || !/^\d+$/.test(senha)) {
-        setErroLogin('Senha deve ser a data de nascimento (DDMMAAAA — 8 dígitos).')
-        return
-      }
+    if (cpfLimpo.length !== 11) {
+      setErroLogin('CPF deve ter 11 dígitos.')
+      return
+    }
+
+    if (!senha.trim()) {
+      setErroLogin('Digite a senha.')
+      return
+    }
+
+    const ehAdmin = cpfLimpo === '00000000000'
+    if (!ehAdmin && (senha.length !== 8 || !/^\d+$/.test(senha))) {
+      setErroLogin('Senha deve ser sua data de nascimento (DDMMAAAA — 8 dígitos).')
+      return
     }
 
     setLoading(true)
@@ -344,15 +342,16 @@ export default function Login({ onLogin }: LoginProps) {
                 id="cpf"
                 type="text"
                 value={cpf}
-                onChange={e => setCpf(formatarCPF(e.target.value))}
+                onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
                 onFocus={() => setFocusCpf(true)}
                 onBlur={() => setFocusCpf(false)}
-                placeholder="Digite seu CPF (apenas números)"
+                placeholder="00000000000"
                 maxLength={11}
                 inputMode="numeric"
+                autoComplete="off"
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  padding: '15px 16px 15px 44px',
+                  padding: '15px 44px 15px 44px',
                   background: '#0d1f3c',
                   border: `1px solid ${focusCpf ? '#1a56ff' : '#1a56ff33'}`,
                   borderRadius: 10, color: '#fff', fontSize: 15,
@@ -361,6 +360,26 @@ export default function Login({ onLogin }: LoginProps) {
                   fontFamily: "'Inter', sans-serif",
                 }}
               />
+              {cpf.length > 0 && cpf.length < 11 && (
+                <span style={{
+                  position: 'absolute', right: 14, top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: 11, color: '#f59e0b', fontWeight: 600,
+                  pointerEvents: 'none',
+                }}>
+                  {cpf.length}/11
+                </span>
+              )}
+              {cpf.length === 11 && (
+                <span style={{
+                  position: 'absolute', right: 14, top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: 16, color: '#10b981',
+                  pointerEvents: 'none',
+                }}>
+                  ✓
+                </span>
+              )}
             </div>
           </div>
 
@@ -382,7 +401,7 @@ export default function Login({ onLogin }: LoginProps) {
                 onChange={e => setSenha(e.target.value)}
                 onFocus={() => setFocusSenha(true)}
                 onBlur={() => setFocusSenha(false)}
-                placeholder="Data de nascimento (DDMMAAAA)"
+                placeholder="Senha (data de nascimento: DDMMAAAA)"
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
