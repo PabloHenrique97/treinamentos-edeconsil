@@ -32,24 +32,26 @@ async function apiRequest<T>(
 }
 
 export const authAPI = {
-  login: (email: string, senha: string) =>
+  login: (cpf: string, senha: string) =>
     apiRequest<{
       token: string
       usuario: {
         id: string
         nome: string
         email: string
+        cpf: string
         perfil: 'admin' | 'instrutor' | 'colaborador'
         matricula: string
         cr: string
         cargo: string
         setor: string
+        turma_id: string | null
         foto_url: string | null
       }
       expiraEm: string
     }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ cpf, senha }),
     }),
 
   verificar: () =>

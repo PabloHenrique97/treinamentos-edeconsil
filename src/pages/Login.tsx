@@ -58,27 +58,42 @@ const diferenciais = [
 export default function Login({ onLogin }: LoginProps) {
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
+  const [cpf, setCpf]           = useState('')
+  const [senha, setSenha]       = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  const [lembrar, setLembrar] = useState(true)
-  const [loading, setLoading] = useState(false)
+  const [lembrar, setLembrar]   = useState(true)
+  const [loading, setLoading]   = useState(false)
   const [erroLogin, setErroLogin] = useState('')
-  const [focusEmail, setFocusEmail] = useState(false)
+  const [focusCpf, setFocusCpf]   = useState(false)
   const [focusSenha, setFocusSenha] = useState(false)
+
+  const formatarCPF = (valor: string) => valor.replace(/\D/g, '').slice(0, 11)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setErroLogin('')
 
-    if (!email.trim() || !senha.trim()) {
-      setErroLogin('Preencha o e-mail e a senha.')
-      return
+    const cpfLimpo = cpf.replace(/\D/g, '')
+
+    if (cpfLimpo === '00000000000') {
+      if (!senha.trim()) {
+        setErroLogin('Digite a senha.')
+        return
+      }
+    } else {
+      if (cpfLimpo.length !== 11) {
+        setErroLogin('CPF deve ter 11 dígitos.')
+        return
+      }
+      if (senha.length !== 8 || !/^\d+$/.test(senha)) {
+        setErroLogin('Senha deve ser a data de nascimento (DDMMAAAA — 8 dígitos).')
+        return
+      }
     }
 
     setLoading(true)
     try {
-      const resposta = await authAPI.login(email.trim(), senha.trim())
+      const resposta = await authAPI.login(cpfLimpo, senha)
       salvarSessao(resposta.token, resposta.usuario)
       if (resposta.usuario.perfil === 'admin' || resposta.usuario.perfil === 'instrutor') {
         onLogin('admin')
@@ -86,7 +101,7 @@ export default function Login({ onLogin }: LoginProps) {
         onLogin('colaborador')
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao fazer login'
+      const msg = err instanceof Error ? err.message : 'CPF ou senha inválidos'
       setErroLogin(msg)
     } finally {
       setLoading(false)
@@ -314,34 +329,35 @@ export default function Login({ onLogin }: LoginProps) {
             na Universidade Corporativa.
           </p>
 
-          {/* Campo E-mail */}
+          {/* Campo CPF */}
           <div>
-            <label htmlFor="email" style={{
+            <label htmlFor="cpf" style={{
               display: 'block', fontSize: 13, fontWeight: 500,
               color: '#ccddee', margin: '0 0 8px',
-            }}>E-mail</label>
+            }}>CPF</label>
             <div style={{ position: 'relative' }}>
               <User size={16} color="#8899aa" style={{
                 position: 'absolute', left: 14, top: '50%',
                 transform: 'translateY(-50%)', pointerEvents: 'none',
               }} />
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                onFocus={() => setFocusEmail(true)}
-                onBlur={() => setFocusEmail(false)}
-                placeholder="seu@email.com"
-                required
+                id="cpf"
+                type="text"
+                value={cpf}
+                onChange={e => setCpf(formatarCPF(e.target.value))}
+                onFocus={() => setFocusCpf(true)}
+                onBlur={() => setFocusCpf(false)}
+                placeholder="Digite seu CPF (apenas números)"
+                maxLength={11}
+                inputMode="numeric"
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   padding: '15px 16px 15px 44px',
                   background: '#0d1f3c',
-                  border: `1px solid ${focusEmail ? '#1a56ff' : '#1a56ff33'}`,
+                  border: `1px solid ${focusCpf ? '#1a56ff' : '#1a56ff33'}`,
                   borderRadius: 10, color: '#fff', fontSize: 15,
                   outline: 'none', transition: 'all 200ms',
-                  boxShadow: focusEmail ? '0 0 0 3px #1a56ff22' : 'none',
+                  boxShadow: focusCpf ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
                 }}
               />
@@ -366,7 +382,7 @@ export default function Login({ onLogin }: LoginProps) {
                 onChange={e => setSenha(e.target.value)}
                 onFocus={() => setFocusSenha(true)}
                 onBlur={() => setFocusSenha(false)}
-                placeholder="Digite sua senha"
+                placeholder="Data de nascimento (DDMMAAAA)"
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
@@ -541,9 +557,19 @@ export default function Login({ onLogin }: LoginProps) {
             </button>
           </div>
 
+          {/* Ajuda de acesso */}
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: '#8899aa', margin: '0 0 4px' }}>
+              CPF: apenas números · Senha: data de nascimento (DDMMAAAA)
+            </p>
+            <p style={{ fontSize: 12, color: '#8899aa66', margin: 0 }}>
+              Administrador: CPF 00000000000
+            </p>
+          </div>
+
           {/* Rodapé do card */}
           <div style={{
-            marginTop: 24,
+            marginTop: 16,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             <ShieldCheck size={14} color="#8899aa" />

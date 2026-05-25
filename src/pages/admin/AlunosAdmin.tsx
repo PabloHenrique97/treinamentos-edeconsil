@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
-import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, TrendingUp, X } from 'lucide-react'
+import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, TrendingUp, X, UserPlus } from 'lucide-react'
+import { CadastroAluno } from './CadastroAluno'
 
 interface Aluno {
   id: number
@@ -82,6 +83,7 @@ interface AlunosAdminProps {
 export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const { C } = useTheme()
 
+  const [modalCadastro, setModalCadastro] = useState(false)
   const [busca, setBusca] = useState('')
   const [cargoFiltro, setCargoFiltro] = useState('Todos')
   const [crFiltro, setCrFiltro] = useState('')
@@ -277,6 +279,19 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
           <span style={{ marginLeft: 'auto', fontSize: '12px', color: C.muted }}>
             {alunosFiltrados.length} resultado{alunosFiltrados.length !== 1 ? 's' : ''}
           </span>
+
+          <button
+            onClick={() => setModalCadastro(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '8px', border: 'none',
+              background: C.blue, color: '#fff', fontSize: '13px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: "'Inter',sans-serif",
+            }}
+          >
+            <UserPlus size={14} />
+            Novo Aluno
+          </button>
         </div>
       </div>
 
@@ -484,6 +499,37 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             >
               Próximo
             </button>
+          </div>
+        </div>
+      )}
+      {/* Modal Cadastro de Aluno */}
+      {modalCadastro && (
+        <div
+          onClick={() => setModalCadastro(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.60)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '620px', maxHeight: '90vh', overflowY: 'auto', border: `1px solid ${C.border}`, boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}
+          >
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>Novo Aluno</h2>
+                <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>Cadastrar colaborador na plataforma</p>
+              </div>
+              <button
+                onClick={() => setModalCadastro(false)}
+                style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '18px', color: C.muted, fontFamily: "'Inter',sans-serif" }}
+              >
+                ×
+              </button>
+            </div>
+            <CadastroAluno
+              onFechar={() => setModalCadastro(false)}
+              onSucesso={(_usuario) => {
+                setModalCadastro(false)
+              }}
+            />
           </div>
         </div>
       )}
