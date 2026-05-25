@@ -38,11 +38,23 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
     if (!form.nome.trim())     { setErro('Nome é obrigatório'); return }
     if (cpfLimpo.length !== 11){ setErro('CPF deve ter 11 dígitos'); return }
     if (!form.data_nascimento) { setErro('Data de nascimento é obrigatória'); return }
-    if (!form.cargo)           { setErro('Selecione a turma'); return }
+    if (!form.cargo.trim())    { setErro('Cargo é obrigatório'); return }
+    if (!form.setor)           { setErro('Selecione o Setor / Turma'); return }
 
     setSalvando(true)
     try {
-      const resultado = await usuariosAPI.criar({ ...form, cpf: cpfLimpo }) as any
+      const resultado = await usuariosAPI.criar({
+        nome:            form.nome,
+        cpf:             cpfLimpo,
+        data_nascimento: form.data_nascimento,
+        matricula:       form.matricula   || null,
+        cargo:           form.setor,       // setor/turma define os cursos (backend busca turma por cargo)
+        setor:           form.setor,
+        centro_custo:    form.centro_custo || null,
+        ramal:           form.ramal       || null,
+        celular:         form.celular     || null,
+        cargo_funcional: form.cargo,
+      }) as any
       setSucesso(resultado)
       onSucesso(resultado.usuario)
     } catch (err: any) {
@@ -70,6 +82,7 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
         type={type}
         value={form[field]}
         onChange={e => set(field, e.target.value)}
+        onKeyDown={e => e.stopPropagation()}
         placeholder={placeholder}
         style={inputStyle}
         onFocus={e => (e.target.style.borderColor = C.blue)}
@@ -88,13 +101,14 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
         <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px', margin: '16px 0', textAlign: 'left' }}>
           <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Nome:</strong> {sucesso.usuario.nome}</p>
           <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>CPF:</strong> {sucesso.usuario.cpf}</p>
-          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Turma:</strong> {sucesso.usuario.cargo}</p>
+          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Cargo:</strong> {form.cargo || '—'}</p>
+          <p style={{ fontSize: '13px', color: C.text, margin: '0 0 6px' }}><strong>Setor / Turma:</strong> {sucesso.usuario.setor ?? sucesso.usuario.cargo}</p>
           <p style={{ fontSize: '13px', fontWeight: 700, color: C.blue, margin: 0 }}><strong>Senha inicial:</strong> {sucesso.senha_inicial}</p>
           <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>{sucesso.instrucoes}</p>
         </div>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button
-            onClick={() => { setSucesso(null); setForm({ nome: '', cpf: '', data_nascimento: '', matricula: '', cargo: '', setor: '', centro_custo: '', ramal: '', celular: '' }) }}
+            onClick={() => { setSucesso(null); setForm({ nome: '', cpf: '', data_nascimento: '', matricula: '', cargo: '', setor: '', centro_custo: '', ramal: '', celular: '' }); setErro('') }}
             style={{ padding: '10px 20px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}
           >
             Cadastrar outro
@@ -127,18 +141,38 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
         <Campo label="Matrícula" field="matricula" placeholder="Ex: MAT-001" />
         <div style={{ gridColumn: '1/-1', marginBottom: '14px' }}>
           <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Turma / Cargo <span style={{ color: '#ef4444' }}>*</span>
+            Cargo <span style={{ color: '#ef4444' }}>*</span>
           </label>
-          <select
+          <input
+            type="text"
             value={form.cargo}
             onChange={e => set('cargo', e.target.value)}
-            style={{ ...inputStyle, cursor: 'pointer', color: form.cargo ? C.text : C.muted }}
+            onKeyDown={e => e.stopPropagation()}
+            placeholder="Ex: Engenheiro Civil, Técnico de Segurança..."
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = C.blue)}
+            onBlur={e  => (e.target.style.borderColor = C.border)}
+          />
+        </div>
+        <div style={{ gridColumn: '1/-1', marginBottom: '14px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: C.muted, display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Setor / Turma <span style={{ color: '#ef4444' }}>*</span>
+          </label>
+          <select
+            value={form.setor}
+            onChange={e => set('setor', e.target.value)}
+            onKeyDown={e => e.stopPropagation()}
+            style={{ ...inputStyle, cursor: 'pointer', color: form.setor ? C.text : C.muted }}
+            onFocus={e => (e.target.style.borderColor = C.blue)}
+            onBlur={e  => (e.target.style.borderColor = C.border)}
           >
-            <option value="">Selecione a turma</option>
+            <option value="">Selecione o setor / turma</option>
             {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
+          <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
+            Define os cursos disponíveis para o aluno
+          </p>
         </div>
-        <Campo label="Setor" field="setor" placeholder="Setor do colaborador" />
         <Campo label="Ramal" field="ramal" placeholder="Ex: 1234" />
         <Campo label="Celular" field="celular" placeholder="Ex: 85999999999" />
         <div style={{ gridColumn: '1/-1' }}>
