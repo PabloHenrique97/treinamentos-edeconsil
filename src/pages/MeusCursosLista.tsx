@@ -40,10 +40,49 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
   const cursosFiltrados = useMemo(() => {
     return fonteDados.filter((c: any) => {
       const matchBusca = c.titulo.toLowerCase().includes(busca.toLowerCase()) || c.categoria?.toLowerCase().includes(busca.toLowerCase())
-      const matchStatus = filtroStatus === 'Todos' || c.status === filtroStatus
+      const matchStatus = filtroStatus === 'Todos'
+        || c.status === filtroStatus
+        || (filtroStatus === 'Em andamento' && c.status === 'ativo')
+        || (filtroStatus === 'Concluído'    && c.status === 'concluido')
       return matchBusca && matchStatus
     })
   }, [busca, filtroStatus, fonteDados])
+
+  const normalizarCurso = (c: any) => {
+    const totalAulas      = c.total_aulas      ?? c.totalAulas      ?? 0
+    const progresso       = c.progresso_usuario ?? c.progresso       ?? 0
+    const aulasConcluidas = c.aulas_concluidas  ?? c.aulasConcluidas ?? Math.round((progresso / 100) * totalAulas)
+    return {
+      id:           c.id,
+      slug:         c.slug          ?? c.id,
+      titulo:       c.titulo,
+      subtitulo:    c.subtitulo     ?? '',
+      descricao:    c.descricao     ?? '',
+      categoria:    c.categoria     ?? '',
+      cargo:        c.cargo         ?? '',
+      trilha:       c.trilha        ?? '',
+      cargaHoraria: c.carga_horaria ?? c.cargaHoraria ?? '—',
+      instrutor:    c.instrutor     ?? '—',
+      totalAulas,
+      aulasConcluidas,
+      progresso,
+      status: c.status === 'ativo'     ? 'Em andamento'
+            : c.status === 'concluido' ? 'Concluído'
+            : (c.status               ?? 'Em andamento'),
+      cor:   c.cor   ?? '#1a56ff',
+      icone: c.icone ?? '📚',
+    }
+  }
+
+  const cursosNormalizados = cursosFiltrados.map(normalizarCurso)
+
+  const totalAulasReal = cursosApi.reduce((s: number, c: any) => s + (c.total_aulas ?? c.totalAulas ?? 0), 0)
+  const aulasConcluídasReal = cursosApi.reduce((s: number, c: any) => {
+    const prog  = c.progresso_usuario ?? c.progresso ?? 0
+    const total = c.total_aulas ?? c.totalAulas ?? 0
+    return s + (c.aulas_concluidas ?? c.aulasConcluidas ?? Math.round((prog / 100) * total))
+  }, 0)
+  const percentualReal = totalAulasReal > 0 ? Math.round((aulasConcluídasReal / totalAulasReal) * 100) : 0
 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -69,8 +108,10 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
               {cursosFiltrados.length} curso{cursosFiltrados.length !== 1 ? 's' : ''} disponível{cursosFiltrados.length !== 1 ? 'is' : ''}
             </p>
             <p style={{ fontSize: '12px', color: C.muted, margin: '4px 0 0' }}>
-              {progresso.aulasConcluidas} de {progresso.totalAulas} aulas concluídas
-              · {progresso.percentualProgresso}% do progresso total
+              {cursosApi.length > 0
+                ? `${aulasConcluídasReal} de ${totalAulasReal} aulas concluídas · ${percentualReal}% do progresso total`
+                : `${progresso.aulasConcluidas} de ${progresso.totalAulas} aulas concluídas · ${progresso.percentualProgresso}% do progresso total`
+              }
             </p>
           </div>
 
@@ -110,7 +151,7 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
 
           {/* Grid de cards */}
           {!loadingApi && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {cursosFiltrados.map(curso => (
+            {cursosNormalizados.map(curso => (
               <div
                 key={curso.id}
                 onClick={() => onAbrirCurso(curso.slug ?? curso.id)}
