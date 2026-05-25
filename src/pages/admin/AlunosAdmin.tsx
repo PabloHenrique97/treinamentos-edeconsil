@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, TrendingUp, X, UserPlus } from 'lucide-react'
 import { CadastroAluno } from './CadastroAluno'
+import { ImportarAlunosModal } from '../../components/admin/ImportarAlunosModal'
 
 interface Aluno {
   id: number
@@ -84,6 +85,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const { C } = useTheme()
 
   const [modalCadastro, setModalCadastro] = useState(false)
+  const [modalImportar, setModalImportar] = useState(false)
   const [busca, setBusca] = useState('')
   const [cargoFiltro, setCargoFiltro] = useState('Todos')
   const [crFiltro, setCrFiltro] = useState('')
@@ -280,6 +282,25 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             {alunosFiltrados.length} resultado{alunosFiltrados.length !== 1 ? 's' : ''}
           </span>
 
+          <button
+            onClick={() => setModalImportar(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '8px 16px', background: 'none',
+              border: `1.5px solid ${C.blue}`, borderRadius: '8px',
+              fontSize: '13px', fontWeight: 600, color: C.blue, cursor: 'pointer', transition: 'all 150ms',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = `rgba(26,86,255,0.08)` }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Importar planilha
+          </button>
           <button
             onClick={() => setModalCadastro(true)}
             style={{
@@ -502,6 +523,43 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
           </div>
         </div>
       )}
+      {/* Modal Importar Planilha */}
+      {modalImportar && (
+        <div
+          onClick={() => setModalImportar(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.60)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background:C.surface, borderRadius:'16px', width:'100%', maxWidth:'780px', maxHeight:'90vh', overflowY:'auto', border:`1px solid ${C.border}`, boxShadow:'0 32px 80px rgba(0,0,0,0.4)' }}
+          >
+            <div style={{ padding:'20px 24px', borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, background:C.surface, zIndex:1 }}>
+              <div>
+                <h2 style={{ fontSize:'16px', fontWeight:700, color:C.text, margin:'0 0 2px' }}>
+                  Importar Alunos — Planilha Excel
+                </h2>
+                <p style={{ fontSize:'12px', color:C.muted, margin:0 }}>
+                  Colunas: Nome · CPF · Cargo · Admissão · Mat · Dat. Nasc · Centro de Custo
+                </p>
+              </div>
+              <button
+                onClick={() => setModalImportar(false)}
+                style={{ background:'none', border:`1px solid ${C.border}`, borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', fontSize:'18px', color:C.muted, display:'flex', alignItems:'center', justifyContent:'center' }}
+              >
+                ×
+              </button>
+            </div>
+            <ImportarAlunosModal
+              onFechar={() => setModalImportar(false)}
+              onSucesso={(total) => {
+                setModalImportar(false)
+                console.log(`${total} aluno(s) importados`)
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Modal Cadastro de Aluno */}
       {modalCadastro && (
         <div

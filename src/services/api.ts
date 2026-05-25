@@ -68,6 +68,11 @@ export const usuariosAPI = {
   buscar: (id: string) => apiRequest(`/usuarios/${id}`),
   atualizar: (id: string, dados: unknown) =>
     apiRequest(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(dados) }),
+  importarCsv: (alunos: unknown[]) =>
+    apiRequest('/usuarios/importar-csv', {
+      method: 'POST',
+      body: JSON.stringify({ alunos }),
+    }),
 }
 
 export const cursosAPI = {
