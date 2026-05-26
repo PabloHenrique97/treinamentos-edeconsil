@@ -9,37 +9,8 @@ import { Topbar } from '../components/Topbar'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
-
-const cursoDados = {
-  nome: 'Gestão de Obras e Construção Civil',
-  totalDisciplinas: 44,
-  concluidas: 12,
-  progresso: 27,
-}
-
-const disciplinasAndamento = [
-  { id: 1,  titulo: 'NR-35 — Trabalho em Altura',              status: 'Cursando', pct: 68  },
-  { id: 2,  titulo: 'SIPAT — Segurança no Canteiro de Obras',  status: 'Cursando', pct: 35  },
-  { id: 3,  titulo: 'Gestão da Qualidade ISO 9001',            status: 'Cursando', pct: 12  },
-  { id: 4,  titulo: 'Liderança em Obras e Canteiros',          status: 'Cursando', pct: 0   },
-  { id: 5,  titulo: 'NR-18 — Condições e Meio Ambiente',       status: 'Cursando', pct: 0   },
-  { id: 6,  titulo: 'Gestão Ambiental em Obras',               status: 'Cursando', pct: 0   },
-]
-
-const disciplinasConcluidas = [
-  { id: 7,  titulo: 'Introdução à Construção Civil',           status: 'Aprovada', pct: 100, cor: '#10b981'},
-  { id: 8,  titulo: 'Fundamentos de Terraplanagem',            status: 'Aprovada', pct: 100, cor: '#10b981'},
-  { id: 9,  titulo: 'Materiais e Equipamentos de Obra',        status: 'Aprovada', pct: 96,  cor: '#10b981'},
-  { id: 10, titulo: 'Normas Técnicas ABNT para Construção',    status: 'Aprovada', pct: 84,  cor: '#10b981'},
-  { id: 11, titulo: 'Segurança Básica no Trabalho',            status: 'Aprovada', pct: 83,  cor: '#10b981'},
-  { id: 12, titulo: 'Planejamento de Obras',                   status: 'Aprovada', pct: 100, cor: '#10b981'},
-  { id: 13, titulo: 'Leitura de Projetos — Nível Básico',      status: 'Aprovada', pct: 96,  cor: '#10b981'},
-  { id: 14, titulo: 'Topografia Aplicada',                     status: 'Aprovada', pct: 91,  cor: '#10b981'},
-  { id: 15, titulo: 'Controle de Qualidade em Obras',          status: 'Aprovada', pct: 88,  cor: '#10b981'},
-  { id: 16, titulo: 'Fundamentos de Pavimentação',             status: 'Aprovada', pct: 79,  cor: '#10b981'},
-  { id: 17, titulo: 'Equipamentos de Terraplanagem',           status: 'Aprovada', pct: 85,  cor: '#10b981'},
-  { id: 18, titulo: 'Gestão de Resíduos em Obras',             status: 'Aprovada', pct: 93,  cor: '#10b981'},
-]
+import { useDadosReaisAluno } from '../hooks/useDadosReaisAluno'
+import { getUsuario } from '../services/authStorage'
 
 const abasStatus = ['Aprovadas', 'Reprovadas', 'Futuras']
 
@@ -59,6 +30,10 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
   const [modalRotina, setModalRotina] = useState(false)
   const [diasSemana, setDiasSemana] = useState(5)
   const [rotinaSalva, setRotinaSalva] = useState(false)
+  const dados = useDadosReaisAluno()
+  const usuarioLogado = getUsuario<{ setor?: string | null }>()
+  const cursosAndamento   = dados.cursos.filter(c => c.progresso_usuario < 100)
+  const cursosConcluidosList = dados.cursos.filter(c => c.progresso_usuario >= 100)
 
   function ModalDefinirRotina({
     dias,
@@ -472,7 +447,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
               Minhas Disciplinas
             </h1>
             <p style={{ fontSize:'13px', fontWeight:700, color:C.muted, margin:0, letterSpacing:'0.5px', textTransform:'uppercase' }}>
-              {cursoDados.nome}
+              {usuarioLogado?.setor ?? 'Minha Trilha'}
             </p>
           </div>
 
@@ -491,17 +466,17 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
               <svg viewBox="0 0 52 52" style={{ transform:'rotate(-90deg)', width:'52px', height:'52px' }}>
                 <circle cx="26" cy="26" r="20" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="6" />
                 <circle cx="26" cy="26" r="20" fill="none" stroke={C.blue} strokeWidth="6"
-                  strokeDasharray={`${2*Math.PI*20*cursoDados.progresso/100} ${2*Math.PI*20*(1-cursoDados.progresso/100)}`}
+                  strokeDasharray={`${2*Math.PI*20*dados.percentual/100} ${2*Math.PI*20*(1-dados.percentual/100)}`}
                   strokeLinecap="round" />
               </svg>
               <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px', fontWeight:700, color:C.blue }}>
-                {cursoDados.progresso}%
+                {dados.percentual}%
               </div>
             </div>
             <div>
               <div style={{ fontSize:'12px', color:C.muted, marginBottom:'2px' }}>Progresso no curso</div>
               <div style={{ fontSize:'14px', fontWeight:700, color:C.text }}>
-                {cursoDados.concluidas} de {cursoDados.totalDisciplinas} disciplinas concluídas
+                {dados.cursosConcluidos} de {dados.totalCursos} disciplinas concluídas
               </div>
             </div>
           </div>
@@ -551,8 +526,16 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
               Disciplinas em andamento
             </h2>
             <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'12px' }}>
-              {disciplinasAndamento.map(d => (
-                <div key={d.id} style={{
+              {dados.carregando ? (
+                <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: C.muted, fontSize: '13px' }}>
+                  Carregando...
+                </div>
+              ) : cursosAndamento.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: C.muted, fontSize: '13px' }}>
+                  Nenhuma disciplina em andamento
+                </div>
+              ) : cursosAndamento.map(c => (
+                <div key={c.id} style={{
                   background: C.surface,
                   border:`1px solid ${C.border}`,
                   borderRadius:'10px', padding:'18px 20px',
@@ -568,7 +551,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                     borderRadius:'6px', padding:'3px 10px',
                     marginBottom:'10px',
                   }}>
-                    <span style={{ fontSize:'10px', fontWeight:700, color:C.blue }}>{d.status}</span>
+                    <span style={{ fontSize:'10px', fontWeight:700, color:C.blue }}>Cursando</span>
                   </div>
 
                   <p style={{
@@ -581,21 +564,21 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                     WebkitBoxOrient:'vertical' as const,
                     overflow:'hidden',
                   }}>
-                    {d.titulo}
+                    {c.titulo}
                   </p>
 
                   <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                     <div style={{ flex:1, background:'rgba(26,86,255,0.10)', borderRadius:'4px', height:'5px' }}>
                       <div style={{
-                        background: d.pct > 0 ? C.blue : 'rgba(26,86,255,0.15)',
+                        background: c.progresso_usuario > 0 ? C.blue : 'rgba(26,86,255,0.15)',
                         height:'5px', borderRadius:'4px',
-                        width:`${d.pct}%`,
-                        minWidth: d.pct > 0 ? '4px' : '0',
+                        width:`${c.progresso_usuario}%`,
+                        minWidth: c.progresso_usuario > 0 ? '4px' : '0',
                         transition:'width 0.5s ease',
                       }} />
                     </div>
-                    <span style={{ fontSize:'11px', fontWeight:600, color: d.pct > 0 ? C.blue : C.muted, minWidth:'28px', textAlign:'right' }}>
-                      {d.pct}%
+                    <span style={{ fontSize:'11px', fontWeight:600, color: c.progresso_usuario > 0 ? C.blue : C.muted, minWidth:'28px', textAlign:'right' }}>
+                      {c.progresso_usuario}%
                     </span>
                   </div>
                 </div>
@@ -626,8 +609,12 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
             {abaAtiva === 'Aprovadas' && (
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'12px', paddingBottom:'32px' }}>
-                {disciplinasConcluidas.map(d => (
-                  <div key={d.id} style={{
+                {cursosConcluidosList.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: C.muted, fontSize: '13px' }}>
+                    Nenhuma disciplina concluída ainda
+                  </div>
+                ) : cursosConcluidosList.map(c => (
+                  <div key={c.id} style={{
                     background: C.surface,
                     border:`1px solid ${C.border}`,
                     borderRadius:'10px', padding:'18px 20px',
@@ -643,7 +630,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                       borderRadius:'6px', padding:'3px 10px',
                       marginBottom:'10px',
                     }}>
-                      <span style={{ fontSize:'10px', fontWeight:700, color:C.green }}>{d.status}</span>
+                      <span style={{ fontSize:'10px', fontWeight:700, color:C.green }}>Aprovada</span>
                     </div>
 
                     <p style={{
@@ -656,7 +643,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                       WebkitBoxOrient:'vertical' as const,
                       overflow:'hidden',
                     }}>
-                      {d.titulo}
+                      {c.titulo}
                     </p>
 
                     <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
@@ -664,12 +651,12 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                         <div style={{
                           background: C.green,
                           height:'5px', borderRadius:'4px',
-                          width:`${d.pct}%`,
+                          width:`${c.progresso_usuario}%`,
                           transition:'width 0.5s ease',
                         }} />
                       </div>
                       <span style={{ fontSize:'11px', fontWeight:700, color:C.green, minWidth:'32px', textAlign:'right' }}>
-                        {d.pct}%
+                        {c.progresso_usuario}%
                       </span>
                     </div>
                   </div>

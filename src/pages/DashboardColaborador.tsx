@@ -7,7 +7,7 @@ import { Topbar } from '../components/Topbar'
 import { MobileMenu } from '../components/MobileMenu'
 import { useTheme } from '../contexts/ThemeContext'
 import { useResponsive } from '../hooks/useResponsive'
-import { useProgressoReal } from '../hooks/useProgressoReal'
+import { useDadosReaisAluno } from '../hooks/useDadosReaisAluno'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 
@@ -27,7 +27,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
   const { C } = useTheme()
   const { isMobile, isTablet } = useResponsive()
   const isSmall = isMobile || isTablet
-  const progressoReal = useProgressoReal()
+  const progressoReal = useDadosReaisAluno()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
 

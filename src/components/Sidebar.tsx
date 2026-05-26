@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Logo } from './Logo'
-import { useProgressoReal } from '../hooks/useProgressoReal'
+import { useDadosReaisAluno } from '../hooks/useDadosReaisAluno'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 const navItems = [
@@ -35,7 +35,7 @@ interface SidebarProps {
 
 export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
   const { C } = useTheme()
-  const progresso = useProgressoReal()
+  const progresso = useDadosReaisAluno()
   const { nome, iniciais, perfil } = useUsuarioLogado()
   return (
     <aside style={{
