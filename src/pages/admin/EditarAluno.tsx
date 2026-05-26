@@ -29,8 +29,9 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
   const [ramal,        setRamal]        = useState('')
   const [celular,      setCelular]      = useState('')
   const [centroCusto,  setCentroCusto]  = useState('')
-  const [dataAdmissao, setDataAdmissao] = useState('')
-  const [status,       setStatus]       = useState('ativo')
+  const [dataAdmissao,   setDataAdmissao]   = useState('')
+  const [dataNascimento, setDataNascimento] = useState('')
+  const [status,         setStatus]         = useState('ativo')
   const [salvando,     setSalvando]     = useState(false)
   const [erro,         setErro]         = useState('')
   const [sucesso,      setSucesso]      = useState(false)
@@ -52,6 +53,13 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
         setDataAdmissao(d.toISOString().split('T')[0])
       }
     }
+
+    if (aluno.data_nascimento) {
+      const dn = new Date(aluno.data_nascimento + 'T00:00:00')
+      if (!isNaN(dn.getTime())) {
+        setDataNascimento(dn.toISOString().split('T')[0])
+      }
+    }
   }, [aluno])
 
   const stopKeys = useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
@@ -70,7 +78,8 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
         ramal:         ramal       || null,
         celular:       celular     || null,
         centro_custo:  centroCusto || null,
-        data_admissao: dataAdmissao || null,
+        data_admissao:   dataAdmissao   || null,
+        data_nascimento: dataNascimento || null,
         status,
       }) as any
 
@@ -150,6 +159,13 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
             <span style={{ fontSize: '11px', color: C.muted }}>
               E-mail: <strong style={{ color: C.text }}>{aluno?.email ?? '—'}</strong>
             </span>
+            {aluno?.data_nascimento && (
+              <span style={{ fontSize: '11px', color: C.muted }}>
+                Nasc: <strong style={{ color: C.text }}>
+                  {new Date(aluno.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR')}
+                </strong>
+              </span>
+            )}
           </div>
         </div>
         <div style={{ fontSize: '11px', color: C.muted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: '6px', padding: '4px 10px', flexShrink: 0 }}>
@@ -258,6 +274,44 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
             style={inputStyle}
           />
         </div>
+      </div>
+
+      {/* Data de Nascimento — define a senha de login */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>
+          Data de Nascimento <span style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <input
+          type="date"
+          value={dataNascimento}
+          onChange={e => setDataNascimento(e.target.value)}
+          onKeyDown={stopKeys}
+          onFocus={onFocusInput}
+          onBlur={onBlurInput}
+          style={inputStyle}
+        />
+        {dataNascimento && (
+          <div style={{ marginTop: '6px', padding: '8px 12px', background: 'rgba(26,86,255,0.08)', border: '1px solid rgba(26,86,255,0.20)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px' }}>🔑</span>
+            <div>
+              <p style={{ fontSize: '11px', color: C.blue, fontWeight: 700, margin: '0 0 1px' }}>
+                Senha de acesso do aluno:
+              </p>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: C.blue, margin: 0, fontFamily: 'monospace', letterSpacing: '2px' }}>
+                {(() => {
+                  const d = new Date(dataNascimento + 'T00:00:00')
+                  const dd   = String(d.getDate()).padStart(2, '0')
+                  const mm   = String(d.getMonth() + 1).padStart(2, '0')
+                  const yyyy = d.getFullYear()
+                  return `${dd}${mm}${yyyy}`
+                })()}
+              </p>
+              <p style={{ fontSize: '10px', color: C.muted, margin: '2px 0 0' }}>
+                Formato DDMMAAAA — o aluno usa este código para fazer login
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Ramal + Celular */}
