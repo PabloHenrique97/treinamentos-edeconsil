@@ -9,6 +9,15 @@ const TURMAS_OFICIAIS = [
   'Engenharia',
   'Manutenções - Oficina',
   'Tecnologia da Informação',
+  'Coordenação de Pessoal',
+  'Coordenação de Qualidade',
+  'Gerência Financeira',
+  'Gerência Jurídica e Compliance',
+  'Gerência de Auditoria',
+  'Gerência de Controladoria',
+  'Gerência de Gestão de Pessoas',
+  'Saúde Ocupacional',
+  'Patrimônio',
 ]
 
 function normalizarStr(str: string): string {
