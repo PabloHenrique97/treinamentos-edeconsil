@@ -1,5 +1,63 @@
 import * as XLSX from 'xlsx'
 
+const TURMAS_OFICIAIS = [
+  'Coordenação de Suprimentos',
+  'Recursos Humanos',
+  'Segurança do Trabalho',
+  'Serviços Gerais',
+  'Comunicação',
+  'Engenharia',
+  'Manutenções - Oficina',
+  'Tecnologia da Informação',
+]
+
+function normalizarStr(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const ALIASES_TURMAS: Record<string, string> = {
+  'coordenacao de suprimentos':  'Coordenação de Suprimentos',
+  'coord suprimentos':           'Coordenação de Suprimentos',
+  'suprimentos':                 'Coordenação de Suprimentos',
+  'recursos humanos':            'Recursos Humanos',
+  'rh':                          'Recursos Humanos',
+  'seguranca do trabalho':       'Segurança do Trabalho',
+  'seguranca':                   'Segurança do Trabalho',
+  'sesmt':                       'Segurança do Trabalho',
+  'servicos gerais':             'Serviços Gerais',
+  'comunicacao':                 'Comunicação',
+  'engenharia':                  'Engenharia',
+  'manutencoes oficina':         'Manutenções - Oficina',
+  'manutencao oficina':          'Manutenções - Oficina',
+  'manutencao':                  'Manutenções - Oficina',
+  'manutencoes':                 'Manutenções - Oficina',
+  'oficina':                     'Manutenções - Oficina',
+  'tecnologia da informacao':    'Tecnologia da Informação',
+  'tecnologia informacao':       'Tecnologia da Informação',
+  'ti':                          'Tecnologia da Informação',
+  'tecnologia':                  'Tecnologia da Informação',
+}
+
+export function resolverTurmaFrontend(nome: string | null | undefined): string | null {
+  if (!nome) return null
+  const exato = TURMAS_OFICIAIS.find(t => t === nome.trim())
+  if (exato) return exato
+  const norm = normalizarStr(nome)
+  if (ALIASES_TURMAS[norm]) return ALIASES_TURMAS[norm]
+  const parcial = TURMAS_OFICIAIS.find(t =>
+    normalizarStr(t) === norm ||
+    normalizarStr(t).includes(norm) ||
+    norm.includes(normalizarStr(t))
+  )
+  return parcial ?? null
+}
+
 export interface AlunoImportado {
   nome:             string
   cpf:              string
@@ -109,7 +167,8 @@ export function lerPlanilhaExcel(arquivo: File): Promise<AlunoImportado[]> {
           const data_nascimento = converterData(dataNascRaw)
           const matricula       = matriculaRaw ? String(matriculaRaw).trim() : null
           const centro_custo    = centroCustoRaw ? String(centroCustoRaw).trim() : null
-          const setor           = setorRaw ? String(setorRaw).trim() : null
+          const setorStr        = setorRaw ? String(setorRaw).trim() : null
+          const setor           = setorStr ? (resolverTurmaFrontend(setorStr) ?? setorStr) : null
           const senhaInicial    = dataNascimentoParaSenha(data_nascimento)
 
           const erros: string[] = []
