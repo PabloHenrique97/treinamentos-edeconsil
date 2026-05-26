@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, X, UserPlus } from 'lucide-react'
 import { CadastroAluno } from './CadastroAluno'
+import { EditarAluno } from './EditarAluno'
 import { ImportarAlunosModal } from '../../components/admin/ImportarAlunosModal'
 import { usuariosAPI } from '../../services/api'
 
@@ -60,6 +61,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const [alunoExcluindo, setAlunoExcluindo]           = useState<Aluno | null>(null)
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
   const [excluindoId, setExcluindoId]                 = useState<string | null>(null)
+  const [alunoEditando, setAlunoEditando]             = useState<any>(null)
   const [busca, setBusca]                             = useState('')
   const [setorFiltro, setSetorFiltro]                 = useState('Todos')
   const [crFiltro, setCrFiltro]                       = useState('')
@@ -452,9 +454,18 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                   {/* Ações */}
                   <td style={{ padding: '12px 12px', whiteSpace: 'nowrap' }}>
                     <button
+                      onClick={() => setAlunoEditando(aluno)}
+                      title="Editar aluno"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: C.text, cursor: 'pointer', transition: 'all 150ms', marginRight: '6px' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,86,255,0.08)'; e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.color = C.blue }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text }}
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
                       title="Excluir aluno"
                       onClick={() => { setAlunoExcluindo(aluno); setConfirmandoExclusao(true) }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '5px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: C.muted, cursor: 'pointer', transition: 'all 150ms' }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: C.muted, cursor: 'pointer', transition: 'all 150ms' }}
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
                     >
@@ -591,6 +602,42 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                 setModalImportar(false)
                 await carregarAlunos()
                 console.log(`${total} aluno(s) importados`)
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Aluno */}
+      {alunoEditando && (
+        <div
+          onClick={() => setAlunoEditando(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.60)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '620px', maxHeight: '90vh', overflowY: 'auto', border: `1px solid ${C.border}`, boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}
+          >
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: C.surface, zIndex: 1 }}>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>Editar Aluno</h2>
+                <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>Altere os dados cadastrais e salve</p>
+              </div>
+              <button
+                onClick={() => setAlunoEditando(null)}
+                style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '18px', color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ×
+              </button>
+            </div>
+            <EditarAluno
+              aluno={alunoEditando}
+              onFechar={() => setAlunoEditando(null)}
+              onSucesso={(alunoAtualizado) => {
+                setAlunoEditando(null)
+                setAlunos(prev => prev.map(a =>
+                  a.id === alunoAtualizado.id ? { ...a, ...alunoAtualizado, status: alunoAtualizado.status === 'ativo' ? 'Ativo' : 'Inativo' } : a
+                ))
               }}
             />
           </div>
