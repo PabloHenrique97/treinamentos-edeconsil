@@ -3,7 +3,6 @@ import { Search, BookOpen, Clock, Check } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
-import { cursosMockColaborador } from '../data/cursosMock'
 import { useDadosReaisAluno } from '../hooks/useDadosReaisAluno'
 import { cursosAPI } from '../services/api'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
@@ -35,7 +34,7 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
       })
   }, [])
 
-  const fonteDados = cursosApi.length > 0 ? cursosApi : cursosMockColaborador
+  const fonteDados = cursosApi
 
   const cursosFiltrados = useMemo(() => {
     return fonteDados.filter((c: any) => {
@@ -227,7 +226,20 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
             ))}
           </div>}
 
-          {!loadingApi && cursosFiltrados.length === 0 && (
+          {!loadingApi && cursosApi.length === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: '16px', textAlign: 'center' }}>
+              <span style={{ fontSize: '48px' }}>📚</span>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: 0 }}>
+                Nenhum curso disponível ainda
+              </h3>
+              <p style={{ fontSize: '13px', color: C.muted, margin: 0, maxWidth: '360px', lineHeight: 1.6 }}>
+                Os cursos da sua turma ainda estão sendo preparados.
+                Em breve novos conteúdos estarão disponíveis aqui!
+              </p>
+            </div>
+          )}
+
+          {!loadingApi && cursosApi.length > 0 && cursosFiltrados.length === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: '12px' }}>
               <span style={{ fontSize: '36px' }}>🔍</span>
               <p style={{ fontSize: '15px', fontWeight: 600, color: C.text, margin: 0 }}>Nenhum curso encontrado</p>
