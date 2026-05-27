@@ -33,9 +33,10 @@ const trilhas = [
 const statusOpcoes = ['Todos', 'Ativo', 'Rascunho', 'Arquivado']
 
 
-export function CursosAdmin({ onNavigate, onLogout }: {
+export function CursosAdmin({ onNavigate, onLogout, onAbrirCurso }: {
   onNavigate: (p: string) => void
   onLogout: () => void
+  onAbrirCurso: (slug: string) => void
 }) {
   const { C } = useTheme()
   const [busca, setBusca] = useState('')
@@ -265,7 +266,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
               {!carregando && cursosFiltrados.map(curso => (
                 <div
                   key={curso.id}
-                  onClick={() => onNavigate('cursoDetalheAdmin')}
+                  onClick={() => onAbrirCurso(curso.slug ?? curso.id)}
                   style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative', cursor: 'pointer' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
@@ -294,7 +295,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                         </button>
                         {menuAberto === curso.id && (
                           <div style={{ position: 'absolute', right: 0, top: '100%', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', minWidth: '160px', zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
-                            <div onClick={e => { e.stopPropagation(); setMenuAberto(null); onNavigate('cursoDetalheAdmin') }}
+                            <div onClick={e => { e.stopPropagation(); setMenuAberto(null); onAbrirCurso(curso.slug ?? curso.id) }}
                               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 14px', cursor: 'pointer', fontSize: '13px', color: C.text, transition: 'background 100ms' }}
                               onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.06)'}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>

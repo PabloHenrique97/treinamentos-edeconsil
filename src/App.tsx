@@ -128,10 +128,12 @@ function AppContent() {
       <CursosAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={handleLogout}
+        onAbrirCurso={(slug) => { setCursoAtivoId(slug); setPagina('cursoDetalheAdmin') }}
       />
     )
     if (pagina === 'cursoDetalheAdmin') return (
       <CursoDetalheAdmin
+        cursoId={cursoAtivoId}
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={handleLogout}
         onVoltar={() => setPagina('cursosAdmin')}
