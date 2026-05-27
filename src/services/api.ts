@@ -86,6 +86,25 @@ export const cursosAPI = {
   aulas: (slug: string) => apiRequest<unknown[]>(`/cursos/${slug}/aulas`),
   meusCursos: () => apiRequest('/meus-cursos'),
   me: () => apiRequest('/me'),
+  criar: (dados: unknown) =>
+    apiRequest('/cursos', {
+      method: 'POST',
+      body:   JSON.stringify(dados),
+    }),
+  atualizar: (id: string, dados: unknown) =>
+    apiRequest(`/cursos/${id}`, {
+      method: 'PUT',
+      body:   JSON.stringify(dados),
+    }),
+  atualizarStatus: (id: string, status: string) =>
+    apiRequest(`/cursos/${id}/status`, {
+      method: 'PATCH',
+      body:   JSON.stringify({ status }),
+    }),
+  excluir: (id: string) =>
+    apiRequest(`/cursos/${id}`, { method: 'DELETE' }),
+  metricas: () =>
+    apiRequest('/admin/metricas'),
 }
 
 export const progressoAPI = {

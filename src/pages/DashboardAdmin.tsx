@@ -4,18 +4,23 @@ import {
 } from 'recharts'
 import {
   GraduationCap, BookOpen, Users, Award,
-  ChevronRight, UserPlus,
+  ChevronRight, UserPlus, TrendingUp,
   FileText, Send, BarChart2, Calendar,
   FileBarChart
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { LayoutAdmin } from '../components/admin/LayoutAdmin'
+import { useMetricasAdmin } from '../hooks/useMetricasAdmin'
 
-const metricas = [
-  { icon: GraduationCap, label: 'Alunos Ativos',        valor: '1.248', delta: '+12,5%', cor: '#1a56ff', spark: [20,35,28,45,38,55,48,65,58,75,68,85] },
-  { icon: BookOpen,      label: 'Cursos Disponíveis',    valor: '42',    delta: '+8,3%',  cor: '#3b82f6', spark: [10,15,12,20,18,25,22,28,24,32,30,38] },
-  { icon: Users,         label: 'Turmas Abertas',        valor: '86',    delta: '+15,2%', cor: '#10b981', spark: [30,45,38,55,48,65,58,72,65,80,74,90] },
-  { icon: Award,         label: 'Certificados Emitidos', valor: '532',   delta: '+18,7%', cor: '#f59e0b', spark: [15,22,18,30,25,38,32,45,40,55,50,65] },
+const metricasBase = [
+  { icon: BookOpen,      label: 'Total de Cursos',   cor: '#3b82f6', spark: [10,15,12,20,18,25,22,28,24,32,30,38] },
+  { icon: BookOpen,      label: 'Cursos Ativos',     cor: '#1a56ff', spark: [8,12,10,16,14,20,18,22,20,28,24,32] },
+  { icon: GraduationCap, label: 'Total de Alunos',   cor: '#10b981', spark: [20,35,28,45,38,55,48,65,58,75,68,85] },
+  { icon: Users,         label: 'Alunos Ativos',     cor: '#059669', spark: [18,30,24,40,34,50,44,60,54,70,64,80] },
+  { icon: Users,         label: 'Total de Turmas',   cor: '#8b5cf6', spark: [30,45,38,55,48,65,58,72,65,80,74,90] },
+  { icon: Award,         label: 'Matrículas Ativas', cor: '#f59e0b', spark: [15,22,18,30,25,38,32,45,40,55,50,65] },
+  { icon: TrendingUp,    label: 'Taxa de Conclusão', cor: '#ec4899', spark: [40,45,42,50,48,55,52,60,58,65,62,70] },
+  { icon: TrendingUp,    label: 'Progresso Médio',   cor: '#0891b2', spark: [35,40,38,45,43,50,48,55,52,60,58,65] },
 ]
 
 const matriculaData = [
@@ -42,14 +47,6 @@ const distribuicao = [
   { nome: 'Pavimentação',           valor: 18, cor: '#f59e0b' },
   { nome: 'Equipamentos',           valor: 12, cor: '#8b5cf6' },
   { nome: 'Administrativo',         valor: 10, cor: '#ec4899' },
-]
-
-const cursosTop = [
-  { pos: 1, nome: 'Leitura e Interpretação de Projetos', alunos: 1245, pct: 100 },
-  { pos: 2, nome: 'Planejamento de Obras',               alunos: 987,  pct: 79  },
-  { pos: 3, nome: 'Segurança no Canteiro de Obras',      alunos: 876,  pct: 70  },
-  { pos: 4, nome: 'Gestão de Obras',                     alunos: 654,  pct: 52  },
-  { pos: 5, nome: 'Terraplanagem na Prática',            alunos: 543,  pct: 44  },
 ]
 
 const statusAlunos = [
@@ -91,6 +88,23 @@ function Sparkline({ data, cor }: { data: number[]; cor: string }) {
 
 export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: string) => void; onLogout: () => void }) {
   const { C } = useTheme()
+  const m = useMetricasAdmin()
+
+  const valoresMetricas = [
+    m.cursos.total,
+    m.cursos.ativos,
+    m.alunos.total,
+    m.alunos.ativos,
+    m.turmas.total,
+    m.matriculas.ativas,
+    m.carregando ? '...' : `${m.taxaConclusao}%`,
+    m.carregando ? '...' : `${m.progressoMedio}%`,
+  ]
+
+  const metricas = metricasBase.map((base, i) => ({
+    ...base,
+    valor: m.carregando ? '...' : String(valoresMetricas[i]),
+  }))
 
   return (
     <LayoutAdmin
@@ -112,23 +126,19 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
 
           {/* ── MÉTRICAS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-            {metricas.map(m => (
-              <div key={m.label} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
+            {metricas.map(mt => (
+              <div key={mt.label} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${m.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <m.icon size={20} color={m.cor} />
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${mt.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <mt.icon size={20} color={mt.cor} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '22px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{m.valor}</div>
-                    <div style={{ fontSize: '11px', color: C.muted, marginTop: '2px' }}>{m.label}</div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{mt.valor}</div>
+                    <div style={{ fontSize: '11px', color: C.muted, marginTop: '2px' }}>{mt.label}</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <div>
-                    <div style={{ fontSize: '12px', color: C.green, fontWeight: 600 }}>↑ {m.delta}</div>
-                    <div style={{ fontSize: '10px', color: C.muted }}>vs mês anterior</div>
-                  </div>
-                  <Sparkline data={m.spark} cor={m.cor} />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+                  <Sparkline data={mt.spark} cor={mt.cor} />
                 </div>
               </div>
             ))}
@@ -221,16 +231,18 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                 <span style={{ fontSize: '12px', color: C.blue, cursor: 'pointer' }}>Ver todos</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {cursosTop.map(c => (
-                  <div key={c.pos} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{c.pos}</div>
+                {m.carregando ? (
+                  <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: C.muted }}>Carregando...</div>
+                ) : m.cursosMaisAcessados.map((curso: any, idx: number) => (
+                  <div key={curso.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: curso.cor ?? C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{idx + 1}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12px', color: C.text, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.nome}</div>
+                      <div style={{ fontSize: '12px', color: C.text, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{curso.titulo}</div>
                       <div style={{ background: 'rgba(26,86,255,0.12)', borderRadius: '4px', height: '4px' }}>
-                        <div style={{ background: C.blue, height: '4px', borderRadius: '4px', width: `${c.pct}%`, transition: 'width 0.5s' }} />
+                        <div style={{ background: curso.cor ?? C.blue, height: '4px', borderRadius: '4px', width: `${Math.min(curso.progresso_medio ?? 0, 100)}%`, transition: 'width 0.5s' }} />
                       </div>
                     </div>
-                    <span style={{ fontSize: '11px', color: C.muted, flexShrink: 0 }}>{c.alunos.toLocaleString()} alunos</span>
+                    <span style={{ fontSize: '11px', color: C.muted, flexShrink: 0 }}>{curso.total_alunos} alunos</span>
                   </div>
                 ))}
               </div>
@@ -296,6 +308,77 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* ── CURSOS RECENTES + ALUNOS RECENTES ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+            {/* Cursos Recentes */}
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '14px' }}>Cursos Recentes</div>
+              {m.carregando ? (
+                <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: C.muted }}>
+                  Carregando...
+                </div>
+              ) : m.cursosRecentes.map((curso: any) => (
+                <div key={curso.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 0', borderBottom: `1px solid ${C.border}`,
+                }}>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>
+                      {curso.titulo}
+                    </p>
+                    <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>
+                      {curso.total_aulas} aulas ·{' '}
+                      <span style={{
+                        color: curso.status === 'ativo' ? '#10b981' :
+                               curso.status === 'rascunho' ? '#f59e0b' : C.muted,
+                        fontWeight: 600,
+                      }}>
+                        {curso.status === 'ativo' ? 'Publicado' :
+                         curso.status === 'rascunho' ? 'Rascunho' : 'Arquivado'}
+                      </span>
+                    </p>
+                  </div>
+                  <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>
+                    {new Date(curso.criado_em).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Alunos Recentes */}
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '14px' }}>Alunos Recentes</div>
+              {m.alunosRecentes.map((aluno: any) => (
+                <div key={aluno.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 0', borderBottom: `1px solid ${C.border}`,
+                }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: 'rgba(26,86,255,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '12px', fontWeight: 700, color: C.blue, flexShrink: 0,
+                  }}>
+                    {aluno.nome.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {aluno.nome}
+                    </p>
+                    <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>
+                      {aluno.setor ?? aluno.cargo ?? '—'}
+                    </p>
+                  </div>
+                  <p style={{ fontSize: '11px', color: C.muted, margin: 0, flexShrink: 0 }}>
+                    {new Date(aluno.criado_em).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              ))}
+            </div>
+
           </div>
 
           {/* ── GERENCIAMENTO RÁPIDO ── */}
