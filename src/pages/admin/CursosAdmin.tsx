@@ -98,8 +98,14 @@ export function CursosAdmin({ onNavigate, onLogout }: {
   }, [busca, cargoFiltro, trilhaFiltro, statusFiltro, cursos])
 
   const totalAtivos    = cursos.filter(c => c.status === 'ativo').length
-  const totalAlunos    = 0
-  const mediaConclusao = 0
+  const totalAlunos    = cursos.reduce((s, c) => s + (parseInt(c.total_alunos_matriculados) || 0), 0)
+  const mediaConclusao = (() => {
+    const ativos = cursos.filter(c => c.status === 'ativo')
+    if (!ativos.length) return 0
+    const totalAlm  = ativos.reduce((s, c) => s + (parseInt(c.total_alunos_matriculados) || 0), 0)
+    const totalConc = ativos.reduce((s, c) => s + (parseInt(c.total_concluidos) || 0), 0)
+    return totalAlm > 0 ? Math.round((totalConc / totalAlm) * 100) : 0
+  })()
 
   const corStatus = (s: string) => ({
     'Ativo':     { bg: 'rgba(16,185,129,0.12)',  color: '#10b981', border: 'rgba(16,185,129,0.25)' },
@@ -338,9 +344,9 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                     {/* Stats */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '14px' }}>
                       {[
-                        { icon: Clock,    val: curso.carga_horaria ?? '—',        label: 'Carga'    },
-                        { icon: BookOpen, val: `${curso.total_aulas ?? 0} aulas`, label: 'Conteúdo' },
-                        { icon: Users,    val: curso.categoria ? curso.categoria.split(' ')[0] : '—', label: 'Categoria' },
+                        { icon: Clock,    val: curso.carga_horaria ?? '—',                                   label: 'Carga'    },
+                        { icon: BookOpen, val: `${curso.total_aulas ?? 0} aulas`,                          label: 'Conteúdo' },
+                        { icon: Users,    val: parseInt(curso.total_alunos_matriculados) || 0,             label: 'Alunos'   },
                       ].map(s => (
                         <div key={s.label} style={{ background: C.surface2, borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: C.text }}>{s.val}</div>
@@ -349,9 +355,25 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                       ))}
                     </div>
 
-                    {/* Instrutor */}
+                    {/* Barra de conclusão + Instrutor */}
+                    {curso.status === 'ativo' && (() => {
+                      const alm  = parseInt(curso.total_alunos_matriculados) || 0
+                      const conc = parseInt(curso.total_concluidos) || 0
+                      const taxa = alm > 0 ? Math.round((conc / alm) * 100) : 0
+                      return (
+                        <div style={{ marginTop: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                            <span style={{ fontSize: '10px', color: C.muted }}>Taxa de conclusão</span>
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: taxa >= 70 ? '#10b981' : C.blue }}>{taxa}%</span>
+                          </div>
+                          <div style={{ background: 'rgba(26,86,255,0.10)', borderRadius: '4px', height: '3px' }}>
+                            <div style={{ background: taxa >= 70 ? '#10b981' : C.blue, height: '3px', borderRadius: '4px', width: `${taxa}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })()}
                     {curso.instrutor && (
-                      <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
+                      <p style={{ fontSize: '11px', color: C.muted, margin: '6px 0 0' }}>
                         👤 {curso.instrutor}
                       </p>
                     )}
@@ -381,7 +403,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 80px 80px', gap: '12px', padding: '8px 16px', fontSize: '11px', fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 <span>Curso</span><span>Cargo</span><span>Categoria</span>
-                <span style={{ textAlign: 'center' }}>Aulas</span>
+                <span style={{ textAlign: 'center' }}>Alunos</span>
                 <span style={{ textAlign: 'center' }}>Carga</span>
                 <span style={{ textAlign: 'center' }}>Status</span>
               </div>
@@ -401,7 +423,7 @@ export function CursosAdmin({ onNavigate, onLogout }: {
                   </div>
                   <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{curso.cargo ?? '—'}</span>
                   <span style={{ fontSize: '12px', color: C.muted2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{curso.categoria ?? '—'}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.text, textAlign: 'center' }}>{curso.total_aulas ?? 0}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: C.text, textAlign: 'center' }}>{parseInt(curso.total_alunos_matriculados) || 0}</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue, textAlign: 'center' }}>{curso.carga_horaria ?? '—'}</span>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     {(() => {
