@@ -132,4 +132,17 @@ export const bibliotecaAPI = {
   },
 }
 
+export const certificadosAPI = {
+  meusCertificados: () =>
+    apiRequest('/meus-certificados'),
+
+  verificar: (codigo: string) =>
+    apiRequest(`/certificados/verificar/${codigo}`),
+
+  listarAdmin: (params?: Record<string, string>) => {
+    const q = params ? '?' + new URLSearchParams(params).toString() : ''
+    return apiRequest(`/admin/certificados${q}`)
+  },
+}
+
 export default apiRequest
