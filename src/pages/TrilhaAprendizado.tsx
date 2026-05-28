@@ -476,7 +476,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             <div>
               <div style={{ fontSize:'12px', color:C.muted, marginBottom:'2px' }}>Progresso no curso</div>
               <div style={{ fontSize:'14px', fontWeight:700, color:C.text }}>
-                {dados.cursosConcluidos} de {dados.totalCursos} disciplinas concluídas
+                {dados.cursosConcluidos} de {dados.totalCursos} curso{dados.totalCursos !== 1 ? 's' : ''} concluído{dados.cursosConcluidos !== 1 ? 's' : ''}
               </div>
             </div>
           </div>
@@ -532,57 +532,75 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                 </div>
               ) : cursosAndamento.length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: C.muted, fontSize: '13px' }}>
-                  Nenhuma disciplina em andamento
+                  Nenhum curso em andamento
                 </div>
-              ) : cursosAndamento.map(c => (
-                <div key={c.id} style={{
-                  background: C.surface,
-                  border:`1px solid ${C.border}`,
-                  borderRadius:'10px', padding:'18px 20px',
-                  cursor:'pointer', transition:'all 150ms',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(26,86,255,0.40)'; e.currentTarget.style.background='rgba(26,86,255,0.06)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.background=C.surface }}
-                >
-                  <div style={{
-                    display:'inline-flex', alignItems:'center',
-                    background:'rgba(26,86,255,0.12)',
-                    border:'0.5px solid rgba(26,86,255,0.3)',
-                    borderRadius:'6px', padding:'3px 10px',
-                    marginBottom:'10px',
-                  }}>
-                    <span style={{ fontSize:'10px', fontWeight:700, color:C.blue }}>Cursando</span>
-                  </div>
+              ) : cursosAndamento.map(c => {
+                const totalAulas      = (c as any).total_aulas      ?? 0
+                const aulasConcluidas = (c as any).aulas_concluidas ?? Math.round(totalAulas * c.progresso_usuario / 100)
+                const progresso       = c.progresso_usuario ?? 0
+                const cor             = c.cor ?? '#1a56ff'
+                return (
+                  <div key={c.id} style={{
+                    background: C.surface,
+                    border:`1px solid ${C.border}`,
+                    borderRadius:'12px', padding:'20px 24px',
+                    cursor:'pointer', transition:'all 150ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(26,86,255,0.40)'; e.currentTarget.style.background='rgba(26,86,255,0.06)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.background=C.surface }}
+                  onClick={() => onNavigate('meusCursos')}
+                  >
+                    <div style={{ marginBottom: '10px' }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '3px 10px',
+                        borderRadius: '20px',
+                        background: 'rgba(26,86,255,0.10)',
+                        color: cor,
+                        border: `1px solid ${cor}40`,
+                      }}>
+                        Cursando
+                      </span>
+                    </div>
 
-                  <p style={{
-                    fontSize:'13px', fontWeight:700, color:C.text,
-                    margin:'0 0 14px', textTransform:'uppercase',
-                    letterSpacing:'0.4px', lineHeight:1.4,
-                    minHeight:'36px',
-                    display:'-webkit-box',
-                    WebkitLineClamp:2,
-                    WebkitBoxOrient:'vertical' as const,
-                    overflow:'hidden',
-                  }}>
-                    {c.titulo}
-                  </p>
+                    <p style={{
+                      fontSize:'13px', fontWeight:700, color:C.text,
+                      margin:'0 0 6px', textTransform:'uppercase',
+                      letterSpacing:'0.4px', lineHeight:1.4,
+                    }}>
+                      {c.titulo}
+                    </p>
 
-                  <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                    <div style={{ flex:1, background:'rgba(26,86,255,0.10)', borderRadius:'4px', height:'5px' }}>
+                    {((c as any).instrutor || (c as any).carga_horaria) && (
+                      <p style={{ fontSize: '12px', color: C.muted, margin: '0 0 12px' }}>
+                        {(c as any).instrutor && `👤 ${(c as any).instrutor}`}
+                        {(c as any).instrutor && (c as any).carga_horaria && ' · '}
+                        {(c as any).carga_horaria && `⏱️ ${(c as any).carga_horaria}`}
+                      </p>
+                    )}
+
+                    <div style={{ background:'rgba(26,86,255,0.10)', borderRadius:'6px', height:'6px', overflow:'hidden', marginBottom:'6px' }}>
                       <div style={{
-                        background: c.progresso_usuario > 0 ? C.blue : 'rgba(26,86,255,0.15)',
-                        height:'5px', borderRadius:'4px',
-                        width:`${c.progresso_usuario}%`,
-                        minWidth: c.progresso_usuario > 0 ? '4px' : '0',
+                        background: progresso > 0 ? cor : 'rgba(26,86,255,0.15)',
+                        height:'6px', borderRadius:'6px',
+                        width:`${Math.min(progresso, 100)}%`,
+                        minWidth: progresso > 0 ? '4px' : '0',
                         transition:'width 0.5s ease',
                       }} />
                     </div>
-                    <span style={{ fontSize:'11px', fontWeight:600, color: c.progresso_usuario > 0 ? C.blue : C.muted, minWidth:'28px', textAlign:'right' }}>
-                      {c.progresso_usuario}%
-                    </span>
+
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <span style={{ fontSize:'11px', color:C.muted }}>
+                        {aulasConcluidas}/{totalAulas} aulas concluídas
+                      </span>
+                      <span style={{ fontSize:'13px', fontWeight:700, color: progresso > 0 ? cor : C.muted }}>
+                        {progresso}%
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
