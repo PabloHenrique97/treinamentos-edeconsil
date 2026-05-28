@@ -11,6 +11,18 @@ export interface CursoReal {
   progresso_usuario: number
 }
 
+export interface AulaProgresso {
+  id: string
+  titulo: string
+  progresso: number
+  concluida: boolean
+  cor: string
+  icone: string
+  cursoTitulo: string
+  cursoSlug: string
+  moduloId: number
+}
+
 export interface DadosAluno {
   cursos: CursoReal[]
   totalCursos: number
@@ -22,24 +34,73 @@ export interface DadosAluno {
   percentualProgresso: number
   horasEstudadas: number
   carregando: boolean
-  aulasEmAndamento: Array<{
-    id: string
-    titulo: string
-    progresso: number
-    cor: string
-    icone: string
-  }>
+  aulasEmAndamento: AulaProgresso[]
 }
 
 export function useDadosReaisAluno(): DadosAluno {
   const [cursos, setCursos] = useState<CursoReal[]>([])
   const [carregando, setCarregando] = useState(true)
+  const [aulasEmAndamento, setAulasEmAndamento] = useState<AulaProgresso[]>([])
 
   useEffect(() => {
-    cursosAPI.meusCursos()
-      .then(data => setCursos(data as CursoReal[]))
-      .catch(() => setCursos([]))
-      .finally(() => setCarregando(false))
+    async function carregarDados() {
+      try {
+        const data = await cursosAPI.meusCursos()
+        const cursosData = data as CursoReal[]
+        setCursos(cursosData)
+
+        const cursosFiltrados = cursosData.filter(c => c.progresso_usuario < 100).slice(0, 2)
+        const aulasColetadas: AulaProgresso[] = []
+
+        for (const curso of cursosFiltrados) {
+          if (aulasColetadas.length >= 3) break
+          try {
+            const modulos = await cursosAPI.aulas(curso.slug) as any[]
+            if (!Array.isArray(modulos)) continue
+            for (const modulo of modulos) {
+              if (aulasColetadas.length >= 3) break
+              for (const aula of (modulo.aulas ?? [])) {
+                if (aulasColetadas.length >= 3) break
+                aulasColetadas.push({
+                  id:          String(aula.id),
+                  titulo:      aula.titulo,
+                  progresso:   aula.progresso?.percentual ?? 0,
+                  concluida:   aula.progresso?.concluida  ?? false,
+                  cor:         curso.cor ?? '#1a56ff',
+                  icone:       curso.icone ?? '📚',
+                  cursoTitulo: curso.titulo,
+                  cursoSlug:   curso.slug,
+                  moduloId:    modulo.id,
+                })
+              }
+            }
+          } catch { /* continua para o próximo curso */ }
+        }
+
+        if (aulasColetadas.length === 0) {
+          cursosData.filter(c => c.progresso_usuario < 100).slice(0, 3).forEach(curso => {
+            aulasColetadas.push({
+              id:          curso.id,
+              titulo:      `${curso.titulo} — Aula 1`,
+              progresso:   0,
+              concluida:   false,
+              cor:         curso.cor ?? '#1a56ff',
+              icone:       curso.icone ?? '📚',
+              cursoTitulo: curso.titulo,
+              cursoSlug:   curso.slug,
+              moduloId:    0,
+            })
+          })
+        }
+
+        setAulasEmAndamento(aulasColetadas)
+      } catch {
+        setCursos([])
+      } finally {
+        setCarregando(false)
+      }
+    }
+    carregarDados()
   }, [])
 
   const totalCursos      = cursos.length
@@ -55,17 +116,6 @@ export function useDadosReaisAluno(): DadosAluno {
     : 0
 
   const horasEstudadas = Math.round((aulasConcluidas * 30) / 60)
-
-  const aulasEmAndamento = cursos
-    .filter(c => c.progresso_usuario < 100)
-    .slice(0, 3)
-    .map(c => ({
-      id:        c.id,
-      titulo:    c.titulo,
-      progresso: c.progresso_usuario,
-      cor:       c.cor ?? '#1a56ff',
-      icone:     c.icone ?? '📚',
-    }))
 
   return {
     cursos,
