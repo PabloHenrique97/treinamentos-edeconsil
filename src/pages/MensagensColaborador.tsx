@@ -11,7 +11,8 @@ interface MensagensColaboradorProps {
   onLogout:   () => void
 }
 
-const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const _apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
+const baseUrl = _apiUrl.replace(/\/api\/?$/, '')
 
 export function MensagensColaborador({ onNavigate, onLogout }: MensagensColaboradorProps) {
   const { C } = useTheme()

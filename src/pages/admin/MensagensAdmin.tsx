@@ -10,7 +10,8 @@ interface MensagensAdminProps {
   onLogout:   () => void
 }
 
-const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const _apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
+const baseUrl = _apiUrl.replace(/\/api\/?$/, '')
 
 function useAdminChat() {
   const [mensagens, setMensagens] = useState<any[]>([])

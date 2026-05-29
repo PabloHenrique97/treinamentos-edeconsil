@@ -42,10 +42,12 @@ export function useChat() {
     const token = getToken()
     if (!token) { setStatus('erro'); return }
 
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host  = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001')
+    const proto  = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
+    const host   = apiUrl
       .replace(/^https?:\/\//, '')
-    const url   = `${proto}//${host}/ws/chat`
+      .replace(/\/api\/?$/, '')
+    const url    = `${proto}//${host}/ws/chat`
 
     const ws = new WebSocket(url)
     wsRef.current = ws
@@ -122,7 +124,8 @@ export function useChat() {
     const token   = getToken()
     const form    = new FormData()
     form.append('arquivo', file)
-    const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+    const apiUrl  = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
+    const baseUrl = apiUrl.replace(/\/api\/?$/, '')
     const resp = await fetch(`${baseUrl}/api/mensagens/upload`, {
       method:  'POST',
       headers: { Authorization: `Bearer ${token}` },
