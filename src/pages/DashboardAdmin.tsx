@@ -1,12 +1,6 @@
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell
-} from 'recharts'
-import {
   GraduationCap, BookOpen, Users, Award,
-  ChevronRight, UserPlus, TrendingUp,
-  FileText, Send, BarChart2, Calendar,
-  FileBarChart
+  UserPlus, TrendingUp, Send, BarChart2,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { LayoutAdmin } from '../components/admin/LayoutAdmin'
@@ -23,38 +17,6 @@ const metricasBase = [
   { icon: TrendingUp,    label: 'Progresso Médio',   cor: '#0891b2', spark: [35,40,38,45,43,50,48,55,52,60,58,65] },
 ]
 
-const matriculaData = [
-  { dia: '01/mai', matriculas: 120, conclusoes: 45  },
-  { dia: '06/mai', matriculas: 280, conclusoes: 120 },
-  { dia: '11/mai', matriculas: 420, conclusoes: 210 },
-  { dia: '16/mai', matriculas: 380, conclusoes: 280 },
-  { dia: '21/mai', matriculas: 520, conclusoes: 350 },
-  { dia: '26/mai', matriculas: 680, conclusoes: 480 },
-  { dia: '31/mai', matriculas: 980, conclusoes: 680 },
-]
-
-const atividades = [
-  { icon: UserPlus, cor: '#1a56ff', titulo: 'Novo aluno matriculado',  desc: 'João Silva se matriculou no curso NR-18',             tempo: '2 min atrás'    },
-  { icon: Award,    cor: '#10b981', titulo: 'Curso concluído',         desc: 'Maria Santos concluiu o curso Gestão de Obras',        tempo: '15 min atrás'   },
-  { icon: Users,    cor: '#8b5cf6', titulo: 'Nova turma criada',       desc: 'Turma Pavimentação — Maio/2025',                       tempo: '1 hora atrás'   },
-  { icon: Award,    cor: '#f59e0b', titulo: 'Certificado emitido',     desc: 'Carlos Lima recebeu certificado em Leitura de Projetos', tempo: '2 horas atrás' },
-  { icon: FileText, cor: '#3b82f6', titulo: 'Avaliação respondida',    desc: 'Ana Paula respondeu avaliação do curso Topografia',    tempo: '3 horas atrás'  },
-]
-
-const distribuicao = [
-  { nome: 'Obras e Infraestrutura', valor: 38, cor: '#1a56ff' },
-  { nome: 'Terraplanagem',          valor: 22, cor: '#10b981' },
-  { nome: 'Pavimentação',           valor: 18, cor: '#f59e0b' },
-  { nome: 'Equipamentos',           valor: 12, cor: '#8b5cf6' },
-  { nome: 'Administrativo',         valor: 10, cor: '#ec4899' },
-]
-
-const statusAlunos = [
-  { label: 'Ativos',       valor: 892, cor: '#1a56ff', pct: 71 },
-  { label: 'Em andamento', valor: 256, cor: '#3b82f6', pct: 21 },
-  { label: 'Concluídos',   valor: 532, cor: '#10b981', pct: 43 },
-  { label: 'Inativos',     valor: 68,  cor: '#8b5cf6', pct: 5  },
-]
 
 const acoes = [
   { icon: BookOpen,  label: 'Novo Curso',        desc: 'Criar um novo curso'        },
@@ -62,11 +24,6 @@ const acoes = [
   { icon: UserPlus,  label: 'Matricular Alunos',  desc: 'Matricular alunos em massa' },
   { icon: Send,      label: 'Enviar Notificação', desc: 'Enviar para os alunos'      },
   { icon: BarChart2, label: 'Relatórios',         desc: 'Gerar relatórios'           },
-]
-
-const acoesRapidas = [
-  { icon: FileText,     label: 'Importar Alunos',   desc: 'Importar via planilha Excel', cor: '#16a34a' },
-  { icon: FileBarChart, label: 'Relatório Completo', desc: 'Gerar relatório detalhado',   cor: '#1a56ff' },
 ]
 
 
@@ -116,15 +73,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Filtro de data */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}>
-              <Calendar size={13} color={C.muted} />
-              <span style={{ fontSize: '12px', color: C.muted }}>01/05/2025 - 31/05/2025</span>
-            </div>
-          </div>
-
-          {/* ── MÉTRICAS ── */}
+{/* ── MÉTRICAS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
             {metricas.map(mt => (
               <div key={mt.label} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
@@ -149,45 +98,30 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
 
             {/* Gráfico Matrículas */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: C.text }}>Matrículas e Engajamento</div>
-                <div style={{ fontSize: '12px', color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '6px', padding: '4px 10px', cursor: 'pointer' }}>Últimos 30 dias ▾</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '12px' }}>Matrículas e Engajamento</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '180px', color: C.muted, fontSize: '13px', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '24px' }}>📊</span>
+                <span>Gráfico de evolução — em desenvolvimento</span>
               </div>
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: C.blue }} />
-                  <span style={{ fontSize: '12px', color: C.muted }}>Matrículas</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: C.green }} />
-                  <span style={{ fontSize: '12px', color: C.muted }}>Conclusões</span>
-                </div>
-              </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart data={matriculaData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(26,86,255,0.08)" />
-                  <XAxis dataKey="dia" tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '12px' }} />
-                  <Line type="monotone" dataKey="matriculas" stroke={C.blue}  strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="conclusoes"  stroke={C.green} strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
             </div>
 
             {/* Atividades Recentes */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '12px' }}>Atividades Recentes</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {atividades.map((a, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: `${a.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
-                      <a.icon size={14} color={a.cor} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {m.carregando ? (
+                  <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: C.muted }}>Carregando...</div>
+                ) : m.alunosRecentes.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: C.muted }}>Nenhuma atividade recente</div>
+                ) : m.alunosRecentes.slice(0, 5).map((aluno: any) => (
+                  <div key={aluno.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(26,86,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: C.blue, flexShrink: 0 }}>
+                      {aluno.nome.split(' ').slice(0, 2).map((n: string) => n[0]).join('')}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>{a.titulo}</div>
-                      <div style={{ fontSize: '11px', color: C.muted, lineHeight: 1.4 }}>{a.desc}</div>
-                      <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>{a.tempo}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>Novo aluno matriculado</div>
+                      <div style={{ fontSize: '11px', color: C.muted, lineHeight: 1.4 }}>{aluno.nome} · {aluno.setor ?? aluno.cargo ?? '—'}</div>
+                      <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>{new Date(aluno.criado_em).toLocaleDateString('pt-BR')}</div>
                     </div>
                   </div>
                 ))}
@@ -197,26 +131,21 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
             {/* Distribuição de Alunos */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '12px' }}>Distribuição de Alunos</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie data={distribuicao} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="valor" strokeWidth={0}>
-                    {distribuicao.map((entry, index) => (
-                      <Cell key={index} fill={entry.cor} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '12px' }} formatter={(v) => [`${v}%`]} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {distribuicao.map(d => (
-                  <div key={d.nome} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: d.cor, flexShrink: 0 }} />
-                      <span style={{ fontSize: '11px', color: C.muted }}>{d.nome}</span>
-                    </div>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: C.text }}>{d.valor}%</span>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: '13px', color: C.text }}>Total de alunos ativos</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>{m.carregando ? '...' : m.alunos.ativos}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: '13px', color: C.text }}>Turmas com alunos</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>{m.carregando ? '...' : m.turmas.total}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+                  <span style={{ fontSize: '13px', color: C.text }}>Média por turma</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>
+                    {m.carregando ? '...' : m.turmas.total > 0 ? Math.round(m.alunos.ativos / m.turmas.total) : 0} alunos
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -255,11 +184,11 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                 <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
                   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(26,86,255,0.12)" strokeWidth="10" />
                   <circle cx="50" cy="50" r="40" fill="none" stroke={C.blue} strokeWidth="10"
-                    strokeDasharray={`${2 * Math.PI * 40 * 0.72} ${2 * Math.PI * 40 * 0.28}`}
+                    strokeDasharray={`${2 * Math.PI * 40 * (m.taxaConclusao / 100)} ${2 * Math.PI * 40 * (1 - m.taxaConclusao / 100)}`}
                     strokeLinecap="round" />
                 </svg>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: C.text }}>72%</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: C.text }}>{m.carregando ? '...' : `${m.taxaConclusao}%`}</div>
                   <div style={{ fontSize: '9px', color: C.muted }}>Taxa geral</div>
                 </div>
               </div>
@@ -271,40 +200,49 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
             {/* Alunos por Status */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '14px' }}>Alunos por Status</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {statusAlunos.map(s => (
-                  <div key={s.label}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', color: C.muted2 }}>{s.label}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: C.text }}>{s.valor}</span>
+              {m.carregando ? (
+                <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: C.muted }}>Carregando...</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[
+                    { label: 'Ativos',       valor: m.alunos.ativos,             cor: '#1a56ff', pct: m.alunos.total > 0 ? Math.round(m.alunos.ativos / m.alunos.total * 100) : 0 },
+                    { label: 'Em andamento', valor: m.matriculas.ativas,          cor: '#3b82f6', pct: m.alunos.total > 0 ? Math.round(m.matriculas.ativas / m.alunos.total * 100) : 0 },
+                    { label: 'Certificados', valor: m.certificados?.total ?? 0,   cor: '#10b981', pct: m.alunos.total > 0 ? Math.round((m.certificados?.total ?? 0) / m.alunos.total * 100) : 0 },
+                    { label: 'Inativos',     valor: m.alunos.total - m.alunos.ativos, cor: '#8b5cf6', pct: m.alunos.total > 0 ? Math.round((m.alunos.total - m.alunos.ativos) / m.alunos.total * 100) : 0 },
+                  ].map(s => (
+                    <div key={s.label}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', color: C.muted2 }}>{s.label}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: C.text }}>{s.valor}</span>
+                      </div>
+                      <div style={{ background: 'rgba(26,86,255,0.08)', borderRadius: '4px', height: '4px' }}>
+                        <div style={{ background: s.cor, height: '4px', borderRadius: '4px', width: `${s.pct}%` }} />
+                      </div>
                     </div>
-                    <div style={{ background: 'rgba(26,86,255,0.08)', borderRadius: '4px', height: '4px' }}>
-                      <div style={{ background: s.cor, height: '4px', borderRadius: '4px', width: `${s.pct}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Ações Rápidas */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '12px' }}>Ações Rápidas</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {acoesRapidas.map(a => (
-                  <div key={a.label}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(26,86,255,0.4)')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+                {[
+                  { label: '📋 Importar Alunos',  page: 'alunosAdmin'        },
+                  { label: '📚 Gerenciar Cursos', page: 'cursosAdmin'        },
+                  { label: '🏆 Ver Certificados', page: 'certificadosAdmin'  },
+                ].map(a => (
+                  <button
+                    key={a.label}
+                    onClick={() => onNavigate(a.page)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: C.text, textAlign: 'left', transition: 'all 150ms', fontFamily: 'inherit', width: '100%' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,86,255,0.06)'; e.currentTarget.style.borderColor = C.blue }}
+                    onMouseLeave={e => { e.currentTarget.style.background = C.surface2; e.currentTarget.style.borderColor = C.border }}
                   >
-                    <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: `${a.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <a.icon size={14} color={a.cor} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>{a.label}</div>
-                      <div style={{ fontSize: '10px', color: C.muted }}>{a.desc}</div>
-                    </div>
-                    <ChevronRight size={14} color={C.muted} />
-                  </div>
+                    <span>{a.label}</span>
+                    <span style={{ color: C.blue }}>→</span>
+                  </button>
                 ))}
               </div>
             </div>

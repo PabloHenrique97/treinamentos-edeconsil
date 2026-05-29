@@ -6,6 +6,7 @@ export interface MetricasAdmin {
   alunos:              { total: number; ativos: number }
   turmas:              { total: number }
   matriculas:          { total: number; ativas: number }
+  certificados:        { total: number }
   taxaConclusao:       number
   progressoMedio:      number
   cursosRecentes:      any[]
@@ -20,6 +21,7 @@ const INICIAL: MetricasAdmin = {
   alunos:              { total: 0, ativos: 0 },
   turmas:              { total: 0 },
   matriculas:          { total: 0, ativas: 0 },
+  certificados:        { total: 0 },
   taxaConclusao:       0,
   progressoMedio:      0,
   cursosRecentes:      [],
