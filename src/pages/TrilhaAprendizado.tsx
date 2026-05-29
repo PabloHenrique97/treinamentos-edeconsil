@@ -460,7 +460,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             <h1 style={{ fontSize:'28px', fontWeight:700, color:C.text, margin:'0 0 4px' }}>
               Minhas Disciplinas
             </h1>
-            <p style={{ fontSize:'13px', fontWeight:700, color:C.muted, margin:0, letterSpacing:'0.5px', textTransform:'uppercase' }}>
+            <p style={{ fontSize:'13px', fontWeight:700, color:C.muted, margin:0 }}>
               {usuarioLogado?.setor ?? 'Minha Trilha'}
             </p>
           </div>
@@ -580,8 +580,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
                     <p style={{
                       fontSize:'13px', fontWeight:700, color:C.text,
-                      margin:'0 0 6px', textTransform:'uppercase',
-                      letterSpacing:'0.4px', lineHeight:1.4,
+                      margin:'0 0 6px', lineHeight:1.4,
                     }}>
                       {c.titulo}
                     </p>
@@ -664,8 +663,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
                     <p style={{
                       fontSize:'13px', fontWeight:700, color:C.text,
-                      margin:'0 0 6px', textTransform:'uppercase',
-                      letterSpacing:'0.4px', lineHeight:1.4,
+                      margin:'0 0 6px', lineHeight:1.4,
                     }}>
                       {c.titulo}
                     </p>
@@ -710,7 +708,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                   }}>
                     <span style={{ fontSize:'20px' }}>❌</span>
                     <div style={{ flex:1 }}>
-                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px', textTransform:'uppercase' }}>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px' }}>
                         {c.titulo}
                       </p>
                       <p style={{ fontSize:'11px', color:'#ef4444', margin:0 }}>
@@ -744,7 +742,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                   }}>
                     <span style={{ fontSize:'20px' }}>🔒</span>
                     <div style={{ flex:1 }}>
-                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px', textTransform:'uppercase' }}>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px' }}>
                         {c.titulo}
                       </p>
                       <p style={{ fontSize:'11px', color:C.muted, margin:0 }}>
