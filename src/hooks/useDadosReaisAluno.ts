@@ -8,7 +8,13 @@ export interface CursoReal {
   cor: string | null
   icone: string | null
   total_aulas: number
+  aulas_concluidas?: number
   progresso_usuario: number
+  nota_obtida?: number | null
+  aprovado?: boolean | null
+  nota_minima?: number
+  instrutor?: string | null
+  carga_horaria?: string | null
 }
 
 export interface AulaProgresso {
@@ -46,10 +52,25 @@ export function useDadosReaisAluno(): DadosAluno {
     async function carregarDados() {
       try {
         const data = await cursosAPI.meusCursos()
-        const cursosData = data as CursoReal[]
-        setCursos(cursosData)
+        const cursosNorm = (data as any[]).map((c: any) => ({
+          id:                c.id,
+          slug:              c.slug ?? String(c.id),
+          titulo:            c.titulo,
+          cor:               c.cor           ?? '#1a56ff',
+          icone:             c.icone         ?? '📚',
+          instrutor:         c.instrutor     ?? null,
+          carga_horaria:     c.carga_horaria ?? null,
+          nota_minima:       c.nota_minima   ?? 70,
+          total_aulas:       c.total_aulas      ?? 0,
+          aulas_concluidas:  Number(c.aulas_concluidas ?? 0),
+          progresso_usuario: c.progresso_usuario ?? c.progresso ?? 0,
+          nota_obtida:       c.nota_obtida ?? null,
+          aprovado:          c.aprovado    ?? null,
+          status:            c.status,
+        }))
+        setCursos(cursosNorm as CursoReal[])
 
-        const cursosFiltrados = cursosData.filter(c => c.progresso_usuario < 100).slice(0, 2)
+        const cursosFiltrados = cursosNorm.filter((c: CursoReal) => c.progresso_usuario < 100).slice(0, 2)
         const aulasColetadas: AulaProgresso[] = []
 
         for (const curso of cursosFiltrados) {
@@ -78,7 +99,7 @@ export function useDadosReaisAluno(): DadosAluno {
         }
 
         if (aulasColetadas.length === 0) {
-          cursosData.filter(c => c.progresso_usuario < 100).slice(0, 3).forEach(curso => {
+          cursosNorm.filter((c: CursoReal) => c.progresso_usuario < 100).slice(0, 3).forEach((curso: CursoReal) => {
             aulasColetadas.push({
               id:          curso.id,
               titulo:      `${curso.titulo} — Aula 1`,

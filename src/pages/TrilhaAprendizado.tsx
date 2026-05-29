@@ -32,8 +32,22 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
   const [rotinaSalva, setRotinaSalva] = useState(false)
   const dados = useDadosReaisAluno()
   const usuarioLogado = getUsuario<{ setor?: string | null }>()
-  const cursosAndamento   = dados.cursos.filter(c => c.progresso_usuario < 100)
-  const cursosConcluidosList = dados.cursos.filter(c => c.progresso_usuario >= 100)
+  const cursosAndamento = dados.cursos.filter(c =>
+    (c.progresso_usuario ?? 0) < 100 && c.aprovado !== true
+  )
+  const cursosAprovadas = dados.cursos.filter(c => {
+    const nota = c.nota_obtida ?? null
+    const notaMin = c.nota_minima ?? 70
+    return ((c.progresso_usuario ?? 0) >= 100) || (nota !== null && nota >= notaMin)
+  })
+  const cursosReprovadas = dados.cursos.filter(c => {
+    const nota = c.nota_obtida ?? null
+    const notaMin = c.nota_minima ?? 70
+    return nota !== null && nota < notaMin
+  })
+  const cursosFuturas = dados.cursos.filter(c =>
+    (c.progresso_usuario ?? 0) === 0 && (c.nota_obtida ?? null) === null
+  )
 
   function ModalDefinirRotina({
     dias,
@@ -627,20 +641,17 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
             {abaAtiva === 'Aprovadas' && (
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'12px', paddingBottom:'32px' }}>
-                {cursosConcluidosList.length === 0 ? (
+                {cursosAprovadas.length === 0 ? (
                   <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: C.muted, fontSize: '13px' }}>
                     Nenhuma disciplina concluída ainda
                   </div>
-                ) : cursosConcluidosList.map(c => (
+                ) : cursosAprovadas.map(c => (
                   <div key={c.id} style={{
                     background: C.surface,
-                    border:`1px solid ${C.border}`,
+                    border:`1px solid rgba(16,185,129,0.25)`,
+                    borderLeft:`4px solid #10b981`,
                     borderRadius:'10px', padding:'18px 20px',
-                    cursor:'pointer', transition:'all 150ms',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(16,185,129,0.35)'; e.currentTarget.style.background='rgba(16,185,129,0.04)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.background=C.surface }}
-                  >
+                  }}>
                     <div style={{
                       display:'inline-flex', alignItems:'center',
                       background:'rgba(16,185,129,0.12)',
@@ -648,20 +659,19 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                       borderRadius:'6px', padding:'3px 10px',
                       marginBottom:'10px',
                     }}>
-                      <span style={{ fontSize:'10px', fontWeight:700, color:C.green }}>Aprovada</span>
+                      <span style={{ fontSize:'10px', fontWeight:700, color:C.green }}>✅ Aprovado</span>
                     </div>
 
                     <p style={{
                       fontSize:'13px', fontWeight:700, color:C.text,
-                      margin:'0 0 14px', textTransform:'uppercase',
+                      margin:'0 0 6px', textTransform:'uppercase',
                       letterSpacing:'0.4px', lineHeight:1.4,
-                      minHeight:'36px',
-                      display:'-webkit-box',
-                      WebkitLineClamp:2,
-                      WebkitBoxOrient:'vertical' as const,
-                      overflow:'hidden',
                     }}>
                       {c.titulo}
+                    </p>
+
+                    <p style={{ fontSize:'11px', color:C.green, margin:'0 0 12px' }}>
+                      {c.nota_obtida != null ? `Nota: ${c.nota_obtida}%` : 'Concluído'}
                     </p>
 
                     <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
@@ -669,12 +679,12 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
                         <div style={{
                           background: C.green,
                           height:'5px', borderRadius:'4px',
-                          width:`${c.progresso_usuario}%`,
+                          width:`${c.nota_obtida ?? c.progresso_usuario}%`,
                           transition:'width 0.5s ease',
                         }} />
                       </div>
                       <span style={{ fontSize:'11px', fontWeight:700, color:C.green, minWidth:'32px', textAlign:'right' }}>
-                        {c.progresso_usuario}%
+                        {c.nota_obtida != null ? `${c.nota_obtida}%` : `${c.progresso_usuario}%`}
                       </span>
                     </div>
                   </div>
@@ -683,14 +693,66 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
             )}
 
             {abaAtiva === 'Reprovadas' && (
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'120px', color:C.muted, fontSize:'14px' }}>
-                Nenhuma disciplina reprovada
+              <div style={{ paddingBottom:'32px' }}>
+                {cursosReprovadas.length === 0 ? (
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'120px', color:C.muted, fontSize:'14px' }}>
+                    Nenhuma reprovação registrada
+                  </div>
+                ) : cursosReprovadas.map(c => (
+                  <div key={c.id} style={{
+                    background: C.surface,
+                    border: `1px solid rgba(239,68,68,0.25)`,
+                    borderLeft: `4px solid #ef4444`,
+                    borderRadius: '10px',
+                    padding: '14px 18px',
+                    marginBottom: '8px',
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                  }}>
+                    <span style={{ fontSize:'20px' }}>❌</span>
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px', textTransform:'uppercase' }}>
+                        {c.titulo}
+                      </p>
+                      <p style={{ fontSize:'11px', color:'#ef4444', margin:0 }}>
+                        Reprovado · Nota: {c.nota_obtida}% · Mínimo: {c.nota_minima ?? 70}%
+                      </p>
+                    </div>
+                    <span style={{ fontSize:'18px', fontWeight:800, color:'#ef4444' }}>
+                      {c.nota_obtida}%
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
 
             {abaAtiva === 'Futuras' && (
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'120px', color:C.muted, fontSize:'14px' }}>
-                Disciplinas futuras serão exibidas aqui
+              <div style={{ paddingBottom:'32px' }}>
+                {cursosFuturas.length === 0 ? (
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'120px', color:C.muted, fontSize:'14px' }}>
+                    Todos os cursos foram iniciados
+                  </div>
+                ) : cursosFuturas.map(c => (
+                  <div key={c.id} style={{
+                    background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    borderLeft: `4px solid ${C.muted}`,
+                    borderRadius: '10px',
+                    padding: '14px 18px',
+                    marginBottom: '8px',
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    opacity: 0.75,
+                  }}>
+                    <span style={{ fontSize:'20px' }}>🔒</span>
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:C.text, margin:'0 0 2px', textTransform:'uppercase' }}>
+                        {c.titulo}
+                      </p>
+                      <p style={{ fontSize:'11px', color:C.muted, margin:0 }}>
+                        Disponível · Não iniciado
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
