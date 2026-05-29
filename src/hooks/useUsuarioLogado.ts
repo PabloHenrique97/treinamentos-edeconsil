@@ -37,6 +37,7 @@ export function useUsuarioLogado() {
     usuario,
     iniciais,
     primeiroNome,
+    id:     usuario?.id     ?? '',
     nome:   usuario?.nome   ?? 'Usuário',
     email:  usuario?.email  ?? '',
     perfil: usuario?.perfil ?? 'colaborador',
