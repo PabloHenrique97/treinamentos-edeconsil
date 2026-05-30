@@ -180,6 +180,28 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
                 </div>
               )}
 
+              {progressoReal.instrutorTurma && (
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  gap: '10px', padding: '10px 12px',
+                  background: 'rgba(26,86,255,0.06)',
+                  border: '1px solid rgba(26,86,255,0.15)',
+                  borderRadius: '8px',
+                }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: 'rgba(26,86,255,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px', flexShrink: 0,
+                  }}>👨‍🏫</div>
+                  <div>
+                    <p style={{ fontSize: '11px', color: C.muted, margin: '0 0 1px' }}>Seu instrutor</p>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: 0 }}>
+                      {progressoReal.instrutorTurma.nome}
+                    </p>
+                  </div>
+                </div>
+              )}
               <button
                 onClick={() => onNavigate('videoAula')}
                 style={{ marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'opacity 150ms', fontFamily: "'Inter', sans-serif" }}

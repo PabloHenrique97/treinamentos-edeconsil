@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { cursosAPI } from '../services/api'
+import apiRequest, { cursosAPI } from '../services/api'
+import { getUsuario } from '../services/authStorage'
 
 export interface CursoReal {
   id: string
@@ -29,6 +30,12 @@ export interface AulaProgresso {
   moduloId: number
 }
 
+export interface InstrutorTurma {
+  nome: string
+  email: string | null
+  especialidade: string | null
+}
+
 export interface DadosAluno {
   cursos: CursoReal[]
   totalCursos: number
@@ -41,12 +48,14 @@ export interface DadosAluno {
   horasEstudadas: number
   carregando: boolean
   aulasEmAndamento: AulaProgresso[]
+  instrutorTurma: InstrutorTurma | null
 }
 
 export function useDadosReaisAluno(): DadosAluno {
   const [cursos, setCursos] = useState<CursoReal[]>([])
   const [carregando, setCarregando] = useState(true)
   const [aulasEmAndamento, setAulasEmAndamento] = useState<AulaProgresso[]>([])
+  const [instrutorTurma, setInstrutorTurma] = useState<InstrutorTurma | null>(null)
 
   useEffect(() => {
     async function carregarDados() {
@@ -115,6 +124,22 @@ export function useDadosReaisAluno(): DadosAluno {
         }
 
         setAulasEmAndamento(aulasColetadas)
+
+        // Buscar instrutor da turma do aluno
+        try {
+          const usuario = getUsuario<{ turma_id?: string | null }>()
+          if (usuario?.turma_id) {
+            const turmasData = await apiRequest<any[]>('/turmas')
+            const minhaTurma = turmasData?.find((t: any) => t.id === usuario.turma_id)
+            if (minhaTurma?.instrutor_nome) {
+              setInstrutorTurma({
+                nome:          minhaTurma.instrutor_nome,
+                email:         minhaTurma.instrutor_email ?? null,
+                especialidade: minhaTurma.instrutor_especialidade ?? null,
+              })
+            }
+          }
+        } catch { /* turma sem instrutor ou erro de rede */ }
       } catch {
         setCursos([])
       } finally {
@@ -150,5 +175,6 @@ export function useDadosReaisAluno(): DadosAluno {
     horasEstudadas,
     carregando,
     aulasEmAndamento,
+    instrutorTurma,
   }
 }
