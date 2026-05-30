@@ -26,4 +26,5 @@ body {
 }
 .pills-scroll::-webkit-scrollbar { display: none; }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }

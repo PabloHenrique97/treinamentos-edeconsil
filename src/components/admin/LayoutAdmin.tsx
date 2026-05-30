@@ -99,6 +99,7 @@ export function LayoutAdmin({
           <TopbarAdmin
             titulo={topbarTitulo}
             subtitulo={topbarSubtitulo}
+            onNavigate={onNavigate}
           />
         )}
         <div style={{ flex: 1, overflowY: 'auto' }}>

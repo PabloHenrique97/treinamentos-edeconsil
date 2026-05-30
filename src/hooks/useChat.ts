@@ -69,6 +69,7 @@ export function useChat() {
           setConversa(msg.conversa)
           setMensagens(msg.mensagens ?? [])
           ws.send(JSON.stringify({ tipo: 'marcar_lida' }))
+          window.dispatchEvent(new CustomEvent('nova-mensagem-recebida'))
           return
         }
         if (msg.tipo === 'nova_mensagem') {
@@ -76,6 +77,7 @@ export function useChat() {
             if (prev.some(m => m.id === msg.mensagem.id)) return prev
             return [...prev, msg.mensagem]
           })
+          window.dispatchEvent(new CustomEvent('nova-mensagem-recebida'))
           ws.send(JSON.stringify({ tipo: 'marcar_lida' }))
           return
         }

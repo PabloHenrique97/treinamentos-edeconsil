@@ -1,7 +1,8 @@
-import { Bell, MessageSquare, Search, ChevronRight } from 'lucide-react'
+import { MessageSquare, Search, ChevronRight } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 import { useTheme } from '../contexts/ThemeContext'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
+import { useNotificacoes } from '../hooks/useNotificacoes'
 
 interface TopbarItem {
   label: string
@@ -15,6 +16,7 @@ interface TopbarProps {
   userRole?: string
   userInitials?: string
   notificacoes?: number
+  onNavigate?: (page: string) => void
 }
 
 export function Topbar({
@@ -22,10 +24,11 @@ export function Topbar({
   userName,
   userRole,
   userInitials,
-  notificacoes = 3,
+  onNavigate,
 }: TopbarProps) {
   const { C } = useTheme()
   const { nome, iniciais, perfil } = useUsuarioLogado()
+  const { mensagensNaoLidas } = useNotificacoes()
   const displayName     = nome     || userName     || 'Usuário'
   const displayInitials = iniciais || userInitials || 'U'
   const displayRole     = userRole || (perfil === 'admin' ? 'Administrador' : 'Colaborador')
@@ -96,21 +99,41 @@ export function Topbar({
       <ThemeToggle />
 
       {/* Sino */}
-      <div style={{ position: 'relative', cursor: 'pointer', padding: '6px', flexShrink: 0 }}>
-        <Bell size={17} color={C.muted} />
-        {notificacoes > 0 && (
-          <div style={{
-            position: 'absolute', top: '3px', right: '3px',
-            width: '14px', height: '14px',
-            background: C.blue,
-            borderRadius: '50%',
-            fontSize: '8px', fontWeight: 700, color: '#fff',
+      <button
+        onClick={() => onNavigate?.('mensagens')}
+        style={{
+          position: 'relative',
+          background: 'none', border: 'none',
+          cursor: 'pointer', padding: '6px',
+          borderRadius: '8px', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: C.muted, transition: 'all 150ms',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,86,255,0.08)'; e.currentTarget.style.color = '#1a56ff' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.muted }}
+        title={mensagensNaoLidas > 0 ? `${mensagensNaoLidas} mensagem(s) não lida(s)` : 'Notificações'}
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        {mensagensNaoLidas > 0 && (
+          <span style={{
+            position: 'absolute', top: '2px', right: '2px',
+            minWidth: '16px', height: '16px',
+            background: '#ef4444', color: '#fff',
+            fontSize: '10px', fontWeight: 700,
+            borderRadius: '8px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0 3px', lineHeight: 1,
+            boxShadow: '0 0 0 2px white',
+            animation: 'pulse 2s infinite',
           }}>
-            {notificacoes}
-          </div>
+            {mensagensNaoLidas > 99 ? '99+' : mensagensNaoLidas}
+          </span>
         )}
-      </div>
+      </button>
 
       {/* Mensagens */}
       <div style={{ cursor: 'pointer', padding: '6px', flexShrink: 0 }}>

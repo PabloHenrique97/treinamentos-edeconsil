@@ -1,21 +1,21 @@
-import { Bell, MessageSquare, Search } from 'lucide-react'
+import { MessageSquare, Search } from 'lucide-react'
 import { ThemeToggle } from '../ThemeToggle'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useNotificacoes } from '../../hooks/useNotificacoes'
 
 interface TopbarAdminProps {
   titulo?: string
   subtitulo?: string
-  notificacoes?: number
-  mensagens?: number
+  onNavigate?: (page: string) => void
 }
 
 export function TopbarAdmin({
   titulo = 'Olá, Administrador! 👋',
   subtitulo = 'Bem-vindo ao painel de gestão da Universidade Corporativa.',
-  notificacoes = 12,
-  mensagens = 5,
+  onNavigate,
 }: TopbarAdminProps) {
   const { C } = useTheme()
+  const { mensagensNaoLidas } = useNotificacoes()
 
   return (
     <div style={{
@@ -62,38 +62,48 @@ export function TopbarAdmin({
       {/* Toggle dark/light */}
       <ThemeToggle />
 
-      {/* Sino */}
-      <div style={{ position: 'relative', cursor: 'pointer', padding: '6px', flexShrink: 0 }}>
-        <Bell size={18} color={C.muted} />
-        {notificacoes > 0 && (
-          <div style={{
+      {/* Sino — navegável, contagem real de não lidas */}
+      <button
+        onClick={() => onNavigate?.('mensagensAdmin')}
+        style={{
+          position: 'relative',
+          background: 'none', border: 'none',
+          cursor: 'pointer', padding: '6px',
+          borderRadius: '8px', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: C.muted, transition: 'all 150ms',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(26,86,255,0.08)'; e.currentTarget.style.color = '#1a56ff' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.muted }}
+        title={mensagensNaoLidas > 0 ? `${mensagensNaoLidas} mensagem(s) não lida(s)` : 'Mensagens'}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        {mensagensNaoLidas > 0 && (
+          <span style={{
             position: 'absolute', top: '2px', right: '2px',
             minWidth: '16px', height: '16px',
-            background: C.blue, borderRadius: '8px',
-            fontSize: '9px', fontWeight: 700, color: '#fff',
+            background: '#ef4444', color: '#fff',
+            fontSize: '9px', fontWeight: 700, borderRadius: '8px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '0 3px',
+            boxShadow: '0 0 0 2px white',
+            animation: 'pulse 2s infinite',
           }}>
-            {notificacoes}
-          </div>
+            {mensagensNaoLidas > 99 ? '99+' : mensagensNaoLidas}
+          </span>
         )}
-      </div>
+      </button>
 
       {/* Mensagens */}
-      <div style={{ position: 'relative', cursor: 'pointer', padding: '6px', flexShrink: 0 }}>
+      <div
+        onClick={() => onNavigate?.('mensagensAdmin')}
+        style={{ cursor: 'pointer', padding: '6px', flexShrink: 0 }}
+      >
         <MessageSquare size={18} color={C.muted} />
-        {mensagens > 0 && (
-          <div style={{
-            position: 'absolute', top: '2px', right: '2px',
-            minWidth: '16px', height: '16px',
-            background: '#ef4444', borderRadius: '8px',
-            fontSize: '9px', fontWeight: 700, color: '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '0 3px',
-          }}>
-            {mensagens}
-          </div>
-        )}
       </div>
 
       {/* Avatar admin */}
