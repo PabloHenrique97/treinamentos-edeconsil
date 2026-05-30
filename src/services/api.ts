@@ -145,4 +145,29 @@ export const certificadosAPI = {
   },
 }
 
+export const instrutoresAPI = {
+  listar: (params?: Record<string, string>) => {
+    const q = params ? '?' + new URLSearchParams(params).toString() : ''
+    return apiRequest(`/instrutores${q}`)
+  },
+
+  buscarPorId: (id: string) =>
+    apiRequest(`/instrutores/${id}`),
+
+  criar: (dados: unknown) =>
+    apiRequest('/instrutores', {
+      method: 'POST',
+      body:   JSON.stringify(dados),
+    }),
+
+  atualizar: (id: string, dados: unknown) =>
+    apiRequest(`/instrutores/${id}`, {
+      method: 'PUT',
+      body:   JSON.stringify(dados),
+    }),
+
+  excluir: (id: string) =>
+    apiRequest(`/instrutores/${id}`, { method: 'DELETE' }),
+}
+
 export default apiRequest
