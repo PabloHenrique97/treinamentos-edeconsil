@@ -1,63 +1,121 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getToken, getUsuario } from '../services/authStorage'
 
-interface NotificacoesState {
-  mensagensNaoLidas: number
-  total:             number
+export interface Notificacao {
+  id:          string
+  tipo:        string
+  titulo:      string
+  mensagem:    string | null
+  lida:        boolean
+  link_pagina: string | null
+  dados_extra: any
+  criado_em:   string
 }
 
-export function useNotificacoes(): NotificacoesState {
-  const [state, setState] = useState<NotificacoesState>({
-    mensagensNaoLidas: 0,
-    total:             0,
+export interface ContadorNotif {
+  notificacoes: number
+  mensagens:    number
+  total:        number
+}
+
+const _apiUrl  = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001/api'
+const BASE_URL = _apiUrl.endsWith('/api') ? _apiUrl : _apiUrl + '/api'
+
+async function fetchAuth(path: string, opts?: RequestInit) {
+  const token = getToken()
+  const resp  = await fetch(`${BASE_URL}${path}`, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(opts?.headers ?? {}),
+    },
   })
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+  return resp.json()
+}
+
+export function useNotificacoes() {
+  const [notificacoes,  setNotificacoes]  = useState<Notificacao[]>([])
+  const [contador,      setContador]      = useState<ContadorNotif>({
+    notificacoes: 0, mensagens: 0, total: 0,
+  })
+  const [aberto,        setAberto]        = useState(false)
+  const [carregando,    setCarregando]    = useState(false)
   const intervaloRef = useRef<ReturnType<typeof setInterval>>(undefined)
 
-  const buscarViaRest = useCallback(async () => {
+  const buscarContador = useCallback(async () => {
     try {
-      const token   = getToken()
-      const usuario = getUsuario<{ perfil?: string }>()
-      if (!token || !usuario) return
+      const data = await fetchAuth('/notificacoes/contador')
+      setContador(data)
+    } catch {}
+  }, [])
 
-      const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api')
-        .replace(/\/api\/?$/, '')
+  const buscarNotificacoes = useCallback(async () => {
+    setCarregando(true)
+    try {
+      const data = await fetchAuth('/notificacoes')
+      setNotificacoes(data.notificacoes ?? [])
+    } catch {} finally {
+      setCarregando(false)
+    }
+  }, [])
 
-      const resp = await fetch(`${baseUrl}/api/conversas`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!resp.ok) return
+  const marcarLida = useCallback(async (id: string) => {
+    try {
+      await fetchAuth(`/notificacoes/${id}/lida`, { method: 'PATCH' })
+      setNotificacoes(prev =>
+        prev.map(n => n.id === id ? { ...n, lida: true } : n)
+      )
+      setContador(prev => ({
+        ...prev,
+        notificacoes: Math.max(0, prev.notificacoes - 1),
+        total:        Math.max(0, prev.total - 1),
+      }))
+    } catch {}
+  }, [])
 
-      const conversas = await resp.json()
-      if (!Array.isArray(conversas)) return
+  const marcarTodasLidas = useCallback(async () => {
+    try {
+      await fetchAuth('/notificacoes/marcar-todas-lidas', { method: 'PATCH' })
+      setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })))
+      setContador(prev => ({ ...prev, notificacoes: 0, total: prev.mensagens }))
+    } catch {}
+  }, [])
 
-      const perfil = usuario.perfil
-      let naoLidas = 0
+  const abrirDropdown = useCallback(() => {
+    setAberto(true)
+    buscarNotificacoes()
+  }, [buscarNotificacoes])
 
-      for (const conv of conversas) {
-        if (perfil === 'admin') {
-          naoLidas += conv.nao_lidas_admin ?? 0
-        } else {
-          naoLidas += conv.nao_lidas_aluno ?? 0
-        }
-      }
-
-      setState({ mensagensNaoLidas: naoLidas, total: naoLidas })
-    } catch { /* silencioso — não quebrar a UI */ }
+  const fecharDropdown = useCallback(() => {
+    setAberto(false)
   }, [])
 
   useEffect(() => {
-    buscarViaRest()
+    const usuario = getUsuario()
+    if (!usuario) return
 
-    intervaloRef.current = setInterval(buscarViaRest, 30_000)
+    buscarContador()
+    intervaloRef.current = setInterval(buscarContador, 30_000)
 
-    const handler = () => buscarViaRest()
+    const handler = () => buscarContador()
     window.addEventListener('nova-mensagem-recebida', handler)
+    window.addEventListener('notificacao-nova',       handler)
 
     return () => {
       clearInterval(intervaloRef.current)
       window.removeEventListener('nova-mensagem-recebida', handler)
+      window.removeEventListener('notificacao-nova',       handler)
     }
-  }, [buscarViaRest])
+  }, [buscarContador])
 
-  return state
+  return {
+    notificacoes, contador, aberto, carregando,
+    abrirDropdown, fecharDropdown,
+    marcarLida, marcarTodasLidas,
+    totalNaoLidas:     contador.total,
+    mensagensNaoLidas: contador.mensagens,
+    notifNaoLidas:     contador.notificacoes,
+  }
 }

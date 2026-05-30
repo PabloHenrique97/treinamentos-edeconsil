@@ -170,4 +170,18 @@ export const instrutoresAPI = {
     apiRequest(`/instrutores/${id}`, { method: 'DELETE' }),
 }
 
+export const notificacoesAPI = {
+  listar: () =>
+    apiRequest<{ notificacoes: unknown[]; naoLidas: number }>('/notificacoes'),
+
+  contador: () =>
+    apiRequest<{ notificacoes: number; mensagens: number; total: number }>('/notificacoes/contador'),
+
+  marcarLida: (id: string) =>
+    apiRequest(`/notificacoes/${id}/lida`, { method: 'PATCH' }),
+
+  marcarTodasLidas: () =>
+    apiRequest('/notificacoes/marcar-todas-lidas', { method: 'PATCH' }),
+}
+
 export default apiRequest
