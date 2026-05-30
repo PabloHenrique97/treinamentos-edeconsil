@@ -2,6 +2,26 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { instrutoresAPI } from '../../services/api'
 
+const TURMAS = [
+  'Coordenação de Suprimentos',
+  'Recursos Humanos',
+  'Segurança do Trabalho',
+  'Serviços Gerais',
+  'Comunicação',
+  'Engenharia',
+  'Manutenções - Oficina',
+  'Tecnologia da Informação',
+  'Coordenação de Pessoal',
+  'Coordenação de Qualidade',
+  'Gerência Financeira',
+  'Gerência Jurídica e Compliance',
+  'Gerência de Auditoria',
+  'Gerência de Controladoria',
+  'Gerência de Gestão de Pessoas',
+  'Saúde Ocupacional',
+  'Patrimônio',
+]
+
 interface EditarInstrutorProps {
   instrutor?: any
   onFechar:   () => void
@@ -36,7 +56,8 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
 
   const handleSalvar = async () => {
     setErro('')
-    if (!nome.trim()) { setErro('Nome é obrigatório.'); return }
+    if (!nome.trim())          { setErro('Nome é obrigatório.'); return }
+    if (!especialidade.trim()) { setErro('Selecione a Especialidade / Turma.'); return }
     setSalvando(true)
     try {
       const payload = {
@@ -152,14 +173,20 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
       {/* Especialidade + Status */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
         <div>
-          <label style={labelStyle}>Especialidade</label>
-          <input
-            type="text" value={especialidade}
+          <label style={labelStyle}>
+            Turma / Especialidade <span style={{ color: '#ef4444' }}>*</span>
+          </label>
+          <select
+            value={especialidade}
             onChange={e => setEspecialidade(e.target.value)}
             onKeyDown={stopKeys} onFocus={onFocus} onBlur={onBlur}
-            placeholder="Ex: Gestão e Suprimentos"
-            style={inputStyle} autoComplete="off"
-          />
+            style={{ ...inputStyle, cursor: 'pointer' }}
+          >
+            <option value="">Selecione uma turma...</option>
+            {TURMAS.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label style={labelStyle}>Status</label>
