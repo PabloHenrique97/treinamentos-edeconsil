@@ -170,6 +170,10 @@ export const instrutoresAPI = {
     apiRequest(`/instrutores/${id}`, { method: 'DELETE' }),
 }
 
+export const turmasAPI = {
+  listar: () => apiRequest<unknown[]>('/turmas'),
+}
+
 export const notificacoesAPI = {
   listar: () =>
     apiRequest<{ notificacoes: unknown[]; naoLidas: number }>('/notificacoes'),
