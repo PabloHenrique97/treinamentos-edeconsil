@@ -1,624 +1,492 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
-  Building2, Monitor, Bell, Shield, Award,
-  Users, BookOpen, Palette, Link2, Database,
-  Lock, Save, RefreshCw,
-  Eye, EyeOff, Check, AlertTriangle,
-  Upload, Download
+  Building2, Monitor, Palette, Bell,
+  Shield, BookOpen, Award,
+  UserCheck, Database, Save,
+  Eye, EyeOff, Download,
+  AlertTriangle, Check,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
+import { useConfiguracoes } from '../../hooks/useConfiguracoes'
 
-type SecaoConfig =
-  | 'perfil' | 'plataforma' | 'notificacoes' | 'seguranca'
-  | 'certificados' | 'matriculas' | 'treinamentos' | 'aparencia'
-  | 'integracao' | 'backup' | 'permissoes'
-
-const secoes = [
-  { key: 'perfil',       label: 'Perfil da Empresa',   grupo: 'GERAL'       },
-  { key: 'plataforma',   label: 'Plataforma',           grupo: 'GERAL'       },
-  { key: 'aparencia',    label: 'Aparência',            grupo: 'GERAL'       },
-  { key: 'notificacoes', label: 'Notificações',         grupo: 'COMUNICAÇÃO' },
-  { key: 'seguranca',    label: 'Segurança e Acesso',   grupo: 'SEGURANÇA'   },
-  { key: 'permissoes',   label: 'Permissões e Perfis',  grupo: 'SEGURANÇA'   },
-  { key: 'matriculas',   label: 'Matrículas',           grupo: 'GESTÃO'      },
-  { key: 'treinamentos', label: 'Treinamentos',         grupo: 'GESTÃO'      },
-  { key: 'certificados', label: 'Certificados',         grupo: 'GESTÃO'      },
-  { key: 'integracao',   label: 'Integrações',          grupo: 'SISTEMA'     },
-  { key: 'backup',       label: 'Backup e Dados',       grupo: 'SISTEMA'     },
-]
-
-const gruposNav = ['GERAL', 'COMUNICAÇÃO', 'SEGURANÇA', 'GESTÃO', 'SISTEMA']
-
-// ── Toggle switch ──
-function Toggle({ ativo, onChange, cor }: { ativo: boolean; onChange: (v: boolean) => void; cor?: string }) {
-  const { C } = useTheme()
-  const corAtivo = cor ?? C.blue
-  return (
-    <button
-      onClick={() => onChange(!ativo)}
-      style={{ width: '44px', height: '24px', borderRadius: '12px', background: ativo ? corAtivo : C.border, border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 200ms', flexShrink: 0 }}
-    >
-      <div style={{ position: 'absolute', top: '2px', left: ativo ? '22px' : '2px', width: '20px', height: '20px', borderRadius: '50%', background: '#ffffff', transition: 'left 200ms', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
-    </button>
-  )
+interface ConfiguracoesAdminProps {
+  onNavigate: (page: string) => void
+  onLogout:   () => void
 }
 
-// ── Linha com toggle ──
-function LinhaToggle({ label, desc, ativo, onChange, cor }: { label: string; desc?: string; ativo: boolean; onChange: (v: boolean) => void; cor?: string }) {
-  const { C } = useTheme()
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', padding: '14px 0', borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>{label}</p>
-        {desc && <p style={{ fontSize: '12px', color: C.muted, margin: 0, lineHeight: 1.4 }}>{desc}</p>}
-      </div>
-      <Toggle ativo={ativo} onChange={onChange} cor={cor} />
-    </div>
-  )
-}
+export function ConfiguracoesAdmin({ onNavigate, onLogout }: ConfiguracoesAdminProps) {
+  const { C, toggleTheme, isDark } = useTheme()
+  const { config, atualizar, salvar, salvando, mensagem, tipoMsg, restaurarPadroes } = useConfiguracoes()
 
-// ── Campo input ──
-function CampoInput({ label, value, onChange, placeholder, type = 'text', desc }: {
-  label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; desc?: string
-}) {
-  const { C } = useTheme()
-  return (
-    <div style={{ marginBottom: '16px' }}>
-      <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none' }}
-        onFocus={e => e.target.style.borderColor = C.blue}
-        onBlur={e => e.target.style.borderColor = C.border}
-      />
-      {desc && <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>{desc}</p>}
-    </div>
-  )
-}
+  const [secaoAtiva, setSecaoAtiva] = useState('perfil')
+  const [mostrarApiKey, setMostrarApiKey] = useState(false)
+  const [apiKey] = useState('sk-edeconsil-' + btoa('edeconsil2026').slice(0, 16))
+  const logoRef = useRef<HTMLInputElement>(null)
 
-// ── Card de seção ──
-function CardSecao({ titulo, children, desc }: { titulo: string; children: React.ReactNode; desc?: string }) {
-  const { C } = useTheme()
-  return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' }}>
-      <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}` }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>{titulo}</p>
-        {desc && <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>{desc}</p>}
-      </div>
-      <div style={{ padding: '4px 20px 16px' }}>{children}</div>
-    </div>
-  )
-}
-
-// ── Botão salvar com feedback ──
-function BotaoSalvar({ onClick }: { onClick: () => void }) {
-  const { C } = useTheme()
-  const [salvo, setSalvo] = useState(false)
-  const handleClick = () => {
-    onClick()
-    setSalvo(true)
-    setTimeout(() => setSalvo(false), 2000)
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box' as const,
+    padding: '9px 13px',
+    background: C.surface2, border: `1px solid ${C.border}`,
+    borderRadius: '8px', fontSize: '13px',
+    color: C.text, outline: 'none', fontFamily: 'inherit',
   }
-  return (
-    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px', paddingTop: '16px', borderTop: `1px solid ${C.border}` }}>
+  const labelStyle: React.CSSProperties = {
+    fontSize: '11px', fontWeight: 700, color: C.muted,
+    display: 'block', marginBottom: '5px',
+    textTransform: 'uppercase' as const, letterSpacing: '0.5px',
+  }
+
+  const Toggle = ({ valor, onChange, label, descricao }: {
+    valor: boolean; onChange: (v: boolean) => void; label: string; descricao?: string
+  }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: `1px solid ${C.border}` }}>
+      <div>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>{label}</p>
+        {descricao && <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>{descricao}</p>}
+      </div>
       <button
-        onClick={handleClick}
-        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: salvo ? '#10b981' : C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 200ms' }}
+        onClick={() => onChange(!valor)}
+        style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: valor ? config.corPrimaria : C.border, position: 'relative', transition: 'background 200ms', flexShrink: 0 }}
       >
-        {salvo ? <Check size={14} /> : <Save size={14} />}
-        {salvo ? 'Salvo!' : 'Salvar alterações'}
+        <div style={{ position: 'absolute', top: '3px', left: valor ? '23px' : '3px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
       </button>
     </div>
   )
-}
 
-// ── Componente principal ──
-export function ConfiguracoesAdmin({ onNavigate, onLogout }: {
-  onNavigate: (page: string) => void
-  onLogout: () => void
-}) {
-  const { C, isDark, toggleTheme } = useTheme()
-  const [secaoAtiva, setSecaoAtiva] = useState<SecaoConfig>('perfil')
+  const BotaoSalvar = ({ secao }: { secao: string }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '24px', paddingTop: '20px', borderTop: `1px solid ${C.border}` }}>
+      {mensagem ? (
+        <span style={{ fontSize: '13px', fontWeight: 600, color: tipoMsg === 'sucesso' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {tipoMsg === 'sucesso' ? <Check size={14} /> : <AlertTriangle size={14} />}
+          {mensagem}
+        </span>
+      ) : <span />}
+      <button
+        onClick={() => salvar(secao)}
+        disabled={salvando}
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: config.corPrimaria, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: salvando ? 'not-allowed' : 'pointer', opacity: salvando ? 0.7 : 1 }}
+      >
+        {salvando
+          ? <><div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Salvando...</>
+          : <><Save size={14} /> Salvar alterações</>
+        }
+      </button>
+    </div>
+  )
 
-  // Perfil
-  const [nomeEmpresa, setNomeEmpresa] = useState('Edeconsil Construtora')
-  const [nomePortal, setNomePortal] = useState('Universidade Corporativa Edeconsil')
-  const [emailSuporte, setEmailSuporte] = useState('suporte@edeconsil.com.br')
-  const [telefone, setTelefone] = useState('+55 (98) 3334-8000')
-  const [endereco, setEndereco] = useState('Av. José Sarney, nº 500, Jardim São Cristóvão')
-  const [site, setSite] = useState('https://www.edeconsil.com.br')
-  const [cnpj, setCnpj] = useState('00.000.000/0001-00')
-  const [descricaoEmpresa, setDescricaoEmpresa] = useState('Empresa de construção civil com foco em obras de infraestrutura.')
+  const Campo = ({ label, campo, tipo = 'text', placeholder = '' }: {
+    label: string; campo: keyof typeof config; tipo?: string; placeholder?: string
+  }) => (
+    <div style={{ marginBottom: '14px' }}>
+      <label style={labelStyle}>{label}</label>
+      <input
+        type={tipo}
+        value={String(config[campo] ?? '')}
+        onChange={e => atualizar(campo as any, tipo === 'number' ? (parseInt(e.target.value) || 0) : e.target.value as any)}
+        placeholder={placeholder}
+        style={inputStyle}
+        onFocus={e => e.target.style.borderColor = config.corPrimaria}
+        onBlur={e  => e.target.style.borderColor = C.border}
+      />
+    </div>
+  )
 
-  // Plataforma
-  const [idioma, setIdioma] = useState('Português (Brasil)')
-  const [fusoHorario, setFusoHorario] = useState('America/Sao_Paulo (UTC-3)')
-  const [formatoData, setFormatoData] = useState('DD/MM/AAAA')
-  const [itensLista, setItensLista] = useState('10')
-  const [manutencao, setManutencao] = useState(false)
-  const [registroPublico, setRegistroPublico] = useState(false)
-  const [loginGoogle, setLoginGoogle] = useState(true)
-  const [loginMicrosoft, setLoginMicrosoft] = useState(true)
+  const menuItens = [
+    { grupo: 'GERAL', itens: [
+      { key: 'perfil',       label: 'Perfil da Empresa', icone: <Building2 size={14} /> },
+      { key: 'plataforma',   label: 'Plataforma',        icone: <Monitor   size={14} /> },
+      { key: 'aparencia',    label: 'Aparência',         icone: <Palette   size={14} /> },
+    ]},
+    { grupo: 'COMUNICAÇÃO', itens: [
+      { key: 'notificacoes', label: 'Notificações',       icone: <Bell    size={14} /> },
+    ]},
+    { grupo: 'SEGURANÇA', itens: [
+      { key: 'seguranca',    label: 'Segurança e Acesso', icone: <Shield  size={14} /> },
+    ]},
+    { grupo: 'GESTÃO', itens: [
+      { key: 'treinamentos', label: 'Treinamentos',       icone: <BookOpen  size={14} /> },
+      { key: 'certificados', label: 'Certificados',       icone: <Award     size={14} /> },
+      { key: 'matriculas',   label: 'Matrículas',         icone: <UserCheck size={14} /> },
+    ]},
+    { grupo: 'SISTEMA', itens: [
+      { key: 'backup',       label: 'Backup e Dados',     icone: <Database size={14} /> },
+    ]},
+  ]
 
-  // Notificações
-  const [notifEmail, setNotifEmail] = useState(true)
-  const [notifSistema, setNotifSistema] = useState(true)
-  const [notifWhatsapp, setNotifWhatsapp] = useState(false)
-  const [notifCertVencendo, setNotifCertVencendo] = useState(true)
-  const [notifNovoCurso, setNotifNovoCurso] = useState(true)
-  const [notifNovaMatricula, setNotifNovaMatricula] = useState(true)
-  const [notifConclusao, setNotifConclusao] = useState(true)
-  const [notifPendencias, setNotifPendencias] = useState(true)
-  const [diasAntecedenciaVenc, setDiasAntecedenciaVenc] = useState('30')
-
-  // Segurança
-  const [senhaMinCaracteres, setSenhaMinCaracteres] = useState('8')
-  const [senhaLetraMaiuscula, setSenhaLetraMaiuscula] = useState(true)
-  const [senhaNumerica, setSenhaNumerica] = useState(true)
-  const [senhaEspecial, setSenhaEspecial] = useState(false)
-  const [expiraSenha, setExpiraSenha] = useState(false)
-  const [diasExpiracaoSenha, setDiasExpiracaoSenha] = useState('90')
-  const [autenticacaoDupla, setAutenticacaoDupla] = useState(false)
-  const [sessaoTimeout, setSessaoTimeout] = useState('480')
-  const [ipWhitelist, setIpWhitelist] = useState(false)
-  const [logAcessos, setLogAcessos] = useState(true)
-  const [tentativasLogin, setTentativasLogin] = useState('5')
-
-  // Treinamentos
-  const [aprovacaoMinima, setAprovacaoMinima] = useState('70')
-  const [tentativasProva, setTentativasProva] = useState('3')
-  const [certAutoEmissao, setCertAutoEmissao] = useState(true)
-  const [progressoObrigatorio, setProgressoObrigatorio] = useState(true)
-  const [ordemObrigatoria, setOrdemObrigatoria] = useState(false)
-  const [comentariosAtivos, setComentariosAtivos] = useState(true)
-  const [avaliacaoAtiva, setAvaliacaoAtiva] = useState(true)
-  const [pausaVideo, setPausaVideo] = useState(false)
-  const [velocidadeVideo, setVelocidadeVideo] = useState(true)
-  const [qualidadeDefault, setQualidadeDefault] = useState('720p')
-
-  // Certificados
-  const [validadePadrao, setValidadePadrao] = useState('12')
-  const [assinaturaDigital, setAssinaturaDigital] = useState(true)
-  const [codigoVerificacao, setCodigoVerificacao] = useState(true)
-  const [downloadPDF, setDownloadPDF] = useState(true)
-  const [compartilharLinkedin, setCompartilharLinkedin] = useState(true)
-  const [nomeAssinante, setNomeAssinante] = useState('Pablo Henrique — Diretor de RH')
-  const [rodapeCert, setRodapeCert] = useState('Edeconsil Universidade Corporativa')
-
-  // Matrículas
-  const [aprovacaoMatricula, setAprovacaoMatricula] = useState(false)
-  const [limiteAlunos, setLimiteAlunos] = useState('')
-  const [campoCpf, setCampoCpf] = useState(true)
-  const [campoFoto, setCampoFoto] = useState(true)
-  const [campoRamal, setCampoRamal] = useState(true)
-  const [campoVeiculo, setCampoVeiculo] = useState(false)
-  const [emailBoasVindas, setEmailBoasVindas] = useState(true)
-  const [crAutomatico, setCrAutomatico] = useState(true)
-
-  // Aparência
-  const [corPrimaria, setCorPrimaria] = useState('#0d2550')
-  const [corDestaque, setCorDestaque] = useState('#F5C400')
-
-  // Integrações
-  const [integracaoGoogleWorkspace, setIntegracaoGoogleWorkspace] = useState(false)
-  const [integracaoMicrosoft365, setIntegracaoMicrosoft365] = useState(false)
-  const [integracaoLinkedin, setIntegracaoLinkedin] = useState(false)
-  const [webhookUrl, setWebhookUrl] = useState('')
-  const [apiKey] = useState('sk-edeconsil-••••••••••••••••')
-  const [mostrarApiKey, setMostrarApiKey] = useState(false)
-
-  const iconePorSecao: Record<SecaoConfig, React.ReactNode> = {
-    perfil:       <Building2 size={15} />,
-    plataforma:   <Monitor size={15} />,
-    aparencia:    <Palette size={15} />,
-    notificacoes: <Bell size={15} />,
-    seguranca:    <Shield size={15} />,
-    permissoes:   <Lock size={15} />,
-    matriculas:   <Users size={15} />,
-    treinamentos: <BookOpen size={15} />,
-    certificados: <Award size={15} />,
-    integracao:   <Link2 size={15} />,
-    backup:       <Database size={15} />,
-  }
-
-  const selectStyle = {
-    width: '100%', padding: '10px 14px',
-    background: C.surface2, border: `1px solid ${C.border}`,
-    borderRadius: '8px', fontSize: '13px', color: C.text,
-    outline: 'none', cursor: 'pointer',
-  }
-
-  const renderConteudo = () => {
+  const renderSecao = () => {
     switch (secaoAtiva) {
 
-      case 'perfil':
-        return (
-          <>
-            <CardSecao titulo="Identidade da Empresa" desc="Informações que aparecem em toda a plataforma">
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                <CampoInput label="Nome da Empresa"   value={nomeEmpresa}   onChange={setNomeEmpresa}   placeholder="Ex: Edeconsil Construtora" />
-                <CampoInput label="Nome do Portal"    value={nomePortal}    onChange={setNomePortal}    placeholder="Ex: Universidade Corporativa" />
-                <CampoInput label="CNPJ"              value={cnpj}          onChange={setCnpj}          placeholder="00.000.000/0001-00" />
-                <CampoInput label="Site"              value={site}          onChange={setSite}          placeholder="https://www.empresa.com.br" />
-                <CampoInput label="Telefone"          value={telefone}      onChange={setTelefone}      placeholder="+55 (98) 3334-8000" />
-                <CampoInput label="E-mail de Suporte" value={emailSuporte}  onChange={setEmailSuporte}  type="email" placeholder="suporte@empresa.com.br" />
-              </div>
-              <CampoInput label="Endereço" value={endereco} onChange={setEndereco} placeholder="Endereço completo" />
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Descrição da Empresa</label>
-                <textarea
-                  value={descricaoEmpresa}
-                  onChange={e => setDescricaoEmpresa(e.target.value)}
-                  rows={3}
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-                  onFocus={e => e.target.style.borderColor = C.blue}
-                  onBlur={e => e.target.style.borderColor = C.border}
-                />
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
+      case 'perfil': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Perfil da Empresa</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Informações institucionais exibidas na plataforma</p>
 
-            <CardSecao titulo="Logo e Identidade Visual" desc="Imagem que aparece no cabeçalho do sistema">
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: C.surface2, borderRadius: '10px', border: `1px solid ${C.border}`, marginBottom: '12px' }}>
-                <div style={{ width: '80px', height: '40px', background: C.surface, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: '11px', color: C.muted }}>Logo atual</span>
+          <div style={{ marginBottom: '20px', padding: '16px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: config.corPrimaria, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 900, color: '#fff', flexShrink: 0 }}>E</div>
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 4px' }}>Logo da empresa</p>
+              <p style={{ fontSize: '11px', color: C.muted, margin: '0 0 8px' }}>PNG ou SVG, mínimo 200×200px</p>
+              <button onClick={() => logoRef.current?.click()} style={{ padding: '6px 14px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', color: C.text, cursor: 'pointer' }}>
+                Trocar logo
+              </button>
+              <input ref={logoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) console.log('Logo:', f.name) }} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <div style={{ gridColumn: '1/-1' }}><Campo label="Nome da Empresa" campo="nomeEmpresa" placeholder="Edeconsil Construções e Locações LTDA" /></div>
+            <Campo label="Nome do Portal"    campo="nomePortal"   placeholder="Universidade Corporativa" />
+            <Campo label="CNPJ"              campo="cnpj"         placeholder="00.000.000/0001-00" />
+            <Campo label="Site"              campo="site"         tipo="url"   placeholder="https://edeconsil.com.br" />
+            <Campo label="Telefone"          campo="telefone"     placeholder="(98) 9999-9999" />
+            <Campo label="E-mail de Suporte" campo="emailSuporte" tipo="email" placeholder="suporte@edeconsil.com.br" />
+            <div style={{ gridColumn: '1/-1' }}><Campo label="Endereço" campo="endereco" placeholder="São Luís, MA" /></div>
+            <div style={{ gridColumn: '1/-1', marginBottom: '14px' }}>
+              <label style={labelStyle}>Descrição</label>
+              <textarea
+                value={config.descricao}
+                onChange={e => atualizar('descricao', e.target.value)}
+                placeholder="Breve descrição da empresa e do portal..."
+                rows={3}
+                style={{ ...inputStyle, resize: 'vertical' as const }}
+                onFocus={e => e.target.style.borderColor = config.corPrimaria}
+                onBlur={e  => e.target.style.borderColor = C.border}
+              />
+            </div>
+          </div>
+          <BotaoSalvar secao="Perfil" />
+        </div>
+      )
+
+      case 'plataforma': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Configurações da Plataforma</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Configurações regionais e de acesso</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={labelStyle}>Idioma</label>
+              <select value={config.idioma} onChange={e => atualizar('idioma', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border}>
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="en-US">English (US)</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={labelStyle}>Fuso Horário</label>
+              <select value={config.fusoHorario} onChange={e => atualizar('fusoHorario', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border}>
+                <option value="America/Fortaleza">Fortaleza (GMT-3)</option>
+                <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
+                <option value="America/Manaus">Manaus (GMT-4)</option>
+                <option value="America/Belem">Belém (GMT-3)</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={labelStyle}>Formato de Data</label>
+              <select value={config.formatoData} onChange={e => atualizar('formatoData', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border}>
+                <option value="DD/MM/AAAA">DD/MM/AAAA</option>
+                <option value="MM/DD/AAAA">MM/DD/AAAA</option>
+                <option value="AAAA-MM-DD">AAAA-MM-DD</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={labelStyle}>Itens por Página</label>
+              <input type="number" value={config.itensPorPagina} onChange={e => atualizar('itensPorPagina', parseInt(e.target.value) || 20)} min={5} max={100} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+            </div>
+          </div>
+
+          <div style={{ marginTop: '8px' }}>
+            <Toggle valor={config.modoManutencao}  onChange={v => atualizar('modoManutencao', v)}  label="Modo Manutenção"    descricao="Bloqueia o acesso de colaboradores à plataforma" />
+            <Toggle valor={config.registroPublico} onChange={v => atualizar('registroPublico', v)} label="Registro Público"   descricao="Permite cadastros sem convite do admin" />
+            <Toggle valor={config.loginGoogle}     onChange={v => atualizar('loginGoogle', v)}     label="Login com Google"   descricao="Habilita autenticação via Google Workspace" />
+            <Toggle valor={config.loginMicrosoft}  onChange={v => atualizar('loginMicrosoft', v)}  label="Login com Microsoft" descricao="Habilita autenticação via Microsoft 365" />
+          </div>
+          <BotaoSalvar secao="Plataforma" />
+        </div>
+      )
+
+      case 'aparencia': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Aparência</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Tema e identidade visual da plataforma</p>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '20px' }}>
+            <Toggle valor={isDark} onChange={() => toggleTheme()} label="Modo Escuro" descricao="Salvo automaticamente — persiste ao recarregar" />
+          </div>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 16px' }}>Cores da Plataforma</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div>
+                <label style={labelStyle}>Cor Primária</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input type="color" value={config.corPrimaria} onChange={e => atualizar('corPrimaria', e.target.value)} style={{ width: '44px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '2px' }} />
+                  <input type="text" value={config.corPrimaria} onChange={e => atualizar('corPrimaria', e.target.value)} style={{ ...inputStyle, fontFamily: 'monospace', width: 'auto', flex: 1 }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>logo-edeconsil.png</p>
-                  <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>PNG ou SVG recomendado · Fundo transparente</p>
+              </div>
+              <div>
+                <label style={labelStyle}>Cor de Destaque</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input type="color" value={config.corDestaque} onChange={e => atualizar('corDestaque', e.target.value)} style={{ width: '44px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '2px' }} />
+                  <input type="text" value={config.corDestaque} onChange={e => atualizar('corDestaque', e.target.value)} style={{ ...inputStyle, fontFamily: 'monospace', width: 'auto', flex: 1 }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
                 </div>
-                <button style={{ display: 'flex', alignItems: 'center', gap: '5px', background: C.blue, color: '#fff', border: 'none', borderRadius: '7px', padding: '8px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                  <Upload size={13} /> Trocar logo
+              </div>
+            </div>
+
+            <div style={{ padding: '14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, color: C.muted, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Preview</p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button style={{ padding: '8px 16px', background: config.corPrimaria, border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}>Botão Primário</button>
+                <button style={{ padding: '8px 16px', background: config.corDestaque, border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: config.corPrimaria, cursor: 'pointer' }}>Destaque</button>
+                <button style={{ padding: '8px 16px', background: 'none', border: `2px solid ${config.corPrimaria}`, borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: config.corPrimaria, cursor: 'pointer' }}>Outline</button>
+              </div>
+            </div>
+            <p style={{ fontSize: '11px', color: C.muted, margin: '10px 0 0' }}>
+              As cores são aplicadas ao ThemeContext após salvar e recarregar a página.
+            </p>
+          </div>
+
+          <BotaoSalvar secao="Aparência" />
+        </div>
+      )
+
+      case 'notificacoes': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Notificações</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Canais e eventos de notificação</p>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Canais</p>
+            <Toggle valor={config.notifEmail}    onChange={v => atualizar('notifEmail', v)}    label="E-mail"    descricao="Enviar notificações por e-mail" />
+            <Toggle valor={config.notifSistema}  onChange={v => atualizar('notifSistema', v)}  label="Sistema"   descricao="Sino de notificações na plataforma" />
+            <Toggle valor={config.notifWhatsapp} onChange={v => atualizar('notifWhatsapp', v)} label="WhatsApp"  descricao="Notificações via WhatsApp Business" />
+          </div>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Eventos</p>
+            <Toggle valor={config.notifNovoCurso}   onChange={v => atualizar('notifNovoCurso', v)}   label="Novo Curso"              descricao="Ao publicar um novo curso" />
+            <Toggle valor={config.notifCertificado} onChange={v => atualizar('notifCertificado', v)} label="Certificado Emitido"     descricao="Ao concluir e receber certificado" />
+            <Toggle valor={config.notifMensagem}    onChange={v => atualizar('notifMensagem', v)}    label="Nova Mensagem"           descricao="Ao receber mensagem do suporte" />
+            <Toggle valor={config.notifAvaliacao}   onChange={v => atualizar('notifAvaliacao', v)}   label="Avaliação Disponível"   descricao="Quando uma prova for liberada" />
+            <Toggle valor={config.notifVencimento}  onChange={v => atualizar('notifVencimento', v)}  label="Vencimento de Certificado" descricao="Dias antes do certificado vencer" />
+          </div>
+
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Dias de antecedência (vencimento)</label>
+            <input type="number" value={config.diasAntecedencia} onChange={e => atualizar('diasAntecedencia', parseInt(e.target.value) || 7)} min={1} max={60} style={{ ...inputStyle, maxWidth: '120px' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+          </div>
+          <BotaoSalvar secao="Notificações" />
+        </div>
+      )
+
+      case 'seguranca': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Segurança e Acesso</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Políticas de senha e controle de acesso</p>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 12px' }}>Política de Senhas</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '12px' }}>
+              <div>
+                <label style={labelStyle}>Mínimo de caracteres</label>
+                <input type="number" value={config.senhaMinChars} onChange={e => atualizar('senhaMinChars', parseInt(e.target.value) || 8)} min={6} max={32} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+              </div>
+              <div>
+                <label style={labelStyle}>Expiração (dias)</label>
+                <input type="number" value={config.diasExpiracao} onChange={e => atualizar('diasExpiracao', parseInt(e.target.value) || 90)} min={30} max={365} disabled={!config.senhaExpiracao} style={{ ...inputStyle, opacity: config.senhaExpiracao ? 1 : 0.5 }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+              </div>
+            </div>
+            <Toggle valor={config.senhaMaiuscula} onChange={v => atualizar('senhaMaiuscula', v)} label="Exigir letra maiúscula" />
+            <Toggle valor={config.senhaNumero}    onChange={v => atualizar('senhaNumero', v)}    label="Exigir número" />
+            <Toggle valor={config.senhaEspecial}  onChange={v => atualizar('senhaEspecial', v)}  label="Exigir caractere especial" />
+            <Toggle valor={config.senhaExpiracao} onChange={v => atualizar('senhaExpiracao', v)} label="Senhas expiram" descricao="Forçar troca periódica de senha" />
+          </div>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 12px' }}>Controle de Acesso</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '12px' }}>
+              <div>
+                <label style={labelStyle}>Timeout de sessão (min)</label>
+                <input type="number" value={config.timeoutSessao} onChange={e => atualizar('timeoutSessao', parseInt(e.target.value) || 480)} min={30} max={1440} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+              </div>
+              <div>
+                <label style={labelStyle}>Tentativas antes de bloquear</label>
+                <input type="number" value={config.tentativasMax} onChange={e => atualizar('tentativasMax', parseInt(e.target.value) || 5)} min={3} max={10} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+              </div>
+            </div>
+            <Toggle valor={config.autenticacao2fa} onChange={v => atualizar('autenticacao2fa', v)} label="Autenticação em 2 fatores" descricao="Exige código adicional no login" />
+            <Toggle valor={config.logAcessos}      onChange={v => atualizar('logAcessos', v)}      label="Log de acessos" descricao="Registrar horário e IP de cada login" />
+          </div>
+
+          <BotaoSalvar secao="Segurança" />
+        </div>
+      )
+
+      case 'treinamentos': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Treinamentos</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Comportamento padrão dos cursos e avaliações</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
+            <div>
+              <label style={labelStyle}>Nota mínima de aprovação (%)</label>
+              <input type="number" value={config.notaMinima} onChange={e => atualizar('notaMinima', parseInt(e.target.value) || 70)} min={0} max={100} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+            </div>
+            <div>
+              <label style={labelStyle}>Tentativas máximas na prova</label>
+              <input type="number" value={config.tentativasProva} onChange={e => atualizar('tentativasProva', parseInt(e.target.value) || 3)} min={1} max={10} style={inputStyle} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+            </div>
+            <div>
+              <label style={labelStyle}>Qualidade padrão de vídeo</label>
+              <select value={config.qualidadeVideo} onChange={e => atualizar('qualidadeVideo', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border}>
+                <option value="480p">480p</option>
+                <option value="720p">720p (HD)</option>
+                <option value="1080p">1080p (Full HD)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px' }}>
+            <Toggle valor={config.progressoObrig}  onChange={v => atualizar('progressoObrig', v)}  label="Progresso obrigatório"   descricao="Aluno deve assistir 100% antes de avançar" />
+            <Toggle valor={config.ordemObrig}       onChange={v => atualizar('ordemObrig', v)}       label="Ordem obrigatória"        descricao="Aulas devem ser feitas em sequência" />
+            <Toggle valor={config.comentarios}      onChange={v => atualizar('comentarios', v)}      label="Comentários nas aulas"    descricao="Permite alunos comentar nas aulas" />
+            <Toggle valor={config.avaliacaoObrig}   onChange={v => atualizar('avaliacaoObrig', v)}   label="Avaliação obrigatória"    descricao="Necessária para concluir o curso" />
+            <Toggle valor={config.pausarVideo}      onChange={v => atualizar('pausarVideo', v)}      label="Permitir pausar vídeo" />
+            <Toggle valor={config.velocidadeVideo}  onChange={v => atualizar('velocidadeVideo', v)}  label="Controle de velocidade"   descricao="Aluno pode ajustar velocidade do vídeo" />
+          </div>
+          <BotaoSalvar secao="Treinamentos" />
+        </div>
+      )
+
+      case 'certificados': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Certificados</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Configurações de emissão e validade</p>
+
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Validade padrão (meses)</label>
+            <input type="number" value={config.validadeCert} onChange={e => atualizar('validadeCert', parseInt(e.target.value) || 24)} min={1} max={120} style={{ ...inputStyle, maxWidth: '160px' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+          </div>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <Toggle valor={config.emissaoAuto}          onChange={v => atualizar('emissaoAuto', v)}          label="Emissão automática"       descricao="Gera certificado ao ser aprovado na prova" />
+            <Toggle valor={config.assinaturaDigital}    onChange={v => atualizar('assinaturaDigital', v)}    label="Assinatura digital"       descricao="Adiciona assinatura digital ao PDF" />
+            <Toggle valor={config.codigoVerif}          onChange={v => atualizar('codigoVerif', v)}          label="Código de verificação"    descricao="Inclui código único EDEC-XXXX" />
+            <Toggle valor={config.gerarPdf}             onChange={v => atualizar('gerarPdf', v)}             label="Gerar PDF para download" />
+            <Toggle valor={config.compartilharLinkedin} onChange={v => atualizar('compartilharLinkedin', v)} label="Compartilhar no LinkedIn" descricao="Botão para publicar no LinkedIn" />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <Campo label="Nome do assinante" campo="nomeAssinante" placeholder="Nome do responsável pela assinatura" />
+            <Campo label="Texto do rodapé"   campo="rodapeCert"    placeholder="São Luís, MA — Edeconsil" />
+          </div>
+          <BotaoSalvar secao="Certificados" />
+        </div>
+      )
+
+      case 'matriculas': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Matrículas</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Comportamento do processo de matrícula</p>
+
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' }}>
+            <Toggle valor={config.aprovacaoManual} onChange={v => atualizar('aprovacaoManual', v)} label="Aprovação manual"       descricao="Admin aprova cada matrícula individualmente" />
+            <Toggle valor={config.crAutomatico}    onChange={v => atualizar('crAutomatico', v)}    label="CR automático"         descricao="Gerar código de registro automaticamente" />
+            <Toggle valor={config.emailBoasVindas} onChange={v => atualizar('emailBoasVindas', v)} label="E-mail de boas-vindas" descricao="Enviar e-mail ao novo aluno matriculado" />
+          </div>
+
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Limite de alunos por turma (0 = ilimitado)</label>
+            <input type="number" value={config.limitePorturma} onChange={e => atualizar('limitePorturma', parseInt(e.target.value) || 0)} min={0} style={{ ...inputStyle, maxWidth: '160px' }} onFocus={e => e.target.style.borderColor = config.corPrimaria} onBlur={e => e.target.style.borderColor = C.border} />
+          </div>
+          <BotaoSalvar secao="Matrículas" />
+        </div>
+      )
+
+      case 'backup': return (
+        <div>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Backup e Dados</h2>
+          <p style={{ fontSize: '13px', color: C.muted, margin: '0 0 24px' }}>Exportação de dados e ações de sistema</p>
+
+          {/* API Key */}
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 12px' }}>Chave de API</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input type={mostrarApiKey ? 'text' : 'password'} value={apiKey} readOnly style={{ ...inputStyle, fontFamily: 'monospace' }} />
+              <button onClick={() => setMostrarApiKey(v => !v)} style={{ padding: '9px 12px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                {mostrarApiKey ? <EyeOff size={15} color={C.muted} /> : <Eye size={15} color={C.muted} />}
+              </button>
+            </div>
+            <p style={{ fontSize: '11px', color: C.muted, margin: '6px 0 0' }}>Use como Bearer Token nas requisições à API.</p>
+          </div>
+
+          {/* Exportações */}
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 14px' }}>Exportar Dados</p>
+            {[
+              { label: 'Lista de Alunos',       rota: '/api/usuarios?perfil=colaborador',  arquivo: 'alunos.csv'        },
+              { label: 'Certificados Emitidos', rota: '/api/admin/certificados',            arquivo: 'certificados.csv'  },
+              { label: 'Cursos',                rota: '/api/cursos',                        arquivo: 'cursos.csv'        },
+              { label: 'Instrutores',           rota: '/api/instrutores',                   arquivo: 'instrutores.csv'   },
+            ].map(exp => (
+              <div key={exp.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>{exp.label}</p>
+                  <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>Exportar em formato CSV</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const token   = localStorage.getItem('edeconsil_token')
+                      const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://web-production-1cfeb.up.railway.app/api'
+                      const resp    = await fetch(`${apiBase}${exp.rota}`, { headers: { Authorization: `Bearer ${token}` } })
+                      const data    = await resp.json()
+                      const rows    = Array.isArray(data) ? data : (data.usuarios ?? data.certificados ?? data.cursos ?? data.instrutores ?? [])
+                      if (!rows.length) { alert('Sem dados para exportar'); return }
+                      const headers = Object.keys(rows[0]).join(',')
+                      const csv = [headers, ...rows.map((r: Record<string, unknown>) =>
+                        Object.values(r).map(v => (typeof v === 'string' && v.includes(',')) ? `"${v}"` : String(v ?? '')).join(',')
+                      )].join('\n')
+                      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                      const url  = URL.createObjectURL(blob)
+                      const a    = document.createElement('a')
+                      a.href = url; a.download = exp.arquivo; a.click()
+                      URL.revokeObjectURL(url)
+                    } catch { alert('Erro ao exportar dados') }
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: C.text, cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = config.corPrimaria; e.currentTarget.style.color = config.corPrimaria }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;           e.currentTarget.style.color = C.text }}
+                >
+                  <Download size={13} /> Exportar CSV
                 </button>
               </div>
-            </CardSecao>
-          </>
-        )
-
-      case 'plataforma':
-        return (
-          <>
-            <CardSecao titulo="Configurações Regionais">
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Idioma</label>
-                  <select value={idioma} onChange={e => setIdioma(e.target.value)} style={selectStyle}>
-                    <option>Português (Brasil)</option>
-                    <option>English (US)</option>
-                    <option>Español</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Fuso Horário</label>
-                  <select value={fusoHorario} onChange={e => setFusoHorario(e.target.value)} style={selectStyle}>
-                    <option>America/Sao_Paulo (UTC-3)</option>
-                    <option>America/Manaus (UTC-4)</option>
-                    <option>America/Belem (UTC-3)</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Formato de Data</label>
-                  <select value={formatoData} onChange={e => setFormatoData(e.target.value)} style={selectStyle}>
-                    <option>DD/MM/AAAA</option>
-                    <option>MM/DD/AAAA</option>
-                    <option>AAAA-MM-DD</option>
-                  </select>
-                </div>
-                <CampoInput label="Itens por página (listas)" value={itensLista} onChange={setItensLista} placeholder="10" desc="Padrão de itens exibidos nas tabelas" />
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Acesso e Login" desc="Configurações de acesso ao portal">
-              <LinhaToggle label="Modo de Manutenção"   desc="Bloqueia o acesso de colaboradores ao portal enquanto ativo"  ativo={manutencao}       onChange={setManutencao}       cor="#ef4444" />
-              <LinhaToggle label="Registro público"     desc="Permite que colaboradores se cadastrem sem convite"            ativo={registroPublico}  onChange={setRegistroPublico}  />
-              <LinhaToggle label="Login com Google"     desc="Permite autenticação via conta Google corporativa"             ativo={loginGoogle}      onChange={setLoginGoogle}      />
-              <LinhaToggle label="Login com Microsoft"  desc="Permite autenticação via conta Microsoft 365"                  ativo={loginMicrosoft}   onChange={setLoginMicrosoft}   />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'aparencia':
-        return (
-          <>
-            <CardSecao titulo="Tema do Sistema" desc="Controle a aparência global da plataforma">
-              <div style={{ height: '8px' }} />
-              <LinhaToggle label="Modo escuro (Dark Mode)" desc="Ativar tema escuro para toda a plataforma" ativo={isDark} onChange={() => toggleTheme()} />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Cores da Plataforma" desc="Cores principais usadas em botões, links e destaques">
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '16px' }}>
-                {[
-                  { label: 'Cor Primária',   value: corPrimaria,  onChange: setCorPrimaria,  desc: 'Usada em botões, links e destaques' },
-                  { label: 'Cor de Destaque', value: corDestaque, onChange: setCorDestaque,  desc: 'Usada em badges, alertas e ícones'  },
-                ].map(c => (
-                  <div key={c.label}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{c.label}</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input type="color" value={c.value} onChange={e => c.onChange(e.target.value)} style={{ width: '44px', height: '40px', borderRadius: '8px', border: `1px solid ${C.border}`, cursor: 'pointer', background: 'none', padding: '2px' }} />
-                      <input value={c.value} onChange={e => c.onChange(e.target.value)} style={{ flex: 1, padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', fontFamily: 'monospace' }} />
-                    </div>
-                    <p style={{ fontSize: '11px', color: C.muted, margin: '6px 0 0' }}>{c.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ background: C.surface2, borderRadius: '10px', padding: '16px', marginBottom: '12px', border: `1px solid ${C.border}` }}>
-                <p style={{ fontSize: '11px', fontWeight: 700, color: C.muted, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pré-visualização</p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button style={{ padding: '8px 16px', background: corPrimaria, color: '#fff', border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Botão primário</button>
-                  <button style={{ padding: '8px 16px', background: corDestaque, color: corPrimaria, border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Destaque</button>
-                  <span style={{ padding: '5px 12px', background: `${corPrimaria}18`, color: corPrimaria, borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: `0.5px solid ${corPrimaria}40` }}>Badge</span>
-                  <span style={{ fontSize: '13px', color: corPrimaria, fontWeight: 600, padding: '8px 0' }}>Link de ação →</span>
-                </div>
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'notificacoes':
-        return (
-          <>
-            <CardSecao titulo="Canais de Notificação" desc="Defina como os colaboradores receberão avisos">
-              <LinhaToggle label="Notificações por E-mail"     desc="Envia e-mails automáticos para eventos importantes"                     ativo={notifEmail}    onChange={setNotifEmail}    />
-              <LinhaToggle label="Notificações no sistema"     desc="Exibe alertas dentro da plataforma (sino no cabeçalho)"                 ativo={notifSistema}  onChange={setNotifSistema}  />
-              <LinhaToggle label="Notificações via WhatsApp"   desc="Integração com WhatsApp Business para mensagens automáticas"            ativo={notifWhatsapp} onChange={setNotifWhatsapp} />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Eventos de Notificação" desc="Escolha quais eventos disparam notificações">
-              <LinhaToggle label="Certificado vencendo"        desc="Alerta quando um certificado está prestes a vencer"                     ativo={notifCertVencendo}    onChange={setNotifCertVencendo}    />
-              <LinhaToggle label="Novo curso disponível"       desc="Avisa quando um novo curso for publicado"                               ativo={notifNovoCurso}       onChange={setNotifNovoCurso}       />
-              <LinhaToggle label="Nova matrícula realizada"    desc="Notifica o admin quando um colaborador for matriculado"                  ativo={notifNovaMatricula}   onChange={setNotifNovaMatricula}   />
-              <LinhaToggle label="Curso concluído"             desc="Notifica quando um colaborador concluir um curso"                       ativo={notifConclusao}       onChange={setNotifConclusao}       />
-              <LinhaToggle label="Lembrete de pendências"      desc="Envia lembretes semanais de cursos não concluídos"                      ativo={notifPendencias}      onChange={setNotifPendencias}      />
-              <div style={{ height: '8px' }} />
-              <CampoInput label="Antecedência para alerta de vencimento (dias)" value={diasAntecedenciaVenc} onChange={setDiasAntecedenciaVenc} placeholder="30" desc="Quantos dias antes do vencimento o alerta será disparado" />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'seguranca':
-        return (
-          <>
-            <CardSecao titulo="Política de Senhas" desc="Regras para criação de senhas dos colaboradores">
-              <div style={{ height: '8px' }} />
-              <CampoInput label="Mínimo de caracteres" value={senhaMinCaracteres} onChange={setSenhaMinCaracteres} placeholder="8" desc="Número mínimo de caracteres exigidos" />
-              <LinhaToggle label="Exigir letra maiúscula"     desc="A senha deve conter pelo menos uma letra maiúscula"         ativo={senhaLetraMaiuscula} onChange={setSenhaLetraMaiuscula} />
-              <LinhaToggle label="Exigir número"              desc="A senha deve conter pelo menos um número"                    ativo={senhaNumerica}       onChange={setSenhaNumerica}       />
-              <LinhaToggle label="Exigir caractere especial"  desc="A senha deve conter símbolos como !@#$%"                     ativo={senhaEspecial}       onChange={setSenhaEspecial}       />
-              <LinhaToggle label="Expiração de senha"         desc="Força a troca periódica de senhas"                           ativo={expiraSenha}         onChange={setExpiraSenha}         />
-              {expiraSenha && <CampoInput label="Dias para expiração" value={diasExpiracaoSenha} onChange={setDiasExpiracaoSenha} placeholder="90" />}
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Controle de Acesso" desc="Configurações de sessão e autenticação">
-              <div style={{ height: '8px' }} />
-              <LinhaToggle label="Autenticação em dois fatores (2FA)" desc="Exige código adicional além da senha no login"           ativo={autenticacaoDupla} onChange={setAutenticacaoDupla} />
-              <LinhaToggle label="Whitelist de IPs"                   desc="Permite acesso apenas de endereços IP específicos"       ativo={ipWhitelist}       onChange={setIpWhitelist}       />
-              <LinhaToggle label="Log de acessos"                     desc="Registra todos os logins e acessos ao sistema"           ativo={logAcessos}        onChange={setLogAcessos}        />
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                <CampoInput label="Timeout de sessão (minutos)"              value={sessaoTimeout}    onChange={setSessaoTimeout}    placeholder="480" desc="Tempo até deslogar automaticamente" />
-                <CampoInput label="Tentativas antes do bloqueio"             value={tentativasLogin}  onChange={setTentativasLogin}  placeholder="5"   />
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'treinamentos':
-        return (
-          <>
-            <CardSecao titulo="Regras de Avaliação" desc="Critérios para aprovação nos cursos">
-              <div style={{ height: '8px' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                <CampoInput label="Nota mínima para aprovação (%)"  value={aprovacaoMinima} onChange={setAprovacaoMinima} placeholder="70" desc="Percentual mínimo para concluir o curso" />
-                <CampoInput label="Tentativas máximas na prova"     value={tentativasProva} onChange={setTentativasProva} placeholder="3"  desc="Número de vezes que o aluno pode tentar a avaliação" />
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Comportamento dos Cursos" desc="Como os cursos funcionam para os colaboradores">
-              <LinhaToggle label="Progresso obrigatório"      desc="O aluno deve assistir 100% da aula antes de avançar"                       ativo={progressoObrigatorio} onChange={setProgressoObrigatorio} />
-              <LinhaToggle label="Ordem obrigatória"          desc="As aulas devem ser feitas na ordem definida pelo instrutor"                  ativo={ordemObrigatoria}     onChange={setOrdemObrigatoria}     />
-              <LinhaToggle label="Comentários habilitados"    desc="Permite que alunos comentem nas aulas"                                       ativo={comentariosAtivos}    onChange={setComentariosAtivos}    />
-              <LinhaToggle label="Avaliação de aulas"         desc="Alunos podem avaliar cada aula com estrelas"                                  ativo={avaliacaoAtiva}       onChange={setAvaliacaoAtiva}       />
-              <LinhaToggle label="Pausar vídeo ao perder foco"desc="O vídeo pausa automaticamente quando o aluno sai da aba"                     ativo={pausaVideo}           onChange={setPausaVideo}           />
-              <LinhaToggle label="Controle de velocidade"     desc="Alunos podem alterar a velocidade do vídeo (0.5x a 2x)"                      ativo={velocidadeVideo}      onChange={setVelocidadeVideo}      />
-              <div style={{ height: '8px' }} />
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Qualidade de Vídeo Padrão</label>
-                <select value={qualidadeDefault} onChange={e => setQualidadeDefault(e.target.value)} style={{ ...selectStyle, width: '200px' }}>
-                  {['1080p', '720p', '480p', '360p', 'Auto'].map(q => <option key={q}>{q}</option>)}
-                </select>
-              </div>
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'certificados':
-        return (
-          <>
-            <CardSecao titulo="Configurações de Emissão" desc="Como os certificados são gerados e distribuídos">
-              <div style={{ height: '8px' }} />
-              <CampoInput label="Validade padrão (meses)" value={validadePadrao} onChange={setValidadePadrao} placeholder="12" desc="Validade aplicada quando não definida no curso" />
-              <LinhaToggle label="Emissão automática"       desc="O certificado é gerado automaticamente ao concluir o curso"         ativo={certAutoEmissao}      onChange={setCertAutoEmissao}      />
-              <LinhaToggle label="Assinatura digital"       desc="Inclui assinatura eletrônica no certificado"                        ativo={assinaturaDigital}    onChange={setAssinaturaDigital}    />
-              <LinhaToggle label="Código de verificação"    desc="Gera um QR Code/código para validar o certificado"                  ativo={codigoVerificacao}    onChange={setCodigoVerificacao}    />
-              <LinhaToggle label="Download em PDF"          desc="Permite que o colaborador baixe o certificado"                      ativo={downloadPDF}          onChange={setDownloadPDF}          />
-              <LinhaToggle label="Compartilhar no LinkedIn" desc="Botão para publicar o certificado no perfil do LinkedIn"            ativo={compartilharLinkedin} onChange={setCompartilharLinkedin} />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Modelo do Certificado" desc="Informações exibidas no certificado emitido">
-              <div style={{ height: '8px' }} />
-              <CampoInput label="Nome do assinante"     value={nomeAssinante} onChange={setNomeAssinante} placeholder="Nome — Cargo" />
-              <CampoInput label="Rodapé do certificado" value={rodapeCert}    onChange={setRodapeCert}    placeholder="Edeconsil Universidade Corporativa" />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'matriculas':
-        return (
-          <>
-            <CardSecao titulo="Processo de Matrícula" desc="Como novos colaboradores são cadastrados">
-              <LinhaToggle label="Aprovação manual de matrículas" desc="Admin precisa aprovar cada nova matrícula antes de liberar o acesso" ativo={aprovacaoMatricula} onChange={setAprovacaoMatricula} />
-              <LinhaToggle label="CR automático"                  desc="Gera o código CR automaticamente ao cadastrar o colaborador"         ativo={crAutomatico}       onChange={setCrAutomatico}       />
-              <LinhaToggle label="E-mail de boas-vindas"          desc="Envia e-mail automático ao colaborador ao ser matriculado"           ativo={emailBoasVindas}    onChange={setEmailBoasVindas}    />
-              <div style={{ height: '8px' }} />
-              <CampoInput label="Limite de alunos por turma (deixe vazio para ilimitado)" value={limiteAlunos} onChange={setLimiteAlunos} placeholder="Ex: 30" />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="Campos do Formulário" desc="Quais campos aparecem no cadastro de colaboradores">
-              <LinhaToggle label="Campo CPF"          desc="Solicita o CPF do colaborador no cadastro"        ativo={campoCpf}     onChange={setCampoCpf}     />
-              <LinhaToggle label="Campo foto"         desc="Permite upload de foto de perfil"                  ativo={campoFoto}    onChange={setCampoFoto}    />
-              <LinhaToggle label="Campo ramal/interfone" desc="Solicita o ramal do colaborador"               ativo={campoRamal}   onChange={setCampoRamal}   />
-              <LinhaToggle label="Campo veículos"     desc="Permite cadastrar veículos do colaborador"         ativo={campoVeiculo} onChange={setCampoVeiculo} />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'permissoes':
-        return (
-          <>
-            <CardSecao titulo="Perfis de Acesso" desc="Níveis de permissão disponíveis no sistema">
-              <div style={{ height: '8px' }} />
-              {[
-                { perfil: 'Administrador', desc: 'Acesso total ao sistema, incluindo configurações e relatórios', cor: '#ef4444', perms: ['Dashboard Admin', 'Gestão de Cursos', 'Gestão de Alunos', 'Configurações', 'Relatórios', 'Matrículas'] },
-                { perfil: 'Instrutor',     desc: 'Pode criar e gerenciar seus próprios cursos e turmas',         cor: '#7c3aed', perms: ['Meus Cursos', 'Turmas', 'Alunos do curso', 'Relatórios básicos'] },
-                { perfil: 'Colaborador',   desc: 'Acesso ao portal de aprendizado e certificados',               cor: '#10b981', perms: ['Dashboard colaborador', 'Meus Cursos', 'Certificados', 'Trilhas', 'Biblioteca'] },
-              ].map(p => (
-                <div key={p.perfil} style={{ background: C.surface2, borderRadius: '10px', padding: '14px', border: `1px solid ${C.border}`, marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff', background: p.cor, borderRadius: '6px', padding: '3px 10px' }}>{p.perfil}</span>
-                    <span style={{ fontSize: '12px', color: C.muted }}>{p.desc}</span>
-                    <button style={{ marginLeft: 'auto', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', padding: '5px 10px', fontSize: '11px', color: C.muted, cursor: 'pointer' }}>
-                      Editar permissões
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    {p.perms.map(perm => (
-                      <span key={perm} style={{ fontSize: '11px', color: p.cor, background: `${p.cor}12`, border: `0.5px solid ${p.cor}30`, borderRadius: '5px', padding: '2px 8px' }}>
-                        {perm}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'integracao':
-        return (
-          <>
-            <CardSecao titulo="Integrações Externas" desc="Conecte a plataforma a outros sistemas">
-              <LinhaToggle label="Google Workspace"  desc="Sincroniza usuários e autenticação com o Google"         ativo={integracaoGoogleWorkspace} onChange={setIntegracaoGoogleWorkspace} />
-              <LinhaToggle label="Microsoft 365"     desc="Sincroniza usuários e autenticação com a Microsoft"      ativo={integracaoMicrosoft365}    onChange={setIntegracaoMicrosoft365}    />
-              <LinhaToggle label="LinkedIn Learning" desc="Exibe certificados diretamente no perfil do LinkedIn"    ativo={integracaoLinkedin}        onChange={setIntegracaoLinkedin}        />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-
-            <CardSecao titulo="API e Webhooks" desc="Integre sistemas externos via API REST">
-              <div style={{ height: '8px' }} />
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Chave de API</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type={mostrarApiKey ? 'text' : 'password'}
-                    value={apiKey}
-                    readOnly
-                    style={{ flex: 1, padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', fontFamily: 'monospace' }}
-                  />
-                  <button onClick={() => setMostrarApiKey(!mostrarApiKey)} style={{ padding: '10px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {mostrarApiKey ? <EyeOff size={15} color={C.muted} /> : <Eye size={15} color={C.muted} />}
-                  </button>
-                  <button style={{ padding: '10px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: C.muted }}>
-                    <RefreshCw size={13} /> Regenerar
-                  </button>
-                </div>
-                <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>Mantenha esta chave em segredo. Use nas requisições como Bearer Token.</p>
-              </div>
-              <CampoInput label="URL do Webhook (opcional)" value={webhookUrl} onChange={setWebhookUrl} placeholder="https://seusite.com/webhook" desc="Receba eventos da plataforma em tempo real via POST" />
-              <BotaoSalvar onClick={() => {}} />
-            </CardSecao>
-          </>
-        )
-
-      case 'backup':
-        return (
-          <>
-            <CardSecao titulo="Exportação de Dados" desc="Baixe os dados do sistema em diferentes formatos">
-              <div style={{ height: '8px' }} />
-              {[
-                { label: 'Exportar lista de alunos',           desc: 'Nome, e-mail, matrícula, status e progresso',    icone: '👥' },
-                { label: 'Exportar histórico de cursos',       desc: 'Todos os cursos concluídos com datas e notas',   icone: '📚' },
-                { label: 'Exportar certificados emitidos',     desc: 'Lista completa de certificados com validade',    icone: '🏅' },
-                { label: 'Exportar relatório de treinamentos', desc: 'Horas de treinamento por colaborador e setor',   icone: '📊' },
-                { label: 'Backup completo do sistema',         desc: 'Exporta todos os dados em formato JSON/ZIP',     icone: '💾' },
-              ].map(op => (
-                <div key={op.label} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: C.surface2, borderRadius: '10px', border: `1px solid ${C.border}`, marginBottom: '8px' }}>
-                  <span style={{ fontSize: '24px' }}>{op.icone}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>{op.label}</p>
-                    <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>{op.desc}</p>
-                  </div>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: '5px', background: C.blue, color: '#fff', border: 'none', borderRadius: '7px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
-                    <Download size={13} /> Exportar CSV
-                  </button>
-                </div>
-              ))}
-            </CardSecao>
-
-            <CardSecao titulo="Zona de Perigo" desc="Ações irreversíveis — execute com cuidado">
-              <div style={{ height: '8px' }} />
-              {[
-                { label: 'Limpar histórico de acessos', desc: 'Remove todos os logs de login do sistema',                              cor: '#f59e0b' },
-                { label: 'Redefinir configurações',     desc: 'Restaura todas as configurações para o padrão de fábrica',              cor: '#ef4444' },
-              ].map(acao => (
-                <div key={acao.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', padding: '14px', background: `${acao.cor}08`, borderRadius: '10px', border: `1px solid ${acao.cor}30`, marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <AlertTriangle size={18} color={acao.cor} />
-                    <div>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>{acao.label}</p>
-                      <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>{acao.desc}</p>
-                    </div>
-                  </div>
-                  <button style={{ background: 'none', border: `1.5px solid ${acao.cor}`, color: acao.cor, borderRadius: '7px', padding: '7px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-                    Executar
-                  </button>
-                </div>
-              ))}
-            </CardSecao>
-          </>
-        )
-
-      default:
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', gap: '12px' }}>
-            <span style={{ fontSize: '40px' }}>🔧</span>
-            <p style={{ fontSize: '14px', color: C.muted, margin: 0 }}>Seção em desenvolvimento</p>
+            ))}
           </div>
-        )
+
+          {/* Zona de Perigo */}
+          <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '10px', padding: '16px 20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444', margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <AlertTriangle size={14} /> Zona de Perigo
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: '0 0 2px' }}>Restaurar configurações padrão</p>
+                <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>Redefine todas as configurações para os valores padrão</p>
+              </div>
+              <button
+                onClick={() => { if (window.confirm('Restaurar todos os valores padrão? Esta ação não pode ser desfeita.')) restaurarPadroes() }}
+                style={{ padding: '7px 14px', background: 'none', border: '1px solid #f59e0b', borderRadius: '6px', fontSize: '12px', fontWeight: 600, color: '#f59e0b', cursor: 'pointer' }}
+              >
+                Restaurar
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+
+      default: return null
     }
   }
 
@@ -630,52 +498,41 @@ export function ConfiguracoesAdmin({ onNavigate, onLogout }: {
       topbarTitulo="Configurações"
       topbarSubtitulo="Gerencie as configurações gerais da plataforma."
     >
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
 
-        {/* Sidebar das configurações */}
-        <div style={{ width: '240px', flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, overflowY: 'auto', padding: '16px 8px' }}>
-          {gruposNav.map(grupo => {
-            const itensGrupo = secoes.filter(s => s.grupo === grupo)
-            return (
-              <div key={grupo} style={{ marginBottom: '8px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: C.muted, letterSpacing: '1px', padding: '4px 12px 6px', margin: 0, textTransform: 'uppercase' }}>
-                  {grupo}
-                </p>
-                {itensGrupo.map(secao => {
-                  const ativa = secaoAtiva === secao.key
-                  return (
-                    <button
-                      key={secao.key}
-                      onClick={() => setSecaoAtiva(secao.key as SecaoConfig)}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-                        padding: '9px 12px', borderRadius: '8px',
-                        background: ativa ? 'rgba(26,86,255,0.12)' : 'transparent',
-                        border: 'none',
-                        borderLeft: ativa ? `3px solid ${C.blue}` : '3px solid transparent',
-                        cursor: 'pointer', transition: 'all 150ms',
-                        color: ativa ? C.blue : C.muted2,
-                        fontSize: '13px', fontWeight: ativa ? 700 : 400,
-                        textAlign: 'left', marginBottom: '2px',
-                      }}
-                      onMouseEnter={e => { if (!ativa) e.currentTarget.style.background = 'rgba(26,86,255,0.06)' }}
-                      onMouseLeave={e => { if (!ativa) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <span style={{ color: ativa ? C.blue : C.muted, flexShrink: 0 }}>
-                        {iconePorSecao[secao.key as SecaoConfig]}
-                      </span>
-                      {secao.label}
-                    </button>
-                  )
-                })}
-              </div>
-            )
-          })}
+        {/* Sidebar de navegação */}
+        <div style={{ width: '220px', flexShrink: 0, borderRight: `1px solid ${C.border}`, overflowY: 'auto', background: C.surface, padding: '16px 0' }}>
+          {menuItens.map(grupo => (
+            <div key={grupo.grupo}>
+              <p style={{ fontSize: '10px', fontWeight: 800, color: C.muted, margin: '16px 16px 6px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                {grupo.grupo}
+              </p>
+              {grupo.itens.map(item => (
+                <button
+                  key={item.key}
+                  onClick={() => setSecaoAtiva(item.key)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '9px 16px', background: secaoAtiva === item.key ? 'rgba(26,86,255,0.08)' : 'none',
+                    border: 'none',
+                    borderLeft: secaoAtiva === item.key ? `3px solid ${config.corPrimaria}` : '3px solid transparent',
+                    cursor: 'pointer', fontSize: '13px',
+                    fontWeight: secaoAtiva === item.key ? 600 : 400,
+                    color: secaoAtiva === item.key ? config.corPrimaria : C.text,
+                    textAlign: 'left', transition: 'all 150ms',
+                  }}
+                >
+                  <span style={{ color: secaoAtiva === item.key ? config.corPrimaria : C.muted }}>{item.icone}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ))}
         </div>
 
-        {/* Conteúdo da seção */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          {renderConteudo()}
+        {/* Conteúdo */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
+          {renderSecao()}
         </div>
       </div>
     </LayoutAdmin>

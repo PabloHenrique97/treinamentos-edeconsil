@@ -47,11 +47,32 @@ const ThemeContext = createContext<ThemeContextType>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      const salvo = localStorage.getItem('edeconsil_tema')
+      if (salvo !== null) return salvo === 'dark'
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    } catch {
+      return true
+    }
+  })
 
-  const toggleTheme = () => setIsDark(prev => !prev)
+  const toggleTheme = () => {
+    setIsDark(prev => {
+      const novo = !prev
+      localStorage.setItem('edeconsil_tema', novo ? 'dark' : 'light')
+      return novo
+    })
+  }
 
-  const C = isDark ? darkColors : lightColors
+  const configSalva = (() => {
+    try {
+      const s = localStorage.getItem('edeconsil_configuracoes')
+      return s ? JSON.parse(s) : {}
+    } catch { return {} }
+  })()
+  const corPrimaria = configSalva.corPrimaria ?? '#1a56ff'
+  const C = { ...(isDark ? darkColors : lightColors), blue: corPrimaria }
 
   useEffect(() => {
     document.body.style.background = C.bg
