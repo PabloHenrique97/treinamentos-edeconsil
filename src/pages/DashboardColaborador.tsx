@@ -12,9 +12,9 @@ import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 
 const recomendados = [
-  { cor: '#1a56ff', titulo: 'Liderança em Obras',        info: '32 aulas · 10 matérias' },
-  { cor: '#10b981', titulo: 'Gestão Ambiental em Obras', info: '18 aulas · 6 matérias'  },
-  { cor: '#8b5cf6', titulo: 'EdeconQuiz — SIPAT 2026',   info: '20 questões · 15 min'   },
+  { cor: '#1a56ff', titulo: 'Liderança em Obras',        info: '32 aulas · 10 matérias', page: '' },
+  { cor: '#10b981', titulo: 'Gestão Ambiental em Obras', info: '18 aulas · 6 matérias',  page: '' },
+  { cor: '#8b5cf6', titulo: 'EdeconQuiz — SIPAT 2026',   info: '20 questões · 15 min',   page: 'edeconQuiz' },
 ]
 
 
@@ -218,6 +218,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
               {recomendados.map(r => (
                 <div
                   key={r.titulo}
+                  onClick={() => r.page && onNavigate(r.page)}
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'rgba(26,86,255,0.06)', borderRadius: '8px', border: '0.5px solid rgba(26,86,255,0.12)', cursor: 'pointer', transition: 'all 150ms' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(26,86,255,0.35)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(26,86,255,0.12)')}

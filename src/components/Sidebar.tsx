@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Início',                page: 'dashboard',  icon: LayoutDashboard },
   { label: 'Meus Cursos',           page: 'meusCursos', icon: BookOpen         },
   { label: 'Certificados',          page: 'certificadosColaborador', icon: Award },
-  { label: 'EdeconQuiz',            page: '',           icon: ClipboardCheck   },
+  { label: 'EdeconQuiz',            page: 'edeconQuiz', icon: ClipboardCheck   },
   { label: 'Apostilas',             page: 'apostilas',  icon: FileText         },
   { label: 'Mensagens',              page: 'mensagens',  icon: MessageSquare    },
   { label: 'Trilhas de Aprendizado',page: 'trilha',     icon: GitBranch        },
