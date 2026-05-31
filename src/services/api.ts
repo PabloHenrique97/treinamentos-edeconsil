@@ -2,7 +2,7 @@ const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ??
   'https://web-production-1cfeb.up.railway.app/api'
 
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {

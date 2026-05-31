@@ -19,7 +19,7 @@ const navAdmin = [
   { label: 'Indicadores',    page: 'indicadoresAdmin'  },
   { label: 'Notificações',   page: ''                  },
   { label: 'Configurações',  page: 'configuracoesAdmin' },
-  { label: 'Permissões',     page: ''                  },
+  { label: 'Permissões',     page: 'permissoesAdmin'   },
 ]
 
 interface SidebarAdminProps {

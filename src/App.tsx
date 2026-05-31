@@ -15,6 +15,7 @@ import { InstrutoresAdmin } from './pages/admin/InstrutoresAdmin'
 import { CertificadosAdmin } from './pages/admin/CertificadosAdmin'
 import { BibliotecaAdmin } from './pages/admin/BibliotecaAdmin'
 import { ConfiguracoesAdmin } from './pages/admin/ConfiguracoesAdmin'
+import { PermissoesAdmin } from './pages/admin/PermissoesAdmin'
 import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
@@ -88,7 +89,7 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'configuracoesAdmin' | 'certificadosColaborador' | 'apostilas' | 'mensagensAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'configuracoesAdmin' | 'permissoesAdmin' | 'certificadosColaborador' | 'apostilas' | 'mensagensAdmin'
 
 function AppContent() {
   // Limpar sessões antigas (sem campo 'id' no usuário)
@@ -179,6 +180,12 @@ if (pagina === 'configuracoesAdmin') return (
       <ConfiguracoesAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={handleLogout}
+      />
+    )
+    if (pagina === 'permissoesAdmin') return (
+      <PermissoesAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={() => { limparSessao(); setLogado(false) }}
       />
     )
     if (pagina === 'mensagensAdmin') return (
