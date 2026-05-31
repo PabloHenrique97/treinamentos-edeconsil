@@ -32,15 +32,17 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
   const { C } = useTheme()
   const ehEdicao = !!instrutor
 
-  const [nome,          setNome]          = useState('')
-  const [email,         setEmail]         = useState('')
-  const [telefone,      setTelefone]      = useState('')
-  const [especialidade, setEspecialidade] = useState('')
-  const [bio,           setBio]           = useState('')
-  const [status,        setStatus]        = useState('ativo')
-  const [salvando,      setSalvando]      = useState(false)
-  const [erro,          setErro]          = useState('')
-  const [sucesso,       setSucesso]       = useState(false)
+  const [nome,           setNome]           = useState('')
+  const [email,          setEmail]          = useState('')
+  const [telefone,       setTelefone]       = useState('')
+  const [especialidade,  setEspecialidade]  = useState('')
+  const [bio,            setBio]            = useState('')
+  const [status,         setStatus]         = useState('ativo')
+  const [cpf,            setCpf]            = useState('')
+  const [dataNascimento, setDataNascimento] = useState('')
+  const [salvando,       setSalvando]       = useState(false)
+  const [erro,           setErro]           = useState('')
+  const [sucesso,        setSucesso]        = useState(false)
 
   useEffect(() => {
     if (!instrutor) return
@@ -50,6 +52,13 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
     setEspecialidade(instrutor.especialidade ?? '')
     setBio(instrutor.bio                  ?? '')
     setStatus(instrutor.status            ?? 'ativo')
+    setCpf(instrutor.cpf ?? '')
+    if (instrutor.data_nascimento) {
+      const d = new Date(instrutor.data_nascimento)
+      if (!isNaN(d.getTime())) {
+        setDataNascimento(d.toISOString().split('T')[0])
+      }
+    }
   }, [instrutor])
 
   const stopKeys = useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
@@ -58,15 +67,21 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
     setErro('')
     if (!nome.trim())          { setErro('Nome é obrigatório.'); return }
     if (!especialidade.trim()) { setErro('Selecione a Especialidade / Turma.'); return }
+    if (cpf.length > 0 && cpf.length !== 11) {
+      setErro('CPF deve ter 11 dígitos.')
+      return
+    }
     setSalvando(true)
     try {
       const payload = {
-        nome:          nome.trim(),
-        email:         email.trim()         || null,
-        telefone:      telefone.trim()      || null,
-        especialidade: especialidade.trim() || null,
-        bio:           bio.trim()           || null,
+        nome:            nome.trim(),
+        email:           email.trim()         || null,
+        telefone:        telefone.trim()      || null,
+        especialidade:   especialidade.trim() || null,
+        bio:             bio.trim()           || null,
         status,
+        cpf:             cpf.replace(/\D/g, '') || null,
+        data_nascimento: dataNascimento || null,
       }
       const resultado = ehEdicao
         ? await instrutoresAPI.atualizar(instrutor.id, payload) as any
@@ -168,6 +183,83 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
             style={inputStyle} autoComplete="off"
           />
         </div>
+      </div>
+
+      {/* CPF + Data de Nascimento — credenciais de login */}
+      <div style={{
+        background: 'rgba(26,86,255,0.06)',
+        border: '1px solid rgba(26,86,255,0.20)',
+        borderRadius: '10px',
+        padding: '14px 16px',
+        marginBottom: '14px',
+      }}>
+        <p style={{
+          fontSize: '12px', fontWeight: 700,
+          color: C.blue, margin: '0 0 12px',
+          display: 'flex', alignItems: 'center', gap: '6px',
+        }}>
+          🔑 Credenciais de Acesso ao Sistema
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div>
+            <label style={labelStyle}>
+              CPF (login) <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <input
+              type="text"
+              value={cpf}
+              onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
+              onKeyDown={stopKeys}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              placeholder="00000000000"
+              maxLength={11}
+              inputMode="numeric"
+              style={inputStyle}
+              autoComplete="off"
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>
+              Data de Nascimento (senha) <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <input
+              type="date"
+              value={dataNascimento}
+              onChange={e => setDataNascimento(e.target.value)}
+              onKeyDown={stopKeys}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+        {dataNascimento && (
+          <div style={{
+            marginTop: '8px', padding: '8px 12px',
+            background: 'rgba(26,86,255,0.08)',
+            borderRadius: '6px',
+            display: 'flex', alignItems: 'center', gap: '6px',
+          }}>
+            <span style={{ fontSize: '13px' }}>🔑</span>
+            <p style={{ fontSize: '12px', color: C.blue, margin: 0 }}>
+              Senha de acesso:{' '}
+              <strong style={{ fontFamily: 'monospace', letterSpacing: '2px' }}>
+                {(() => {
+                  const d = new Date(dataNascimento + 'T00:00:00')
+                  const dd   = String(d.getDate()).padStart(2, '0')
+                  const mm   = String(d.getMonth() + 1).padStart(2, '0')
+                  const yyyy = d.getFullYear()
+                  return `${dd}${mm}${yyyy}`
+                })()}
+              </strong>
+              {' '}(DDMMAAAA)
+            </p>
+          </div>
+        )}
+        <p style={{ fontSize: '11px', color: C.muted, margin: '8px 0 0' }}>
+          O instrutor acessa o painel de administrador com CPF + data de nascimento (DDMMAAAA).
+        </p>
       </div>
 
       {/* Especialidade + Status */}
