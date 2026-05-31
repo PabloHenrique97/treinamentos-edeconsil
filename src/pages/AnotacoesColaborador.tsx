@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Plus, Search, Trash2, Edit3, Save,
   X, Clock, ChevronRight,
@@ -8,7 +8,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
-import { cursosMockColaborador } from '../data/cursosMock'
+import { cursosAPI } from '../services/api'
 
 interface Anotacao {
   id: number
@@ -67,8 +67,15 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
   const [aulaSelecionada, setAulaSelecionada] = useState('')
   const [textoAnotacao, setTextoAnotacao] = useState('')
   const [corSelecionada, setCorSelecionada] = useState(coresAnotacao[0])
+  const [cursosApi, setCursosApi] = useState<{ id: string; slug: string; titulo: string }[]>([])
 
-  const cursosOpcoes = ['Todas as disciplinas', ...cursosMockColaborador.map(c => c.titulo)]
+  useEffect(() => {
+    ;(cursosAPI.meusCursos() as Promise<any[]>).then(rows => {
+      setCursosApi((rows ?? []).map((c: any) => ({ id: c.id, slug: c.slug, titulo: c.titulo })))
+    }).catch(() => {})
+  }, [])
+
+  const cursosOpcoes = ['Todas as disciplinas', ...cursosApi.map(c => c.titulo)]
 
   const anotacoesFiltradas = anotacoes.filter(a => {
     const matchBusca = a.texto.toLowerCase().includes(busca.toLowerCase()) ||
@@ -78,11 +85,10 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
     return matchBusca && matchCurso
   })
 
-  const cursoAtual = cursosMockColaborador.find(c => c.titulo === cursoSelecionado)
-  const todasAulas = cursoAtual?.modulos.flatMap(m => m.aulas) ?? []
+  const todasAulas: { id: number; titulo: string }[] = []
 
   const abrirNovaAnotacao = () => {
-    setCursoSelecionado(cursosMockColaborador[0]?.titulo ?? '')
+    setCursoSelecionado(cursosApi[0]?.titulo ?? '')
     setAulaSelecionada('')
     setTextoAnotacao('')
     setCorSelecionada(coresAnotacao[0])
@@ -116,7 +122,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
     } else {
       const nova: Anotacao = {
         id: Date.now(),
-        cursoId: cursosMockColaborador.find(c => c.titulo === cursoSelecionado)?.id ?? '',
+        cursoId: cursosApi.find(c => c.titulo === cursoSelecionado)?.slug ?? '',
         cursoTitulo: cursoSelecionado,
         aulaId: todasAulas.find(a => a.titulo === aulaSelecionada)?.id ?? 0,
         aulaTitulo: aulaSelecionada || 'Anotação geral',
@@ -180,7 +186,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
                     style={{ width: '100%', padding: '10px 14px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, outline: 'none', cursor: 'pointer' }}
                   >
                     <option value="">Selecione a disciplina</option>
-                    {cursosMockColaborador.map(c => (
+                    {cursosApi.map(c => (
                       <option key={c.id} value={c.titulo}>{c.titulo}</option>
                     ))}
                   </select>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ChevronDown, ChevronUp, ChevronRight,
   Calendar, BookOpen, FileText,
@@ -9,7 +9,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
-import { cursosMockColaborador } from '../data/cursosMock'
+import { cursosAPI } from '../services/api'
 
 interface CursoDetalheColaboradorProps {
   cursoId: string
@@ -17,7 +17,7 @@ interface CursoDetalheColaboradorProps {
   onLogout: () => void
   onVoltarLista: () => void
   onAbrirAula: (cursoId: string, moduloId: number, aulaId: number) => void
-  onAbrirProva: (cursoId: string) => void
+  onAbrirProva: (cursoId: string, titulo?: string) => void
 }
 
 export function CursoDetalheColaborador({
@@ -26,10 +26,80 @@ export function CursoDetalheColaborador({
   const { C } = useTheme()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
-  const curso = cursosMockColaborador.find(c => c.id === cursoId || c.slug === cursoId)
-    ?? cursosMockColaborador.find(c => c.id === 'coord-suprimentos')
-    ?? cursosMockColaborador[0]
-  const [modulos, setModulos] = useState(curso.modulos)
+
+  const [carregando, setCarregando] = useState(true)
+  const [cursoDados, setCursoDados] = useState<{
+    titulo: string; cor: string; icone: string; instrutor: string
+    cargaHoraria: string; notaMinimaAprovacao: number; id: string
+    totalAulas: number; aulasConcluidas: number; progresso: number
+    live: { status: string; data: string; hora: string; titulo: string } | null
+    calendario: { inicio: string; fim: string }
+  } | null>(null)
+  const [modulos, setModulos] = useState<{
+    id: number; titulo: string; aberto: boolean
+    aulas: { id: number; numero: number; titulo: string; descricao: string
+              duracao: string; status: string; progresso: number
+              materiais: { nome: string; tamanho: string }[] }[]
+    totalAulas: number; aulasConcluidas: number; progresso: number
+  }[]>([])
+
+  useEffect(() => {
+    let cancelado = false
+    async function carregar() {
+      try {
+        const [cursoApi, modulosApi] = await Promise.all([
+          cursosAPI.buscarPorSlug(cursoId) as Promise<any>,
+          cursosAPI.aulas(cursoId) as Promise<any[]>,
+        ])
+        if (cancelado) return
+        const modulosMapped = (modulosApi ?? []).map((mod: any, i: number) => {
+          const aulas = (mod.aulas ?? []).map((a: any, j: number) => ({
+            id: a.ordem ?? j + 1,
+            numero: a.ordem ?? j + 1,
+            titulo: a.titulo ?? '',
+            descricao: a.descricao ?? '',
+            duracao: a.duracao ?? '',
+            status: a.progresso?.concluida ? 'Concluída' : 'Incompleta',
+            progresso: a.progresso?.percentual ?? 0,
+            materiais: a.materiais ?? [],
+          }))
+          const conc = aulas.filter((a: any) => a.status === 'Concluída').length
+          return {
+            id: i + 1,
+            titulo: mod.titulo ?? '',
+            aberto: i === 0,
+            aulas,
+            totalAulas: aulas.length,
+            aulasConcluidas: conc,
+            progresso: aulas.length > 0 ? Math.round(conc / aulas.length * 100) : 0,
+          }
+        })
+        const totalAulas = modulosMapped.reduce((s: number, m: any) => s + m.totalAulas, 0)
+        const aulasConcluidas = modulosMapped.reduce((s: number, m: any) => s + m.aulasConcluidas, 0)
+        setCursoDados({
+          titulo: (cursoApi as any).titulo ?? '',
+          cor: (cursoApi as any).cor ?? '#1a56ff',
+          icone: (cursoApi as any).icone ?? '📚',
+          instrutor: (cursoApi as any).instrutor ?? '',
+          cargaHoraria: (cursoApi as any).carga_horaria ?? '',
+          notaMinimaAprovacao: (cursoApi as any).nota_minima ?? 70,
+          id: (cursoApi as any).slug ?? cursoId,
+          totalAulas,
+          aulasConcluidas,
+          progresso: totalAulas > 0 ? Math.round(aulasConcluidas / totalAulas * 100) : 0,
+          live: null,
+          calendario: { inicio: '', fim: '' },
+        })
+        setModulos(modulosMapped)
+      } catch {
+        // keep empty state
+      } finally {
+        if (!cancelado) setCarregando(false)
+      }
+    }
+    carregar()
+    return () => { cancelado = true }
+  }, [cursoId])
 
   const toggleModulo = (id: number) => {
     setModulos(prev => prev.map(m => m.id === id ? { ...m, aberto: !m.aberto } : m))
@@ -40,6 +110,15 @@ export function CursoDetalheColaborador({
     'Em andamento': { color: C.blue,   bg: 'rgba(26,86,255,0.10)',  border: 'rgba(26,86,255,0.25)'  },
     'Incompleta':   { color: C.muted,  bg: C.surface2,              border: C.border                },
   } as Record<string, { color: string; bg: string; border: string }>)[s] ?? { color: C.muted, bg: C.surface2, border: C.border }
+
+  if (carregando || !cursoDados) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: C.bg }}>
+        <span style={{ fontSize: '14px', color: C.muted }}>Carregando...</span>
+      </div>
+    )
+  }
+  const curso = cursoDados
 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -313,7 +392,7 @@ export function CursoDetalheColaborador({
 
             {/* ── PROVA ONLINE ── */}
             <div
-              onClick={() => onAbrirProva(curso.id)}
+              onClick={() => onAbrirProva(curso.id, curso.titulo)}
               style={{
                 background: C.surface,
                 border: `1px solid ${C.border}`,

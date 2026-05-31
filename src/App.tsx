@@ -24,7 +24,6 @@ import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { EdeconQuiz } from './pages/EdeconQuiz'
 import { ProvaOnline } from './pages/ProvaOnline'
 import { ThemeProvider } from './contexts/ThemeContext'
-import { cursosMockColaborador } from './data/cursosMock'
 import { getUsuario, sessaoAtiva, limparSessao } from './services/authStorage'
 import './App.css'
 
@@ -246,12 +245,9 @@ if (pagina === 'configuracoesAdmin') return (
         setAulaAtivaId(aulId)
         setPagina('videoAula')
       }}
-      onAbrirProva={(cursoId) => {
+      onAbrirProva={(cursoId, titulo) => {
         setCursoProvaSlug(cursoId)
-        setCursoProvaTitulo(
-          cursosMockColaborador.find(c => c.id === cursoId || c.slug === cursoId)?.titulo
-          ?? 'Avaliação Final'
-        )
+        setCursoProvaTitulo(titulo ?? 'Avaliação Final')
         setPagina('prova')
       }}
     />

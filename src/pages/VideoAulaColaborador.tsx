@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Play, Pause, SkipForward, Volume2, VolumeX,
   Maximize, Settings, ChevronRight,
@@ -9,7 +9,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
-import { cursosMockColaborador } from '../data/cursosMock'
+import { cursosAPI } from '../services/api'
 import modeloTreinamento from '../assets/modelo-treinamento.png'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
 
@@ -32,11 +32,21 @@ export function VideoAulaColaborador({
   const { C } = useTheme()
   const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
-  const curso = cursosMockColaborador.find(c => c.id === cursoId || c.slug === cursoId)
-    ?? cursosMockColaborador.find(c => c.id === 'coord-suprimentos')
-    ?? cursosMockColaborador[0]
-  const moduloAtivo = curso.modulos.find(m => m.id === moduloId) ?? curso.modulos[0]
-  const aulaAtiva = moduloAtivo.aulas.find(a => a.id === aulaId) ?? moduloAtivo.aulas[0]
+
+  const [carregando, setCarregando] = useState(true)
+  const [dados, setDados] = useState<{
+    titulo: string; totalAulas: number; aulasConcluidas: number
+    modulos: {
+      id: number; titulo: string
+      aulas: {
+        id: number; numero: number; titulo: string; descricao: string
+        duracao: string; status: string; progresso: number
+        videoUrl: string; videoDisponivel: boolean
+        materiais: { nome: string; tamanho: string; tipo: string; url: string }[]
+      }[]
+      aulasConcluidas: number; totalAulas: number
+    }[]
+  } | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [tocando, setTocando] = useState(false)
@@ -50,6 +60,43 @@ export function VideoAulaColaborador({
   const [abaAtiva, setAbaAtiva] = useState<'sobre' | 'materiais' | 'anotacoes' | 'perguntas'>('sobre')
   const [aulasConcluidas, setAulasConcluidas] = useState<number[]>([])
 
+  useEffect(() => {
+    let cancelado = false
+    async function carregar() {
+      try {
+        const modulosApi = await (cursosAPI.aulas(cursoId) as Promise<any[]>)
+        if (cancelado) return
+        const cursoApi = await (cursosAPI.buscarPorSlug(cursoId) as Promise<any>)
+        if (cancelado) return
+        const modulosMapped = (modulosApi ?? []).map((mod: any, i: number) => {
+          const aulas = (mod.aulas ?? []).map((a: any, j: number) => ({
+            id: a.ordem ?? j + 1,
+            numero: a.ordem ?? j + 1,
+            titulo: a.titulo ?? '',
+            descricao: a.descricao ?? '',
+            duracao: a.duracao ?? '',
+            status: a.progresso?.concluida ? 'Concluída' : 'Incompleta',
+            progresso: a.progresso?.percentual ?? 0,
+            videoUrl: a.video_url ?? '',
+            videoDisponivel: a.video_disponivel ?? false,
+            materiais: a.materiais ?? [],
+          }))
+          const conc = aulas.filter((a: any) => a.status === 'Concluída').length
+          return { id: i + 1, titulo: mod.titulo ?? '', aulas, totalAulas: aulas.length, aulasConcluidas: conc }
+        })
+        const totalAulas = modulosMapped.reduce((s: number, m: any) => s + m.totalAulas, 0)
+        const aulasConcl = modulosMapped.reduce((s: number, m: any) => s + m.aulasConcluidas, 0)
+        setDados({ titulo: cursoApi.titulo ?? '', totalAulas, aulasConcluidas: aulasConcl, modulos: modulosMapped })
+      } catch {
+        // show empty state
+      } finally {
+        if (!cancelado) setCarregando(false)
+      }
+    }
+    carregar()
+    return () => { cancelado = true }
+  }, [cursoId])
+
   const togglePlay = () => {
     if (!videoRef.current) { setTocando(!tocando); return }
     if (tocando) videoRef.current.pause()
@@ -61,16 +108,6 @@ export function VideoAulaColaborador({
     setModulosAbertos(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id])
   }
 
-  const marcarConcluida = () => {
-    if (!aulasConcluidas.includes(aulaAtiva.id)) {
-      setAulasConcluidas(prev => [...prev, aulaAtiva.id])
-    }
-  }
-
-  const concluida = aulasConcluidas.includes(aulaAtiva.id) || aulaAtiva.status === 'Concluída'
-  const totalConcluidas = aulasConcluidas.length + curso.aulasConcluidas
-  const progressoGeral = Math.round((totalConcluidas / curso.totalAulas) * 100)
-
   const onTimeUpdate = () => {
     const v = videoRef.current
     if (!v) return
@@ -80,6 +117,28 @@ export function VideoAulaColaborador({
     setTempoAtual(fmt(v.currentTime))
     setTempoTotal(fmt(total))
   }
+
+  if (carregando || !dados || !dados.modulos.length) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: C.bg }}>
+        <span style={{ fontSize: '14px', color: C.muted }}>{carregando ? 'Carregando...' : 'Nenhuma aula disponível.'}</span>
+      </div>
+    )
+  }
+
+  const curso = dados
+  const moduloAtivo = dados.modulos.find(m => m.id === moduloId) ?? dados.modulos[0]
+  const aulaAtiva = moduloAtivo.aulas.find(a => a.id === aulaId) ?? moduloAtivo.aulas[0]
+
+  const marcarConcluida = () => {
+    if (aulaAtiva && !aulasConcluidas.includes(aulaAtiva.id)) {
+      setAulasConcluidas(prev => [...prev, aulaAtiva.id])
+    }
+  }
+
+  const concluida = !!aulaAtiva && (aulasConcluidas.includes(aulaAtiva.id) || aulaAtiva.status === 'Concluída')
+  const totalConcluidas = aulasConcluidas.length + curso.aulasConcluidas
+  const progressoGeral = Math.round((totalConcluidas / (curso.totalAulas || 1)) * 100)
 
   return (
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>

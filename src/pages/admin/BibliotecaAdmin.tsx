@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Search, Filter, ChevronDown, ChevronLeft,
   ChevronRight, X, Download, Heart,
@@ -8,11 +8,12 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
+import { bibliotecaAPI } from '../../services/api'
 
 type TipoMaterial = 'Livro' | 'Artigo' | 'Manual' | 'Norma' | 'E-book'
 
 interface Material {
-  id: number
+  id: string
   titulo: string
   autor: string
   tipo: TipoMaterial
@@ -21,38 +22,13 @@ interface Material {
   paginas: number
   descricao: string
   cor: string
-  corSecundaria: string
+  url: string | null
   downloads: number
   favoritos: number
   status: 'Disponível' | 'Em revisão'
   destaque: boolean
-  dataAdicao: string
 }
 
-const materiaisMock: Material[] = [
-  { id:1,  titulo:'Manual de Construção Civil — Fundamentos e Práticas',        autor:'Hélio Rubens de Queiroz',      tipo:'Manual',  categoria:'Obras e Infraestrutura', ano:2022, paginas:480, descricao:'Guia completo para profissionais da construção civil, cobrindo desde fundações até acabamentos com normas atualizadas.',                cor:'#1a56ff', corSecundaria:'#93c5fd', downloads:342, favoritos:89,  status:'Disponível', destaque:true,  dataAdicao:'10/01/2025' },
-  { id:2,  titulo:'Segurança do Trabalho na Construção Civil',                  autor:'Eduardo de Paula Santos',      tipo:'Livro',   categoria:'Segurança do Trabalho',  ano:2023, paginas:320, descricao:'Aborda as principais normas regulamentadoras aplicadas à construção civil, com foco em prevenção de acidentes e saúde ocupacional.',  cor:'#dc2626', corSecundaria:'#fca5a5', downloads:289, favoritos:74,  status:'Disponível', destaque:true,  dataAdicao:'15/01/2025' },
-  { id:3,  titulo:'Gestão da Qualidade em Obras',                               autor:'Silvio Burrattino Melhado',    tipo:'Livro',   categoria:'Gestão e Suprimentos',   ano:2021, paginas:256, descricao:'Técnicas e metodologias para implementação de sistemas de gestão da qualidade em canteiros de obras.',                                  cor:'#7c3aed', corSecundaria:'#c4b5fd', downloads:198, favoritos:52,  status:'Disponível', destaque:false, dataAdicao:'20/01/2025' },
-  { id:4,  titulo:'Topografia Aplicada à Engenharia Civil',                     autor:'Ernesto Mikhailoff Espartel',  tipo:'Livro',   categoria:'Obras e Infraestrutura', ano:2022, paginas:412, descricao:'Fundamentos teóricos e práticos de topografia com aplicações em levantamentos planimétricos e altimétricos.',                          cor:'#0891b2', corSecundaria:'#67e8f9', downloads:156, favoritos:41,  status:'Disponível', destaque:false, dataAdicao:'05/02/2025' },
-  { id:5,  titulo:'Terraplanagem — Técnicas e Equipamentos',                    autor:'Paulo Massato Yoshinaga',      tipo:'Manual',  categoria:'Terraplanagem',          ano:2023, paginas:280, descricao:'Manual técnico sobre movimentação de terra, compactação e operação de máquinas pesadas em obras de terraplanagem.',                     cor:'#854d0e', corSecundaria:'#fde68a', downloads:134, favoritos:38,  status:'Disponível', destaque:true,  dataAdicao:'10/02/2025' },
-  { id:6,  titulo:'NR-35 Comentada — Trabalho em Altura',                       autor:'Fundacentro',                  tipo:'Norma',   categoria:'Segurança do Trabalho',  ano:2023, paginas:96,  descricao:'Texto completo da norma NR-35 com comentários técnicos, exemplos práticos e casos aplicados ao trabalho em altura.',                   cor:'#dc2626', corSecundaria:'#fca5a5', downloads:412, favoritos:112, status:'Disponível', destaque:true,  dataAdicao:'15/02/2025' },
-  { id:7,  titulo:'Pavimentação Asfáltica — Projetos e Execução',              autor:'Liedi Légi Bernucci',          tipo:'Livro',   categoria:'Pavimentação',           ano:2022, paginas:508, descricao:'Referência completa em pavimentação asfáltica, cobrindo desde o projeto executivo até a manutenção de pavimentos.',                      cor:'#374151', corSecundaria:'#9ca3af', downloads:167, favoritos:45,  status:'Disponível', destaque:false, dataAdicao:'20/02/2025' },
-  { id:8,  titulo:'Gestão de Projetos na Construção Civil',                     autor:'Arlindo Philippi Jr',          tipo:'Livro',   categoria:'Gestão e Suprimentos',   ano:2021, paginas:334, descricao:'Metodologias ágeis e tradicionais aplicadas ao gerenciamento de projetos de construção civil.',                                        cor:'#059669', corSecundaria:'#6ee7b7', downloads:178, favoritos:58,  status:'Disponível', destaque:false, dataAdicao:'01/03/2025' },
-  { id:9,  titulo:'NBR 6118 — Projeto de Estruturas de Concreto',              autor:'ABNT',                         tipo:'Norma',   categoria:'Obras e Infraestrutura', ano:2023, paginas:256, descricao:'Norma brasileira para projeto de estruturas de concreto armado e protendido, atualizada com as últimas revisões técnicas.',            cor:'#1f2937', corSecundaria:'#6b7280', downloads:523, favoritos:145, status:'Disponível', destaque:true,  dataAdicao:'05/03/2025' },
-  { id:10, titulo:'Instalações Elétricas na Construção Civil',                  autor:'Geraldo Kindermann',           tipo:'Livro',   categoria:'Manutenção Elétrica',    ano:2022, paginas:388, descricao:'Projeto, execução e manutenção de instalações elétricas prediais conforme as normas técnicas vigentes.',                              cor:'#f59e0b', corSecundaria:'#fde68a', downloads:145, favoritos:39,  status:'Disponível', destaque:false, dataAdicao:'10/03/2025' },
-  { id:11, titulo:'Manutenção Mecânica Industrial',                             autor:'Roberto Pinto',                tipo:'Manual',  categoria:'Manutenção Mecânica',    ano:2021, paginas:298, descricao:'Guia técnico para manutenção preventiva e corretiva de equipamentos e máquinas utilizadas em obras civis.',                            cor:'#16a34a', corSecundaria:'#86efac', downloads:112, favoritos:29,  status:'Disponível', destaque:false, dataAdicao:'15/03/2025' },
-  { id:12, titulo:'Primeiros Socorros no Trabalho',                             autor:'SESI-SP',                      tipo:'Manual',  categoria:'Segurança do Trabalho',  ano:2023, paginas:128, descricao:'Manual prático de primeiros socorros para ambientes industriais e de construção civil com protocolos de atendimento de emergências.',cor:'#dc2626', corSecundaria:'#fca5a5', downloads:267, favoritos:71,  status:'Disponível', destaque:false, dataAdicao:'01/04/2025' },
-  { id:13, titulo:'Sustentabilidade na Construção Civil',                       autor:'Alex Abiko',                   tipo:'Artigo',  categoria:'Gestão e Suprimentos',   ano:2023, paginas:48,  descricao:'Análise das principais práticas sustentáveis aplicadas à construção civil brasileira com casos de estudo.',                            cor:'#15803d', corSecundaria:'#4ade80', downloads:89,  favoritos:34,  status:'Disponível', destaque:false, dataAdicao:'05/04/2025' },
-  { id:14, titulo:'Fundações — Teoria e Prática',                              autor:'Waldemar Couto Hachich',       tipo:'Livro',   categoria:'Obras e Infraestrutura', ano:2022, paginas:566, descricao:'Obra de referência em fundações e obras de terra, abrangendo projeto, execução e controle de qualidade.',                             cor:'#92400e', corSecundaria:'#fcd34d', downloads:198, favoritos:62,  status:'Disponível', destaque:false, dataAdicao:'10/04/2025' },
-  { id:15, titulo:'Concreto — Estrutura, Propriedades e Materiais',            autor:'Paulo Roberto do Lago Helene', tipo:'Livro',   categoria:'Obras e Infraestrutura', ano:2021, paginas:476, descricao:'Estudo aprofundado das propriedades do concreto e tecnologias de dosagem para estruturas de alto desempenho.',                        cor:'#4b5563', corSecundaria:'#9ca3af', downloads:156, favoritos:48,  status:'Disponível', destaque:false, dataAdicao:'15/04/2025' },
-  { id:16, titulo:'Planejamento e Controle de Obras',                           autor:'Aldo Dórea Mattos',            tipo:'Livro',   categoria:'Gestão e Suprimentos',   ano:2023, paginas:344, descricao:'Técnicas de planejamento com uso de cronogramas, curva S e gestão de recursos em obras de construção civil.',                         cor:'#db2777', corSecundaria:'#f9a8d4', downloads:234, favoritos:67,  status:'Disponível', destaque:true,  dataAdicao:'20/04/2025' },
-  { id:17, titulo:'Gestão Ambiental em Canteiro de Obras',                     autor:'Tarcísio de Paula Pinto',      tipo:'Artigo',  categoria:'Segurança do Trabalho',  ano:2022, paginas:36,  descricao:'Diretrizes para gestão de resíduos sólidos e impactos ambientais gerados em canteiros de obras urbanas.',                           cor:'#059669', corSecundaria:'#6ee7b7', downloads:76,  favoritos:22,  status:'Em revisão',  destaque:false, dataAdicao:'01/05/2025' },
-  { id:18, titulo:'Excel Avançado para Engenheiros',                            autor:'Mário Salvatore Giammusso',    tipo:'E-book',  categoria:'Gestão e Suprimentos',   ano:2023, paginas:180, descricao:'Domínio de fórmulas, macros e dashboards no Excel aplicados à engenharia civil e gestão de obras.',                                    cor:'#1a56ff', corSecundaria:'#93c5fd', downloads:312, favoritos:95,  status:'Disponível', destaque:false, dataAdicao:'05/05/2025' },
-  { id:19, titulo:'Liderança e Gestão de Equipes em Obras',                    autor:'José Finocchio Jr',            tipo:'E-book',  categoria:'Obras e Infraestrutura', ano:2023, paginas:220, descricao:'Desenvolvimento de competências de liderança aplicadas ao gerenciamento de equipes multidisciplinares em canteiros de obras.',        cor:'#6d28d9', corSecundaria:'#ddd6fe', downloads:189, favoritos:54,  status:'Disponível', destaque:false, dataAdicao:'10/05/2025' },
-  { id:20, titulo:'Orçamento de Obras — Teoria e Prática',                     autor:'Antônio Edésio Jungles',       tipo:'Livro',   categoria:'Gestão e Suprimentos',   ano:2022, paginas:398, descricao:'Metodologia completa para elaboração de orçamentos de obras civis com tabelas de composições e encargos sociais.',                    cor:'#0891b2', corSecundaria:'#67e8f9', downloads:267, favoritos:82,  status:'Disponível', destaque:false, dataAdicao:'15/05/2025' },
-]
-
-const categorias = ['Todas as categorias', ...Array.from(new Set(materiaisMock.map(m => m.categoria))).sort()]
 const tipos: TipoMaterial[] = ['Livro', 'Artigo', 'Manual', 'Norma', 'E-book']
 const ITENS_POR_PAGINA = 12
 
@@ -226,6 +202,7 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
   onLogout: () => void
 }) {
   const { C } = useTheme()
+  const [materiais, setMateriais] = useState<Material[]>([])
   const [busca, setBusca] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todas as categorias')
   const [tipoFiltro, setTipoFiltro] = useState<'Todos' | TipoMaterial>('Todos')
@@ -235,8 +212,25 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
   const [modalMat, setModalMat] = useState<Material | null>(null)
   const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
 
+  useEffect(() => {
+    ;(bibliotecaAPI.listar() as Promise<any[]>).then(rows => {
+      setMateriais((rows ?? []).map((r: any) => ({
+        id: r.id, titulo: r.titulo, autor: r.autor ?? '',
+        tipo: r.tipo as TipoMaterial, categoria: r.categoria ?? '',
+        ano: r.ano ?? 0, paginas: r.paginas ?? 0, descricao: r.descricao ?? '',
+        cor: r.cor ?? '#1a56ff', url: r.url ?? null,
+        downloads: r.downloads ?? 0, favoritos: r.favoritos ?? 0,
+        status: r.status as 'Disponível' | 'Em revisão', destaque: r.destaque ?? false,
+      })))
+    }).catch(() => {})
+  }, [])
+
+  const categorias = useMemo(() => (
+    ['Todas as categorias', ...Array.from(new Set(materiais.map(m => m.categoria))).sort()]
+  ), [materiais])
+
   const materiaiFiltrados = useMemo(() => {
-    return materiaisMock.filter(m => {
+    return materiais.filter(m => {
       const matchBusca     = m.titulo.toLowerCase().includes(busca.toLowerCase()) ||
                              m.autor.toLowerCase().includes(busca.toLowerCase()) ||
                              m.categoria.toLowerCase().includes(busca.toLowerCase())
@@ -246,7 +240,7 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
       const matchDestaque  = !apenasDestaques || m.destaque
       return matchBusca && matchCategoria && matchTipo && matchStatus && matchDestaque
     })
-  }, [busca, categoriaFiltro, tipoFiltro, statusFiltro, apenasDestaques])
+  }, [materiais, busca, categoriaFiltro, tipoFiltro, statusFiltro, apenasDestaques])
 
   const totalPaginas = Math.ceil(materiaiFiltrados.length / ITENS_POR_PAGINA)
   const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA
@@ -260,8 +254,8 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
     setApenasDestaques(false); setPaginaAtual(1)
   }
 
-  const totalDownloads = materiaisMock.reduce((s, m) => s + m.downloads, 0)
-  const totalFavoritos = materiaisMock.reduce((s, m) => s + m.favoritos, 0)
+  const totalDownloads = materiais.reduce((s, m) => s + m.downloads, 0)
+  const totalFavoritos = materiais.reduce((s, m) => s + m.favoritos, 0)
 
   const corTipo = (t: string) => ({
     'Livro':  C.blue,    'Artigo': '#10b981',
@@ -285,7 +279,7 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>Biblioteca Digital</h1>
             <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
-              {materiaiFiltrados.length} de {materiaisMock.length} materiais
+              {materiaiFiltrados.length} de {materiais.length} materiais
             </p>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -309,9 +303,9 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
         {/* Métricas */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
           {[
-            { label: 'Total de Materiais', valor: materiaisMock.length,                                                                     icon: BookOpen,    cor: C.blue    },
-            { label: 'Livros',             valor: materiaisMock.filter(m => m.tipo === 'Livro').length,                                      icon: BookMarked,  cor: '#7c3aed' },
-            { label: 'Artigos e Normas',   valor: materiaisMock.filter(m => m.tipo === 'Artigo' || m.tipo === 'Norma').length,               icon: FileText,    cor: '#dc2626' },
+            { label: 'Total de Materiais', valor: materiais.length,                                                                     icon: BookOpen,    cor: C.blue    },
+            { label: 'Livros',             valor: materiais.filter(m => m.tipo === 'Livro').length,                                      icon: BookMarked,  cor: '#7c3aed' },
+            { label: 'Artigos e Normas',   valor: materiais.filter(m => m.tipo === 'Artigo' || m.tipo === 'Norma').length,               icon: FileText,    cor: '#dc2626' },
             { label: 'Total Downloads',    valor: totalDownloads.toLocaleString(),                                                           icon: Download,    cor: '#10b981' },
             { label: 'Total Favoritos',    valor: totalFavoritos,                                                                            icon: Heart,       cor: '#f59e0b' },
           ].map(m => (
