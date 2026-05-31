@@ -182,7 +182,7 @@ export default function Login({ onLogin }: LoginProps) {
           gap: '20px',
           zIndex: 10,
         }}>
-          <Logo height={72} />
+          <Logo height={72} forceClara />
           <div style={{
             width: '1.5px',
             height: '48px',

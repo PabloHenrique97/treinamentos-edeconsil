@@ -3,15 +3,17 @@ import logoClara  from '../assets/logo-edeconsil.png'
 import { useTheme } from '../contexts/ThemeContext'
 
 interface LogoProps {
-  height?: number
+  height?:     number
+  width?:      number
+  forceClara?: boolean
 }
 
-export function Logo({ height = 32 }: LogoProps) {
+export function Logo({ height = 32, forceClara }: LogoProps) {
   const { isDark } = useTheme()
 
   return (
     <img
-      src={isDark ? logoClara : logoEscura}
+      src={forceClara || isDark ? logoClara : logoEscura}
       alt="Edeconsil"
       style={{
         height: `${height}px`,
