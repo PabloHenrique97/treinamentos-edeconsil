@@ -3,6 +3,7 @@ import { Search, Users, BookOpen, GraduationCap, RefreshCw } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { turmasAPI } from '../../services/api'
+import { useBreakpoint } from '../../hooks/useMobile'
 
 interface TurmasAdminProps {
   onNavigate: (page: string) => void
@@ -51,6 +52,7 @@ const CORES: Record<string, string> = {
 
 export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
   const { C } = useTheme()
+  const { cols } = useBreakpoint()
 
   const [turmas,       setTurmas]       = useState<any[]>([])
   const [carregando,   setCarregando]   = useState(true)
@@ -135,7 +137,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
 
         {/* Métricas */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4,1fr)',
+          display: 'grid', gridTemplateColumns: `repeat(${cols(2, 2, 4)}, 1fr)`,
           gap: '12px', marginBottom: '24px',
         }}>
           {[

@@ -4,6 +4,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { useNotificacoes } from '../hooks/useNotificacoes'
 import { DropdownNotificacoes } from './DropdownNotificacoes'
+import { useMobile } from '../hooks/useMobile'
 
 interface TopbarItem {
   label: string
@@ -28,6 +29,7 @@ export function Topbar({
   onNavigate,
 }: TopbarProps) {
   const { C } = useTheme()
+  const isMobile = useMobile()
   const { nome, iniciais, perfil } = useUsuarioLogado()
   const {
     notificacoes, contador, aberto, carregando,
@@ -47,12 +49,12 @@ export function Topbar({
       borderBottom: `1px solid ${C.border}`,
       display: 'flex',
       alignItems: 'center',
-      padding: '0 20px',
+      padding: isMobile ? '0 12px' : '0 20px',
       gap: '20px',
     }}>
 
       {/* Links de navegação */}
-      {navItems.map(item => (
+      {!isMobile && navItems.map(item => (
         <span
           key={item.label}
           onClick={item.onClick}
@@ -82,7 +84,7 @@ export function Topbar({
         border: `1px solid ${C.border}`,
         borderRadius: '8px',
         padding: '7px 14px',
-        width: '240px',
+        width: isMobile ? '140px' : '240px',
         flexShrink: 0,
       }}>
         <Search size={13} color={C.muted} />

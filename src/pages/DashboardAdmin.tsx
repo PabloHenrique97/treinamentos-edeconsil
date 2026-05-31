@@ -5,6 +5,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext'
 import { LayoutAdmin } from '../components/admin/LayoutAdmin'
 import { useMetricasAdmin } from '../hooks/useMetricasAdmin'
+import { useBreakpoint } from '../hooks/useMobile'
 
 const metricasBase = [
   { icon: BookOpen,      label: 'Total de Cursos',   cor: '#3b82f6', spark: [10,15,12,20,18,25,22,28,24,32,30,38] },
@@ -46,6 +47,7 @@ function Sparkline({ data, cor }: { data: number[]; cor: string }) {
 export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: string) => void; onLogout: () => void }) {
   const { C } = useTheme()
   const m = useMetricasAdmin()
+  const { isMobile, isTablet, cols } = useBreakpoint()
 
   const valoresMetricas = [
     m.cursos.total,
@@ -71,10 +73,10 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
       topbarTitulo="Olá, Administrador! 👋"
       topbarSubtitulo="Bem-vindo ao painel de gestão da Universidade Corporativa."
     >
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ padding: isMobile ? '12px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
 {/* ── MÉTRICAS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols(2, 2, 4)}, 1fr)`, gap: '12px' }}>
             {metricas.map(mt => (
               <div key={mt.label} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
@@ -94,7 +96,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           </div>
 
           {/* ── LINHA 2: Gráfico + Atividades + Distribuição ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px 280px', gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 320px' : '1fr 320px 280px', gap: '16px', alignItems: 'start' }}>
 
             {/* Gráfico Matrículas */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
@@ -151,7 +153,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           </div>
 
           {/* ── LINHA 3: Cursos + Taxa Conclusão + Status + Ações Rápidas ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 220px 200px', gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 220px 220px 200px', gap: '16px', alignItems: 'start' }}>
 
             {/* Cursos mais acessados */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
@@ -249,7 +251,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           </div>
 
           {/* ── CURSOS RECENTES + ALUNOS RECENTES ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
 
             {/* Cursos Recentes */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
@@ -322,7 +324,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           {/* ── GERENCIAMENTO RÁPIDO ── */}
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
             <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '14px' }}>Gerenciamento Rápido</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols(2, 3, 5)}, 1fr)`, gap: '12px' }}>
               {acoes.map(a => (
                 <div key={a.label}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '16px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer', transition: 'all 150ms', textAlign: 'center' }}

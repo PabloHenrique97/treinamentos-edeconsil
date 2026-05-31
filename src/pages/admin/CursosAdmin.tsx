@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { cursosAPI } from '../../services/api'
 import { CriarCurso } from './CriarCurso'
+import { useBreakpoint } from '../../hooks/useMobile'
 
 const cargos = [
   'Todos os cargos',
@@ -39,6 +40,7 @@ export function CursosAdmin({ onNavigate, onLogout, onAbrirCurso }: {
   onAbrirCurso: (slug: string) => void
 }) {
   const { C } = useTheme()
+  const { isMobile, cols } = useBreakpoint()
   const [busca, setBusca] = useState('')
   const [cargoFiltro, setCargoFiltro] = useState('Todos os cargos')
   const [trilhaFiltro, setTrilhaFiltro] = useState('Todas as trilhas')
@@ -214,7 +216,7 @@ export function CursosAdmin({ onNavigate, onLogout, onAbrirCurso }: {
           </div>
 
           {/* Métricas */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols(2, 2, 4)}, 1fr)`, gap: '12px', marginBottom: '20px' }}>
             {[
               { label: 'Total de Cursos',   valor: cursos.length,   icone: BookOpen,   cor: C.blue    },
               { label: 'Cursos Ativos',     valor: totalAtivos,     icone: TrendingUp, cor: '#10b981' },
@@ -257,7 +259,7 @@ export function CursosAdmin({ onNavigate, onLogout, onAbrirCurso }: {
 
           {/* Grid de cards */}
           {visualizacao === 'grid' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
               {carregando && (
                 <div style={{ gridColumn: '1/-1', padding: '40px', textAlign: 'center', fontSize: '13px', color: C.muted }}>
                   Carregando cursos...

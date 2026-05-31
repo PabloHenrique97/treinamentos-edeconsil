@@ -6,6 +6,7 @@ import { Topbar } from '../components/Topbar'
 import { useChat } from '../hooks/useChat'
 import type { Mensagem } from '../hooks/useChat'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
+import { useMobile } from '../hooks/useMobile'
 
 interface MensagensColaboradorProps {
   onNavigate: (page: string) => void
@@ -17,6 +18,7 @@ const BASE_URL = _apiUrl.replace(/\/api\/?$/, '')
 
 export function MensagensColaborador({ onNavigate, onLogout }: MensagensColaboradorProps) {
   const { C } = useTheme()
+  const isMobile = useMobile()
   const { nome, iniciais, id: meuId } = useUsuarioLogado()
   const { mensagens, conversa, status, enviando, enviarMensagem, uploadArquivo } = useChat()
 
@@ -118,7 +120,7 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
           <div style={{
             width: '280px', flexShrink: 0,
             borderRight: `1px solid ${C.border}`,
-            display: 'flex', flexDirection: 'column',
+            display: isMobile ? 'none' : 'flex', flexDirection: 'column',
             background: C.surface,
           }}>
             {/* Header */}

@@ -63,7 +63,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
         </div>
 
         {/* Busca */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '8px 14px', flex: 1 }}>
             <Search size={14} color={C.muted} />
             <input
@@ -81,7 +81,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
         </div>
 
         {/* Tabela */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: C.surface2 }}>

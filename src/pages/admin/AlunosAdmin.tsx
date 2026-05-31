@@ -6,6 +6,7 @@ import { CadastroAluno } from './CadastroAluno'
 import { EditarAluno } from './EditarAluno'
 import { ImportarAlunosModal } from '../../components/admin/ImportarAlunosModal'
 import { usuariosAPI } from '../../services/api'
+import { useBreakpoint } from '../../hooks/useMobile'
 
 interface Aluno {
   id: string
@@ -53,6 +54,7 @@ interface AlunosAdminProps {
 
 export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const { C } = useTheme()
+  const { cols } = useBreakpoint()
 
   const [alunos, setAlunos]                           = useState<Aluno[]>([])
   const [carregando, setCarregando]                   = useState(false)
@@ -208,7 +210,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
       topbarSubtitulo="Gerencie os colaboradores matriculados"
     >
       {/* Métricas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols(1, 3, 3)}, 1fr)`, gap: '16px', marginBottom: '24px' }}>
         {metricas.map(m => {
           const Icon = m.icon
           return (

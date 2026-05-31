@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { instrutoresAPI } from '../../services/api'
 import { EditarInstrutor } from './EditarInstrutor'
+import { useBreakpoint } from '../../hooks/useMobile'
 
 interface InstrutoresAdminProps {
   onNavigate: (page: string) => void
@@ -12,6 +13,7 @@ interface InstrutoresAdminProps {
 
 export function InstrutoresAdmin({ onNavigate, onLogout }: InstrutoresAdminProps) {
   const { C } = useTheme()
+  const { isMobile, cols } = useBreakpoint()
 
   const [instrutores,    setInstrutores]    = useState<any[]>([])
   const [carregando,     setCarregando]     = useState(true)
@@ -137,7 +139,7 @@ export function InstrutoresAdmin({ onNavigate, onLogout }: InstrutoresAdminProps
         </div>
 
         {/* Estatísticas */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols(2, 2, 4)}, 1fr)`, gap: '12px', marginBottom: '24px' }}>
           {[
             { label: 'Total',   valor: total,       icone: '👨‍🏫', cor: C.blue    },
             { label: 'Ativos',  valor: ativos,      icone: '✅',   cor: '#10b981' },
@@ -232,7 +234,7 @@ export function InstrutoresAdmin({ onNavigate, onLogout }: InstrutoresAdminProps
             )}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
             {instrutores.map(inst => (
               <div
                 key={inst.id}

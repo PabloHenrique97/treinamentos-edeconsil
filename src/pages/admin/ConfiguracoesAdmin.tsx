@@ -9,6 +9,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { useConfiguracoes } from '../../hooks/useConfiguracoes'
+import { useMobile } from '../../hooks/useMobile'
 
 interface ConfiguracoesAdminProps {
   onNavigate: (page: string) => void
@@ -18,6 +19,7 @@ interface ConfiguracoesAdminProps {
 export function ConfiguracoesAdmin({ onNavigate, onLogout }: ConfiguracoesAdminProps) {
   const { C, toggleTheme, isDark } = useTheme()
   const { config, atualizar, salvar, salvando, mensagem, tipoMsg, restaurarPadroes } = useConfiguracoes()
+  const isMobile = useMobile()
 
   const [secaoAtiva, setSecaoAtiva] = useState('perfil')
   const [mostrarApiKey, setMostrarApiKey] = useState(false)
@@ -498,13 +500,13 @@ export function ConfiguracoesAdmin({ onNavigate, onLogout }: ConfiguracoesAdminP
       topbarTitulo="Configurações"
       topbarSubtitulo="Gerencie as configurações gerais da plataforma."
     >
-      <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
+      <div style={{ display: isMobile ? 'block' : 'flex', height: isMobile ? 'auto' : 'calc(100vh - 60px)', overflow: isMobile ? 'auto' : 'hidden' }}>
 
         {/* Sidebar de navegação */}
-        <div style={{ width: '220px', flexShrink: 0, borderRight: `1px solid ${C.border}`, overflowY: 'auto', background: C.surface, padding: '16px 0' }}>
+        <div style={{ width: isMobile ? '100%' : '220px', flexShrink: 0, borderRight: isMobile ? 'none' : `1px solid ${C.border}`, borderBottom: isMobile ? `1px solid ${C.border}` : 'none', overflowX: isMobile ? 'auto' : 'visible', overflowY: isMobile ? 'hidden' : 'auto', display: isMobile ? 'flex' : 'block', background: C.surface, padding: isMobile ? '8px' : '16px 0' }}>
           {menuItens.map(grupo => (
             <div key={grupo.grupo}>
-              <p style={{ fontSize: '10px', fontWeight: 800, color: C.muted, margin: '16px 16px 6px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 800, color: C.muted, margin: '16px 16px 6px', textTransform: 'uppercase', letterSpacing: '0.8px', display: isMobile ? 'none' : 'block' }}>
                 {grupo.grupo}
               </p>
               {grupo.itens.map(item => (
@@ -513,7 +515,7 @@ export function ConfiguracoesAdmin({ onNavigate, onLogout }: ConfiguracoesAdminP
                   onClick={() => setSecaoAtiva(item.key)}
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '9px 16px', background: secaoAtiva === item.key ? 'rgba(26,86,255,0.08)' : 'none',
+                    padding: isMobile ? '8px 12px' : '9px 16px', background: secaoAtiva === item.key ? 'rgba(26,86,255,0.08)' : 'none', whiteSpace: 'nowrap' as const,
                     border: 'none',
                     borderLeft: secaoAtiva === item.key ? `3px solid ${config.corPrimaria}` : '3px solid transparent',
                     cursor: 'pointer', fontSize: '13px',
