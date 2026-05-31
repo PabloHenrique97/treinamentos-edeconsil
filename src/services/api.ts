@@ -174,6 +174,10 @@ export const turmasAPI = {
   listar: () => apiRequest<unknown[]>('/turmas'),
 }
 
+export const indicadoresAPI = {
+  buscar: () => apiRequest('/admin/indicadores'),
+}
+
 export const notificacoesAPI = {
   listar: () =>
     apiRequest<{ notificacoes: unknown[]; naoLidas: number }>('/notificacoes'),
