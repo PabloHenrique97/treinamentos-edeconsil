@@ -491,7 +491,7 @@ export function VideoAulaColaborador({
                   >
                     <div style={{ flex: 1, marginRight: '8px' }}>
                       <div style={{ fontSize: '12px', fontWeight: 600, color: C.text, lineHeight: 1.4 }}>{mod.titulo}</div>
-                      <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>{mod.aulasConcluidas}/{mod.totalAulas}</div>
+                      <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>{mod.aulas.filter(a => aulasConcluidas.includes(a.id) || a.status === 'Concluída').length}/{mod.totalAulas}</div>
                     </div>
                     {modulosAbertos.includes(mod.id) ? <ChevronUp size={14} color={C.muted} /> : <ChevronRight size={14} color={C.muted} />}
                   </div>

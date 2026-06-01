@@ -109,6 +109,7 @@ function AppContent() {
   const [aulaAtivaId, setAulaAtivaId] = useState<number>(1)
   const [cursoProvaSlug, setCursoProvaSlug]     = useState('coord-suprimentos')
   const [cursoProvaTitulo, setCursoProvaTitulo] = useState('Coordenação de Suprimentos')
+  const [navKey, setNavKey] = useState(0)
 
   const handleLogout = () => {
     limparSessao()
@@ -217,6 +218,7 @@ if (pagina === 'configuracoesAdmin') return (
       onLogout={() => { limparSessao(); setLogado(false) }}
       onVoltarDetalhe={() => {
         setCursoAtivoId(cursoProvaSlug)
+        setNavKey(k => k + 1)
         setPagina('cursoDetalhe')
       }}
     />
@@ -235,6 +237,7 @@ if (pagina === 'configuracoesAdmin') return (
 
   if (pagina === 'cursoDetalhe') return (
     <CursoDetalheColaborador
+      key={navKey}
       cursoId={cursoAtivoId}
       onNavigate={(p) => setPagina(p as Pagina)}
       onLogout={handleLogout}
@@ -263,6 +266,7 @@ if (pagina === 'configuracoesAdmin') return (
       onVoltarLista={() => setPagina('meusCursos')}
       onVoltarDetalhe={(id) => {
         setCursoAtivoId(id)
+        setNavKey(k => k + 1)
         setPagina('cursoDetalhe')
       }}
       onTrocarAula={(id, modId, aulId) => {
