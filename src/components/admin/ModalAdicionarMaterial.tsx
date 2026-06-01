@@ -35,6 +35,7 @@ export function ModalAdicionarMaterial({ onFechar, onSucesso }: Props) {
   const [descricao,     setDescricao]     = useState('')
   const [cor,           setCor]           = useState('#0d2550')
   const [destaque,      setDestaque]      = useState(false)
+  const [tipo,          setTipo]          = useState('E-book')
   const [enviando,      setEnviando]      = useState(false)
   const [erro,          setErro]          = useState('')
   const [sucesso,       setSucesso]       = useState(false)
@@ -75,8 +76,8 @@ export function ModalAdicionarMaterial({ onFechar, onSucesso }: Props) {
       form.append('descricao', descricao.trim())
       form.append('cor',       cor)
       form.append('destaque',  String(destaque))
-      form.append('tipo',      'PDF')
-      form.append('status',    'ativo')
+      form.append('tipo',      tipo)
+      form.append('status',    'Disponível')
 
       const resultado = await bibliotecaAPI.upload(form) as any
       setMaterialCriado(resultado.material)
@@ -242,6 +243,21 @@ export function ModalAdicionarMaterial({ onFechar, onSucesso }: Props) {
           style={{ ...inputStyle, cursor: 'pointer', color: categoria ? C.text : C.muted }}>
           <option value="">Selecione a categoria</option>
           {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+        </select>
+      </div>
+
+      {/* Tipo */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Tipo</label>
+        <select value={tipo}
+          onChange={e => setTipo(e.target.value)}
+          onKeyDown={stopKeys} onFocus={onFocus} onBlur={onBlur}
+          style={{ ...inputStyle, cursor: 'pointer' }}>
+          <option value="Livro">Livro</option>
+          <option value="E-book">E-book</option>
+          <option value="Manual">Manual</option>
+          <option value="Artigo">Artigo</option>
+          <option value="Norma">Norma</option>
         </select>
       </div>
 
