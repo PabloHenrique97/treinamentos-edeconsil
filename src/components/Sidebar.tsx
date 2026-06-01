@@ -18,14 +18,6 @@ const navItems = [
   { label: 'Trilhas de Aprendizado',page: 'trilha',     icon: GitBranch        },
 ]
 
-const categorias = [
-  'Obras e Infraestrutura',
-  'Terraplanagem',
-  'Pavimentação',
-  'Equipamentos',
-  'Segurança do Trabalho',
-  'Gestão e Suprimentos',
-]
 
 interface SidebarProps {
   paginaAtiva: string
@@ -115,40 +107,6 @@ export function Sidebar({ paginaAtiva, onNavigate, onLogout }: SidebarProps) {
         })}
       </div>
 
-      {/* Categorias */}
-      <div style={{ padding: '0 8px', flexShrink: 0 }}>
-        <div style={{
-          fontSize: '9px', fontWeight: 700, color: C.muted,
-          letterSpacing: '1px', padding: '4px 12px 8px',
-          textTransform: 'uppercase',
-        }}>
-          Categorias
-        </div>
-        {categorias.map(cat => (
-          <div
-            key={cat}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 150ms',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,86,255,0.06)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{
-              width: '6px', height: '6px',
-              borderRadius: '50%',
-              background: C.muted,
-              flexShrink: 0,
-            }} />
-            <span style={{ fontSize: '12px', color: C.muted2 }}>{cat}</span>
-          </div>
-        ))}
-      </div>
 
       {/* Espaço flex */}
       <div style={{ flex: 1 }} />
