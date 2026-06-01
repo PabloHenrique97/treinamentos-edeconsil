@@ -9,6 +9,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { bibliotecaAPI } from '../../services/api'
+import { ModalAdicionarMaterial } from '../../components/admin/ModalAdicionarMaterial'
 
 type TipoMaterial = 'Livro' | 'Artigo' | 'Manual' | 'Norma' | 'E-book'
 
@@ -134,7 +135,7 @@ function IconeTipo({ tipo, size = 14, color }: { tipo: TipoMaterial; size?: numb
   return <Icon size={size} color={color} />
 }
 
-function ModalMaterial({ mat, onFechar, C }: { mat: Material; onFechar: () => void; C: Record<string, string> }) {
+function ModalMaterial({ mat, onFechar, onExcluir, C }: { mat: Material; onFechar: () => void; onExcluir?: () => void; C: Record<string, string> }) {
   return (
     <div onClick={onFechar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '760px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}` }}>
@@ -182,13 +183,28 @@ function ModalMaterial({ mat, onFechar, C }: { mat: Material; onFechar: () => vo
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-              <button style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 500, color: C.text, cursor: 'pointer' }}>
-                <Heart size={14} /> Favoritar
-              </button>
-              <button style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: mat.cor, border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
-                <Download size={14} /> Baixar material
-              </button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', flexWrap: 'wrap' }}>
+              {onExcluir && (
+                <button
+                  onClick={onExcluir}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', fontWeight: 600, color: '#ef4444', cursor: 'pointer' }}>
+                  🗑️ Excluir
+                </button>
+              )}
+              {mat.url ? (
+                <a
+                  href={`${(import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace('/api', '')}${mat.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => bibliotecaAPI.registrarDownload(mat.id)}
+                  style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: mat.cor, borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer', textDecoration: 'none' }}>
+                  <Download size={14} /> Baixar PDF
+                </a>
+              ) : (
+                <button style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: mat.cor, border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'not-allowed', opacity: 0.5 }} disabled>
+                  <Download size={14} /> Sem arquivo
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -210,9 +226,10 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
   const [apenasDestaques, setApenasDestaques] = useState(false)
   const [paginaAtual, setPaginaAtual] = useState(1)
   const [modalMat, setModalMat] = useState<Material | null>(null)
-  const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
+  const [visualizacao,  setVisualizacao]  = useState<'grid' | 'lista'>('grid')
+  const [modalAdicionar, setModalAdicionar] = useState(false)
 
-  useEffect(() => {
+  const carregarMateriais = () => {
     ;(bibliotecaAPI.listar() as Promise<any[]>).then(rows => {
       setMateriais((rows ?? []).map((r: any) => ({
         id: r.id, titulo: r.titulo, autor: r.autor ?? '',
@@ -223,7 +240,9 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
         status: r.status as 'Disponível' | 'Em revisão', destaque: r.destaque ?? false,
       })))
     }).catch(() => {})
-  }, [])
+  }
+
+  useEffect(() => { carregarMateriais() }, [])
 
   const categorias = useMemo(() => (
     ['Todas as categorias', ...Array.from(new Set(materiais.map(m => m.categoria))).sort()]
@@ -291,6 +310,7 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
               ))}
             </div>
             <button
+              onClick={() => setModalAdicionar(true)}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', background: C.blue, color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'opacity 150ms' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}
@@ -435,6 +455,7 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
 
             {/* Card adicionar */}
             <div
+              onClick={() => setModalAdicionar(true)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', background: C.surface, border: `2px dashed ${C.border}`, borderRadius: '8px', padding: '20px 12px', cursor: 'pointer', transition: 'all 150ms', minHeight: '180px' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.background = 'rgba(26,86,255,0.04)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface }}
@@ -543,8 +564,50 @@ export function BibliotecaAdmin({ onNavigate, onLogout }: {
         <ModalMaterial
           mat={modalMat}
           onFechar={() => setModalMat(null)}
+          onExcluir={async () => {
+            if (!window.confirm('Excluir este material permanentemente?')) return
+            try {
+              await bibliotecaAPI.excluir(modalMat.id)
+              setModalMat(null)
+              carregarMateriais()
+            } catch (err: any) {
+              alert('Erro ao excluir: ' + err.message)
+            }
+          }}
           C={C as Record<string, string>}
         />
+      )}
+
+      {modalAdicionar && (
+        <div
+          onClick={() => setModalAdicionar(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.60)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '580px', maxHeight: '92vh', overflowY: 'auto', border: `1px solid ${C.border}`, boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}
+          >
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: C.surface, zIndex: 1 }}>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 2px' }}>Adicionar Material</h2>
+                <p style={{ fontSize: '12px', color: C.muted, margin: 0 }}>Upload de PDF para a biblioteca</p>
+              </div>
+              <button
+                onClick={() => setModalAdicionar(false)}
+                style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '18px', color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ×
+              </button>
+            </div>
+            <ModalAdicionarMaterial
+              onFechar={() => setModalAdicionar(false)}
+              onSucesso={() => {
+                setModalAdicionar(false)
+                carregarMateriais()
+              }}
+            />
+          </div>
+        </div>
       )}
     </LayoutAdmin>
   )

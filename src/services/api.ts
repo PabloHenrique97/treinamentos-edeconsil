@@ -126,10 +126,31 @@ export const provaAPI = {
 }
 
 export const bibliotecaAPI = {
-  listar: (status?: string) => {
-    const query = status ? `?status=${status}` : ''
-    return apiRequest(`/biblioteca${query}`)
+  listar: (params?: Record<string, string>) => {
+    const q = params ? '?' + new URLSearchParams(params).toString() : ''
+    return apiRequest(`/biblioteca${q}`)
   },
+
+  upload: async (formData: FormData): Promise<any> => {
+    const token   = localStorage.getItem('edeconsil_token')
+    const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api')
+    const resp = await fetch(`${baseUrl}/biblioteca`, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body:    formData,
+    })
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}))
+      throw new Error((err as any).erro ?? 'Erro no upload')
+    }
+    return resp.json()
+  },
+
+  excluir: (id: string) =>
+    apiRequest(`/biblioteca/${id}`, { method: 'DELETE' }),
+
+  registrarDownload: (id: string) =>
+    apiRequest(`/biblioteca/${id}/download`, { method: 'PATCH' }),
 }
 
 export const certificadosAPI = {

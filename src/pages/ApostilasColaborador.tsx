@@ -236,7 +236,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
   const [visualizacao, setVisualizacao] = useState<'grid' | 'lista'>('grid')
 
   useEffect(() => {
-    ;(bibliotecaAPI.listar('Disponível') as Promise<any[]>).then(rows => {
+    ;(bibliotecaAPI.listar({ status: 'Disponível' }) as Promise<any[]>).then(rows => {
       setMateriais((rows ?? []).map((r: any) => ({
         id: r.id, titulo: r.titulo, autor: r.autor ?? '',
         tipo: r.tipo as TipoMaterial, categoria: r.categoria ?? '',
