@@ -105,6 +105,11 @@ export const cursosAPI = {
     apiRequest(`/cursos/${id}`, { method: 'DELETE' }),
   metricas: () =>
     apiRequest('/admin/metricas'),
+  salvarProgresso: (slug: string, aulaId: number, dados: { percentual: number; concluida: boolean }) =>
+    apiRequest(`/cursos/${slug}/aulas/${aulaId}/progresso`, {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    }),
 }
 
 export const progressoAPI = {

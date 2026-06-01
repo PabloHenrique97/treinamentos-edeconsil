@@ -6,7 +6,6 @@ import {
   Clock,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosAPI } from '../services/api'
@@ -30,8 +29,6 @@ export function VideoAulaColaborador({
   onVoltarLista, onVoltarDetalhe, onTrocarAula
 }: VideoAulaColaboradorProps) {
   const { C } = useTheme()
-  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
-  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
 
   const [carregando, setCarregando] = useState(true)
   const [dados, setDados] = useState<{
@@ -39,7 +36,7 @@ export function VideoAulaColaborador({
     modulos: {
       id: number; titulo: string
       aulas: {
-        id: number; numero: number; titulo: string; descricao: string
+        id: number; dbId: number; numero: number; titulo: string; descricao: string
         duracao: string; status: string; progresso: number
         videoUrl: string; videoDisponivel: boolean
         materiais: { nome: string; tamanho: string; tipo: string; url: string }[]
@@ -49,6 +46,8 @@ export function VideoAulaColaborador({
   } | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const ultimoSalvoRef = useRef(-1)
+  const aulaDbIdRef = useRef<number | null>(null)
   const [tocando, setTocando] = useState(false)
   const [progresso, setProgresso] = useState(0)
   const [tempoAtual, setTempoAtual] = useState('0:00')
@@ -71,6 +70,7 @@ export function VideoAulaColaborador({
         const modulosMapped = (modulosApi ?? []).map((mod: any, i: number) => {
           const aulas = (mod.aulas ?? []).map((a: any, j: number) => ({
             id: a.ordem ?? j + 1,
+            dbId: a.id,
             numero: a.ordem ?? j + 1,
             titulo: a.titulo ?? '',
             descricao: a.descricao ?? '',
@@ -97,6 +97,14 @@ export function VideoAulaColaborador({
     return () => { cancelado = true }
   }, [cursoId])
 
+  useEffect(() => {
+    if (!dados) return
+    const mod = dados.modulos.find(m => m.id === moduloId) ?? dados.modulos[0]
+    const aula = mod?.aulas.find(a => a.id === aulaId) ?? mod?.aulas[0]
+    aulaDbIdRef.current = aula?.dbId ?? null
+    ultimoSalvoRef.current = -1
+  }, [dados, moduloId, aulaId])
+
   const togglePlay = () => {
     if (!videoRef.current) { setTocando(!tocando); return }
     if (tocando) videoRef.current.pause()
@@ -116,6 +124,12 @@ export function VideoAulaColaborador({
     const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
     setTempoAtual(fmt(v.currentTime))
     setTempoTotal(fmt(total))
+    const seg = Math.floor(v.currentTime)
+    if (seg > 0 && seg % 10 === 0 && seg !== ultimoSalvoRef.current && aulaDbIdRef.current) {
+      ultimoSalvoRef.current = seg
+      const pct = total > 0 ? Math.round((v.currentTime / total) * 100) : 0
+      cursosAPI.salvarProgresso(cursoId, aulaDbIdRef.current, { percentual: pct, concluida: false }).catch(() => {})
+    }
   }
 
   if (carregando || !dados || !dados.modulos.length) {
@@ -131,8 +145,11 @@ export function VideoAulaColaborador({
   const aulaAtiva = moduloAtivo.aulas.find(a => a.id === aulaId) ?? moduloAtivo.aulas[0]
 
   const marcarConcluida = () => {
-    if (aulaAtiva && !aulasConcluidas.includes(aulaAtiva.id)) {
-      setAulasConcluidas(prev => [...prev, aulaAtiva.id])
+    if (!aulaAtiva || aulasConcluidas.includes(aulaAtiva.id)) return
+    setAulasConcluidas(prev => [...prev, aulaAtiva.id])
+    if (aulaAtiva.dbId) {
+      cursosAPI.salvarProgresso(cursoId, aulaAtiva.dbId, { percentual: 100, concluida: true })
+        .catch(() => {})
     }
   }
 
@@ -144,15 +161,7 @@ export function VideoAulaColaborador({
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[
-            { label: 'Meus Cursos',  ativo: true,  onClick: onVoltarLista },
-            { label: 'Certificados', ativo: false, onClick: () => onNavigate('certificadosColaborador') },
-            { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
-            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
-          ]}
-          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
-        />
+        <Topbar titulo="Vídeo Aula" subtitulo="Conteúdo em vídeo" onNavigate={onNavigate} />
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
           {/* ── ÁREA CENTRAL ── */}

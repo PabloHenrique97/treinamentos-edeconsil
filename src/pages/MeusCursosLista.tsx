@@ -5,7 +5,6 @@ import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { useDadosReaisAluno } from '../hooks/useDadosReaisAluno'
 import { cursosAPI } from '../services/api'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 interface MeusCursosListaProps {
   onNavigate: (page: string, extra?: Record<string, unknown>) => void
@@ -16,7 +15,6 @@ interface MeusCursosListaProps {
 export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCursosListaProps) {
   const { C } = useTheme()
   const progresso = useDadosReaisAluno()
-  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState<'Todos' | 'Em andamento' | 'Concluído' | 'Não iniciado'>('Todos')
   const [cursosApi, setCursosApi] = useState<any[]>([])
@@ -48,9 +46,11 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
   }, [busca, filtroStatus, fonteDados])
 
   const normalizarCurso = (c: any) => {
-    const totalAulas      = c.total_aulas      ?? c.totalAulas      ?? 0
-    const progresso       = c.progresso_usuario ?? c.progresso       ?? 0
-    const aulasConcluidas = c.aulas_concluidas  ?? c.aulasConcluidas ?? Math.round((progresso / 100) * totalAulas)
+    const totalAulas      = c.total_aulas_real ?? c.total_aulas ?? c.totalAulas ?? 0
+    const aulasConcluidas = c.aulas_concluidas ?? c.aulasConcluidas ?? 0
+    const progresso       = totalAulas > 0
+      ? Math.round((aulasConcluidas / totalAulas) * 100)
+      : (c.progresso_usuario ?? c.progresso ?? 0)
     return {
       id:           c.id,
       slug:         c.slug          ?? c.id,
@@ -87,16 +87,7 @@ export function MeusCursosLista({ onNavigate, onLogout, onAbrirCurso }: MeusCurs
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[
-            { label: 'Início',       ativo: false, onClick: () => onNavigate('dashboard') },
-            { label: 'Meus Cursos',  ativo: true },
-            { label: 'Certificados', ativo: false, onClick: () => onNavigate('certificadosColaborador') },
-            { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
-            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
-          ]}
-          userName={nome} userRole={perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'} userInitials={iniciais} notificacoes={3}
-        />
+        <Topbar titulo="Meus Cursos" subtitulo="Todos os cursos matriculados" onNavigate={onNavigate} />
         <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
 
           {/* Cabeçalho */}
