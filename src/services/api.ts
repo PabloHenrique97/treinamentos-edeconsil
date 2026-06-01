@@ -130,6 +130,19 @@ export const provaAPI = {
     }),
 }
 
+export const questoesAPI = {
+  atualizar: (id: string, dados: {
+    enunciado?: string
+    alternativas?: { A: string; B: string; C: string; D: string }
+    gabarito?: string
+    explicacao?: string
+  }) =>
+    apiRequest(`/questoes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+    }),
+}
+
 export const bibliotecaAPI = {
   listar: (params?: Record<string, string>) => {
     const q = params ? '?' + new URLSearchParams(params).toString() : ''
