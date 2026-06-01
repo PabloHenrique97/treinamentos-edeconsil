@@ -11,6 +11,8 @@ import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { bibliotecaAPI } from '../../services/api'
 import { ModalAdicionarMaterial } from '../../components/admin/ModalAdicionarMaterial'
 
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
+
 type TipoMaterial = 'Livro' | 'Artigo' | 'Manual' | 'Norma' | 'E-book'
 
 interface Material {
@@ -138,7 +140,7 @@ function IconeTipo({ tipo, size = 14, color }: { tipo: TipoMaterial; size?: numb
 function ModalMaterial({ mat, onFechar, onExcluir, C }: { mat: Material; onFechar: () => void; onExcluir?: () => void; C: Record<string, string> }) {
   return (
     <div onClick={onFechar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '760px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}` }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: '16px', width: '100%', maxWidth: '900px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}` }}>
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -182,6 +184,26 @@ function ModalMaterial({ mat, onFechar, onExcluir, C }: { mat: Material; onFecha
                 </div>
               ))}
             </div>
+
+            {mat.url && (
+              <div style={{ borderRadius: '10px', overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                <div style={{ padding: '10px 14px', background: C.surface2, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>📖</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>Visualizador de PDF</span>
+                  </div>
+                  <a href={`${BASE_URL}${mat.url}`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: '11px', color: C.blue, textDecoration: 'none', fontWeight: 600 }}>
+                    Abrir em nova aba ↗
+                  </a>
+                </div>
+                <iframe
+                  src={`${BASE_URL}${mat.url}#toolbar=1&navpanes=0&view=FitH`}
+                  style={{ width: '100%', height: '420px', border: 'none', display: 'block' }}
+                  title={mat.titulo}
+                />
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', flexWrap: 'wrap' }}>
               {onExcluir && (

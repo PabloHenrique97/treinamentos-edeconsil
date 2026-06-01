@@ -14,6 +14,8 @@ import { Topbar } from '../components/Topbar'
 import { useResponsive } from '../hooks/useResponsive'
 import { bibliotecaAPI } from '../services/api'
 
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
+
 type TipoMaterial = 'Livro' | 'Artigo' | 'Manual' | 'Norma' | 'E-book'
 
 interface Material {
@@ -143,7 +145,7 @@ function ModalMaterial({ mat, onFechar, C, isSmall = false }: { mat: Material; o
 
   return (
     <div onClick={onFechar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 1000, display: 'flex', alignItems: isSmall ? 'flex-end' : 'center', justifyContent: 'center', padding: isSmall ? '0' : '20px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: isSmall ? '16px 16px 0 0' : '16px', width: '100%', maxWidth: isSmall ? '100%' : '760px', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}`, maxHeight: isSmall ? '90vh' : 'none', overflowY: isSmall ? 'auto' : 'visible' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: isSmall ? '16px 16px 0 0' : '16px', width: '100%', maxWidth: isSmall ? '100%' : (mat.url ? '860px' : '760px'), overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: `1px solid ${C.border}`, maxHeight: isSmall ? '90vh' : 'none', overflowY: isSmall ? 'auto' : 'visible' }}>
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -188,6 +190,26 @@ function ModalMaterial({ mat, onFechar, C, isSmall = false }: { mat: Material; o
               ))}
             </div>
 
+            {mat.url && (
+              <div style={{ borderRadius: '10px', overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                <div style={{ padding: '8px 14px', background: C.surface2, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '14px' }}>📖</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>Leitura online</span>
+                  </div>
+                  <a href={`${BASE_URL}${mat.url}`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: '11px', color: mat.cor ?? C.blue, textDecoration: 'none', fontWeight: 600 }}>
+                    Tela cheia ↗
+                  </a>
+                </div>
+                <iframe
+                  src={`${BASE_URL}${mat.url}#toolbar=1&navpanes=0&view=FitH`}
+                  style={{ width: '100%', height: isSmall ? '350px' : '480px', border: 'none', display: 'block' }}
+                  title={mat.titulo}
+                />
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
               <button
                 onClick={() => setFavoritado(f => !f)}
@@ -204,9 +226,21 @@ function ModalMaterial({ mat, onFechar, C, isSmall = false }: { mat: Material; o
                 <Heart size={14} fill={favoritado ? '#f59e0b' : 'none'} color={favoritado ? '#f59e0b' : C.muted} />
                 {favoritado ? 'Favoritado' : 'Favoritar'}
               </button>
-              <button style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: mat.cor, border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
-                <Download size={14} /> Baixar material
-              </button>
+              {mat.url ? (
+                <a
+                  href={`${BASE_URL}${mat.url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => { try { bibliotecaAPI.registrarDownload(mat.id) } catch {} }}
+                  style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', background: mat.cor, borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer', textDecoration: 'none' }}
+                >
+                  <Download size={14} /> Baixar material
+                </a>
+              ) : (
+                <button disabled style={{ flex: 2, opacity: 0.5, padding: '10px', background: C.border, border: 'none', borderRadius: '8px', fontSize: '13px', color: C.muted, cursor: 'not-allowed' }}>
+                  Sem arquivo
+                </button>
+              )}
             </div>
           </div>
         </div>
