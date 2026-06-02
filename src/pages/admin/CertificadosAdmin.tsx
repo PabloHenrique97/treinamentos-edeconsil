@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import { Search, FileDown } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { certificadosAPI } from '../../services/api'
@@ -60,6 +60,26 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
               {total} certificado{total !== 1 ? 's' : ''} emitido{total !== 1 ? 's' : ''}
             </p>
           </div>
+          <a
+            href="/treinamentos-edeconsil/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
+            download
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              background: '#F5C400',
+              color: '#0d2550',
+              borderRadius: '8px',
+              fontWeight: 700,
+              fontSize: '13px',
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <FileDown size={16} />
+            Modelo de Certificado
+          </a>
         </div>
 
         {/* Busca */}
