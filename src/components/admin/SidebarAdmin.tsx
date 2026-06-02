@@ -17,7 +17,7 @@ const navGestao = [
 const navAdmin = [
   { label: 'Mensagens',      page: 'mensagensAdmin'    },
   { label: 'Indicadores',    page: 'indicadoresAdmin'  },
-  { label: 'Notificações',   page: ''                  },
+  { label: 'Notificações',   page: 'notificacoesAdmin'  },
   { label: 'Configurações',  page: 'configuracoesAdmin' },
   { label: 'Permissões',     page: 'permissoesAdmin'   },
 ]
