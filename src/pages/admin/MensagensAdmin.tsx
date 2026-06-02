@@ -36,10 +36,13 @@ function useAdminChat(convSelecionadaRef: { current: any }) {
         const msg = JSON.parse(e.data)
         if (msg.tipo === 'auth_ok') return
         if (msg.tipo === 'nova_mensagem') {
-          if (msg.conversa_id !== convSelecionadaRef.current?.id) return
+          if (String(msg.conversa_id) !== String(convSelecionadaRef.current?.id)) return
           setMensagens(prev => {
-            if (prev.some((m: any) => m.id === msg.mensagem.id)) return prev
-            return [...prev, msg.mensagem]
+            const semOptimista = prev.filter((m: any) =>
+              !String(m.id).startsWith('temp-'))
+            if (semOptimista.some((m: any) =>
+              String(m.id) === String(msg.mensagem.id))) return prev
+            return [...semOptimista, msg.mensagem]
           })
         }
       } catch { /* ignore */ }
@@ -132,6 +135,14 @@ export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
 
   const handleEnviar = () => {
     if (!texto.trim() && !arquivoPreview) return
+    const mensagemOptimista = {
+      id: `temp-${Date.now()}`,
+      conteudo: texto,
+      remetente_perfil: 'admin',
+      conversa_id: convSelecionadaRef.current?.id,
+      criado_em: new Date().toISOString(),
+    }
+    setMensagens(prev => [...prev, mensagemOptimista])
     enviar(texto, arquivoPreview ?? undefined)
     setTexto('')
     setArquivoPreview(null)
@@ -204,8 +215,16 @@ export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
                     headers: { Authorization: `Bearer ${token}` },
                   })
                     .then(r => r.json())
-                    .then((msgs: any[]) => Array.isArray(msgs) ? setMensagens(msgs) : null)
-                    .catch(() => setMensagens([]))
+                    .then((msgs: any[]) => {
+                      if (String(convSelecionadaRef.current?.id) === String(conv.id)) {
+                        if (Array.isArray(msgs)) setMensagens(msgs)
+                      }
+                    })
+                    .catch(() => {
+                      if (String(convSelecionadaRef.current?.id) === String(conv.id)) {
+                        setMensagens([])
+                      }
+                    })
                 }}
                 style={{
                   padding: '12px 16px',
