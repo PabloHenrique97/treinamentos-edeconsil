@@ -178,17 +178,7 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
 
         {!isSmall && (
-          <Topbar
-            navItems={[
-              { label: 'Início',       ativo: false, onClick: () => onNavigate('dashboard')  },
-              { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
-              { label: 'Certificados', ativo: true                                            },
-            ]}
-            userName={nome}
-            userRole={roleDisplay}
-            userInitials={iniciais}
-            notificacoes={0}
-          />
+          <Topbar titulo="Certificados" subtitulo="Histórico de conquistas" onNavigate={onNavigate} />
         )}
 
         <div style={{ flex: 1, overflowY: 'auto', padding: isSmall ? '20px 16px' : '32px 40px' }}>

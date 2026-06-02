@@ -276,18 +276,7 @@ export function TrilhaAprendizado({ onNavigate, onLogout }: TrilhaAprendizadoPro
 
         {/* TOPBAR — apenas desktop */}
         {!isSmall && (
-          <Topbar
-            navItems={[
-              { label: 'Meus Cursos',  ativo: false, onClick: () => onNavigate('meusCursos') },
-              { label: 'Certificados', ativo: false },
-              { label: 'Biblioteca',   ativo: false },
-              { label: 'Trilhas',      ativo: !telaRotina, onClick: () => setTelaRotina(false) },
-            ]}
-            userName="João Silva"
-            userRole="Aluno"
-            userInitials="JS"
-            notificacoes={3}
-          />
+          <Topbar titulo="Trilha de Aprendizado" subtitulo="Seu caminho de desenvolvimento" onNavigate={onNavigate} />
         )}
 
         {/* CONTEÚDO COM SCROLL */}

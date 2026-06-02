@@ -7,7 +7,6 @@ import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { provaAPI } from '../services/api'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 interface Questao {
   id: string
@@ -51,7 +50,6 @@ export function ProvaOnline({
   onVoltarDetalhe,
 }: ProvaOnlineProps) {
   const { C } = useTheme()
-  const { nome, iniciais, perfil } = useUsuarioLogado()
 
   const [questoes, setQuestoes]           = useState<Questao[]>([])
   const [notaMinima, setNotaMinima]       = useState(70)
@@ -134,7 +132,6 @@ export function ProvaOnline({
   const questao = questoes[questaoAtual]
   const totalRespondidas = Object.keys(respostas).length
   const timerCritico     = tempoRestante < 5 * 60
-  const roleDisplay      = perfil === 'admin' ? 'Administrador' : 'Colaborador'
 
   // ── LOADING ──
   if (carregando) {
@@ -176,12 +173,7 @@ export function ProvaOnline({
       <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
         <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Topbar
-            navItems={[{ label: 'Meus Cursos', ativo: true, onClick: () => onNavigate('meusCursos') }]}
-            userName={nome} userInitials={iniciais}
-            userRole={roleDisplay}
-            notificacoes={0}
-          />
+          <Topbar titulo="Meus Cursos" subtitulo="Avaliações e provas" onNavigate={onNavigate} />
           <div style={{ flex: 1, overflowY: 'auto', padding: '32px', display: 'flex', justifyContent: 'center' }}>
             <div style={{ width: '100%', maxWidth: '720px' }}>
               <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', overflow: 'hidden', marginBottom: '24px' }}>
@@ -284,15 +276,7 @@ export function ProvaOnline({
       <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
         <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Topbar
-            navItems={[
-              { label: 'Meus Cursos', ativo: true, onClick: () => onNavigate('meusCursos') },
-              { label: 'Prova Online', ativo: false },
-            ]}
-            userName={nome} userInitials={iniciais}
-            userRole={roleDisplay}
-            notificacoes={0}
-          />
+          <Topbar titulo="Prova Online" subtitulo="Configurações da avaliação" onNavigate={onNavigate} />
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', maxWidth: '560px', width: '100%', overflow: 'hidden' }}>
               <div style={{ height: '4px', background: C.blue }} />
@@ -363,12 +347,7 @@ export function ProvaOnline({
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[{ label: 'Prova em Andamento', ativo: true }]}
-          userName={nome} userInitials={iniciais}
-          userRole={roleDisplay}
-          notificacoes={0}
-        />
+        <Topbar titulo="Prova em Andamento" subtitulo="Responda com atenção" onNavigate={onNavigate} />
 
         {/* Barra de progresso e timer */}
         <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '12px 24px', flexShrink: 0 }}>

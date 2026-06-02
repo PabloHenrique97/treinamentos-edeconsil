@@ -6,7 +6,6 @@ import {
   Check, Clock,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosAPI } from '../services/api'
@@ -24,8 +23,6 @@ export function CursoDetalheColaborador({
   cursoId, onNavigate, onLogout, onVoltarLista, onAbrirAula, onAbrirProva
 }: CursoDetalheColaboradorProps) {
   const { C } = useTheme()
-  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
-  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
 
   const [carregando, setCarregando] = useState(true)
   const [cursoDados, setCursoDados] = useState<{
@@ -124,16 +121,7 @@ export function CursoDetalheColaborador({
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar paginaAtiva="meusCursos" onNavigate={onNavigate} onLogout={onLogout} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[
-            { label: 'Início',       ativo: false, onClick: () => onNavigate('dashboard') },
-            { label: 'Meus Cursos',  ativo: true,  onClick: onVoltarLista },
-            { label: 'Certificados', ativo: false, onClick: () => onNavigate('certificadosColaborador') },
-            { label: 'Biblioteca',   ativo: false, onClick: () => onNavigate('apostilas') },
-            { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
-          ]}
-          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
-        />
+        <Topbar titulo="Detalhes do Curso" subtitulo="Conteúdo e progresso" onNavigate={onNavigate} />
         <div style={{ flex: 1, overflowY: 'auto' }}>
 
           {/* Breadcrumb */}

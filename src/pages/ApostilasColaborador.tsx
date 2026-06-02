@@ -339,19 +339,7 @@ export function ApostilasColaborador({ onNavigate, onLogout }: ApostilasColabora
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: isSmall ? '56px' : '0' }}>
 
         {!isSmall && (
-          <Topbar
-            navItems={[
-              { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard')  },
-              { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
-              { label: 'Certificados',ativo: false, onClick: () => onNavigate('certificadosColaborador') },
-              { label: 'Apostilas',   ativo: true                                            },
-              { label: 'Trilhas',     ativo: false, onClick: () => onNavigate('trilha')      },
-            ]}
-            userName="João Silva"
-            userRole="Aluno"
-            userInitials="JS"
-            notificacoes={3}
-          />
+          <Topbar titulo="Apostilas & Biblioteca" subtitulo="Material de estudo e leituras" onNavigate={onNavigate} />
         )}
 
         <div style={{ flex: 1, overflowY: 'auto', padding: isSmall ? '16px' : '32px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>

@@ -1,7 +1,6 @@
 import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 
 interface EdeconQuizProps {
   onNavigate: (page: string) => void
@@ -10,7 +9,6 @@ interface EdeconQuizProps {
 
 export function EdeconQuiz({ onNavigate, onLogout }: EdeconQuizProps) {
   const { C } = useTheme()
-  const { nome, iniciais } = useUsuarioLogado()
 
   return (
     <div style={{
@@ -28,15 +26,7 @@ export function EdeconQuiz({ onNavigate, onLogout }: EdeconQuizProps) {
         flex: 1, display: 'flex',
         flexDirection: 'column', overflow: 'hidden',
       }}>
-        <Topbar
-          navItems={[
-            { label: 'Início',     ativo: false, onClick: () => onNavigate('dashboard') },
-            { label: 'EdeconQuiz', ativo: true },
-          ]}
-          userName={nome} userInitials={iniciais}
-          userRole="Colaborador" notificacoes={0}
-          onNavigate={onNavigate}
-        />
+        <Topbar titulo="EdeconQuiz" subtitulo="Treinamentos gamificados" onNavigate={onNavigate} />
 
         <div style={{
           flex: 1, overflowY: 'auto',

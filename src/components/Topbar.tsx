@@ -13,7 +13,9 @@ interface TopbarItem {
 }
 
 interface TopbarProps {
-  navItems: TopbarItem[]
+  navItems?: TopbarItem[]
+  titulo?: string
+  subtitulo?: string
   userName?: string
   userRole?: string
   userInitials?: string
@@ -23,6 +25,8 @@ interface TopbarProps {
 
 export function Topbar({
   navItems,
+  titulo,
+  subtitulo,
   userName,
   userRole,
   userInitials,
@@ -53,8 +57,13 @@ export function Topbar({
       gap: '20px',
     }}>
 
-      {/* Links de navegação */}
-      {!isMobile && navItems.map(item => (
+      {/* Título da página ou links de navegação */}
+      {titulo ? (
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{titulo}</div>
+          {subtitulo && <div style={{ fontSize: '11px', color: C.muted, marginTop: '1px' }}>{subtitulo}</div>}
+        </div>
+      ) : (!isMobile && navItems?.map(item => (
         <span
           key={item.label}
           onClick={item.onClick}
@@ -72,7 +81,7 @@ export function Topbar({
         >
           {item.label}
         </span>
-      ))}
+      )))}
 
       {/* Busca */}
       <div style={{

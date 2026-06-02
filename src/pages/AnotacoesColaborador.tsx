@@ -5,7 +5,6 @@ import {
   FileText
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
-import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosAPI } from '../services/api'
@@ -55,8 +54,6 @@ interface AnotacoesColaboradorProps {
 
 export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColaboradorProps) {
   const { C } = useTheme()
-  const { nome, iniciais, perfil: perfilUsuario } = useUsuarioLogado()
-  const roleDisplay = perfilUsuario === 'admin' ? 'Administrador' : 'Colaborador'
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>(anotacoesIniciais)
   const [busca, setBusca] = useState('')
   const [cursoBusca, setCursoBusca] = useState('Todas as disciplinas')
@@ -147,13 +144,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
       <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
         <Sidebar paginaAtiva="anotacoes" onNavigate={onNavigate} onLogout={onLogout} />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Topbar
-            navItems={[
-              { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard') },
-              { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
-            ]}
-            userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
-          />
+          <Topbar titulo="Minhas Anotações" subtitulo="Notas e rascunhos" onNavigate={onNavigate} />
           <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
@@ -287,13 +278,7 @@ export function AnotacoesColaborador({ onNavigate, onLogout }: AnotacoesColabora
     <div style={{ fontFamily: "'Inter',sans-serif", background: C.bg, color: C.text, display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar paginaAtiva="anotacoes" onNavigate={onNavigate} onLogout={onLogout} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[
-            { label: 'Início',      ativo: false, onClick: () => onNavigate('dashboard') },
-            { label: 'Meus Cursos', ativo: false, onClick: () => onNavigate('meusCursos') },
-          ]}
-          userName={nome} userRole={roleDisplay} userInitials={iniciais} notificacoes={3}
-        />
+        <Topbar titulo="Minhas Anotações" subtitulo="Notas e rascunhos" onNavigate={onNavigate} />
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px 40px' }}>
 

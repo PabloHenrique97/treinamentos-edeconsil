@@ -63,17 +63,7 @@ export function DashboardColaborador({ onLogout, onNavigate }: DashboardColabora
 
         {/* Topbar — apenas desktop */}
         {!isSmall && (
-          <Topbar
-            navItems={[
-              { label: 'Início',     ativo: true  },
-              { label: 'Notícias',   ativo: false },
-              { label: 'Biblioteca', ativo: false },
-            ]}
-            userName={nome}
-            userRole={roleDisplay}
-            userInitials={iniciais}
-            notificacoes={3}
-          />
+          <Topbar titulo="Painel" subtitulo="Bem-vindo de volta" onNavigate={onNavigate} />
         )}
 
         {/* Conteúdo */}

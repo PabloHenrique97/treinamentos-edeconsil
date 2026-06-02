@@ -128,18 +128,7 @@ export function MeusCursos({ onNavigate }: { onNavigate: (page: string) => void 
 
         {/* TOPBAR — apenas desktop */}
         {!isSmall && (
-          <Topbar
-            navItems={[
-              { label: 'Meus Cursos',  ativo: true  },
-              { label: 'Certificados', ativo: false },
-              { label: 'Biblioteca',   ativo: false },
-              { label: 'Trilhas',      ativo: false, onClick: () => onNavigate('trilha') },
-            ]}
-            userName="João Silva"
-            userRole="Aluno"
-            userInitials="JS"
-            notificacoes={3}
-          />
+          <Topbar titulo="Meus Cursos" subtitulo="Cursos e matrículas" onNavigate={onNavigate} />
         )}
 
         {/* CONTEÚDO COM SCROLL */}
