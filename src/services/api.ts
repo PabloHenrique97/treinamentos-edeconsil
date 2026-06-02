@@ -244,6 +244,11 @@ export const notificacoesAPI = {
     apiRequest('/notificacoes/marcar-todas-lidas', { method: 'PATCH' }),
 }
 
+export const conversasAPI = {
+  listar: () => apiRequest<any[]>('/conversas'),
+  mensagens: (id: string) => apiRequest<any[]>(`/conversas/${id}/mensagens`),
+}
+
 export const modulosAPI = {
   criar: (dados: { curso_id: string; titulo: string; ordem?: number }) =>
     apiRequest('/modulos', { method: 'POST', body: JSON.stringify(dados) }),

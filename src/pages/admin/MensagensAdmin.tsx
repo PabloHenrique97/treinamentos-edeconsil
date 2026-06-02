@@ -13,7 +13,7 @@ interface MensagensAdminProps {
 const _apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
 const baseUrl = _apiUrl.replace(/\/api\/?$/, '')
 
-function useAdminChat() {
+function useAdminChat(convSelecionadaRef: { current: any }) {
   const [mensagens, setMensagens] = useState<any[]>([])
   const [status,    setStatus]    = useState<'conectando' | 'conectado' | 'desconectado'>('conectando')
   const wsRef = useRef<WebSocket | null>(null)
@@ -34,15 +34,9 @@ function useAdminChat() {
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data)
-        if (msg.tipo === 'auth_ok') {
-          ws.send(JSON.stringify({ tipo: 'historico' }))
-          return
-        }
-        if (msg.tipo === 'historico') {
-          setMensagens(msg.mensagens ?? [])
-          return
-        }
+        if (msg.tipo === 'auth_ok') return
         if (msg.tipo === 'nova_mensagem') {
+          if (msg.conversa_id !== convSelecionadaRef.current?.id) return
           setMensagens(prev => {
             if (prev.some((m: any) => m.id === msg.mensagem.id)) return prev
             return [...prev, msg.mensagem]
@@ -72,6 +66,7 @@ function useAdminChat() {
       arquivo_url:  arquivo?.url  ?? null,
       arquivo_nome: arquivo?.nome ?? null,
       arquivo_tipo: arquivo?.tipo ?? null,
+      aluno_id:     convSelecionadaRef.current?.aluno_id ?? null,
     }))
   }, [])
 
@@ -87,7 +82,7 @@ function useAdminChat() {
     return resp.json()
   }, [])
 
-  return { mensagens, status, enviar, uploadArquivo }
+  return { mensagens, setMensagens, status, enviar, uploadArquivo }
 }
 
 export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
@@ -100,10 +95,11 @@ export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
   const [texto,          setTexto]          = useState('')
   const [arquivoPreview, setArquivoPreview] = useState<{ url: string; nome: string; tipo: string } | null>(null)
   const [uploadando,     setUploadando]     = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const fileRef   = useRef<HTMLInputElement>(null)
+  const bottomRef          = useRef<HTMLDivElement>(null)
+  const fileRef            = useRef<HTMLInputElement>(null)
+  const convSelecionadaRef = useRef<any>(null)
 
-  const { mensagens, status, enviar, uploadArquivo } = useAdminChat()
+  const { mensagens, setMensagens, status, enviar, uploadArquivo } = useAdminChat(convSelecionadaRef)
 
   useEffect(() => {
     const token = getToken()
@@ -114,7 +110,17 @@ export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
       .then(data => {
         if (Array.isArray(data)) {
           setConversas(data)
-          if (data.length > 0) setConvSelecionada(data[0])
+          if (data.length > 0) {
+            const primeira = data[0]
+            setConvSelecionada(primeira)
+            convSelecionadaRef.current = primeira
+            fetch(`${baseUrl}/api/conversas/${primeira.id}/mensagens`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then(r => r.json())
+              .then((msgs: any[]) => Array.isArray(msgs) ? setMensagens(msgs) : null)
+              .catch(() => {})
+          }
         }
       })
       .catch(console.error)
@@ -189,7 +195,18 @@ export function MensagensAdmin({ onNavigate, onLogout }: MensagensAdminProps) {
             ) : conversasFiltradas.map(conv => (
               <div
                 key={conv.id}
-                onClick={() => setConvSelecionada(conv)}
+                onClick={() => {
+                  setConvSelecionada(conv)
+                  convSelecionadaRef.current = conv
+                  setMensagens([])
+                  const token = getToken()
+                  fetch(`${baseUrl}/api/conversas/${conv.id}/mensagens`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                    .then(r => r.json())
+                    .then((msgs: any[]) => Array.isArray(msgs) ? setMensagens(msgs) : null)
+                    .catch(() => setMensagens([]))
+                }}
                 style={{
                   padding: '12px 16px',
                   borderBottom: `1px solid ${C.border}`,
