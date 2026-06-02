@@ -222,6 +222,10 @@ export const instrutoresAPI = {
     apiRequest(`/instrutores/${id}`, { method: 'DELETE' }),
 }
 
+export const meuInstrutorAPI = {
+  buscar: () => apiRequest<any>('/meu-instrutor'),
+}
+
 export const turmasAPI = {
   listar: () => apiRequest<unknown[]>('/turmas'),
 }

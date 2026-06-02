@@ -31,12 +31,13 @@ export interface Conversa {
 type Status = 'conectando' | 'conectado' | 'desconectado' | 'erro'
 
 export function useChat() {
-  const [mensagens, setMensagens] = useState<Mensagem[]>([])
-  const [conversa,  setConversa]  = useState<Conversa | null>(null)
-  const [status,    setStatus]    = useState<Status>('conectando')
-  const [enviando,  setEnviando]  = useState(false)
-  const wsRef         = useRef<WebSocket | null>(null)
-  const reconectarRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const [mensagens,     setMensagens]     = useState<Mensagem[]>([])
+  const [conversaAtiva, setConversaAtiva] = useState<any>(null)
+  const [status,        setStatus]        = useState<Status>('conectando')
+  const [enviando,      setEnviando]      = useState(false)
+  const wsRef            = useRef<WebSocket | null>(null)
+  const reconectarRef    = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const conversaAtivaRef = useRef<any>(null)
 
   const conectar = useCallback(() => {
     const token = getToken()
@@ -66,19 +67,22 @@ export function useChat() {
           return
         }
         if (msg.tipo === 'historico') {
-          setConversa(msg.conversa)
+          setConversaAtiva(msg.conversa)
+          conversaAtivaRef.current = msg.conversa
           setMensagens(msg.mensagens ?? [])
-          ws.send(JSON.stringify({ tipo: 'marcar_lida' }))
+          ws.send(JSON.stringify({ tipo: 'marcar_lida', tipo_contato: msg.conversa?.tipo_contato }))
           window.dispatchEvent(new CustomEvent('nova-mensagem-recebida'))
           return
         }
         if (msg.tipo === 'nova_mensagem') {
+          if (conversaAtivaRef.current &&
+              String(msg.conversa_id) !== String(conversaAtivaRef.current.id)) return
           setMensagens(prev => {
             if (prev.some(m => m.id === msg.mensagem.id)) return prev
             return [...prev, msg.mensagem]
           })
           window.dispatchEvent(new CustomEvent('nova-mensagem-recebida'))
-          ws.send(JSON.stringify({ tipo: 'marcar_lida' }))
+          ws.send(JSON.stringify({ tipo: 'marcar_lida', tipo_contato: conversaAtivaRef.current?.tipo_contato }))
           return
         }
       } catch { /* ignore parse errors */ }
@@ -109,11 +113,13 @@ export function useChat() {
     setEnviando(true)
     try {
       wsRef.current.send(JSON.stringify({
-        tipo:         'mensagem',
-        conteudo:     conteudo.trim() || null,
-        arquivo_url:  arquivo?.url  ?? null,
-        arquivo_nome: arquivo?.nome ?? null,
-        arquivo_tipo: arquivo?.tipo ?? null,
+        tipo:                 'mensagem',
+        conteudo:             conteudo.trim() || null,
+        arquivo_url:          arquivo?.url  ?? null,
+        arquivo_nome:         arquivo?.nome ?? null,
+        arquivo_tipo:         arquivo?.tipo ?? null,
+        tipo_contato:         conversaAtivaRef.current?.tipo_contato ?? 'suporte',
+        instrutor_id_payload: conversaAtivaRef.current?.instrutor_id ?? null,
       }))
     } finally {
       setEnviando(false)
@@ -137,5 +143,18 @@ export function useChat() {
     return resp.json()
   }, [])
 
-  return { mensagens, conversa, status, enviando, enviarMensagem, uploadArquivo }
+  const selecionarConversa = useCallback((tipo: string, instId?: string | null) => {
+    setMensagens([])
+    setConversaAtiva(null)
+    conversaAtivaRef.current = null
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        tipo:                 'historico',
+        tipo_contato:         tipo,
+        instrutor_id_payload: instId ?? null,
+      }))
+    }
+  }, [])
+
+  return { mensagens, conversa: conversaAtiva, conversaAtiva, status, enviando, enviarMensagem, uploadArquivo, selecionarConversa }
 }

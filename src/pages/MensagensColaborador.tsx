@@ -7,6 +7,7 @@ import { useChat } from '../hooks/useChat'
 import type { Mensagem } from '../hooks/useChat'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { useMobile } from '../hooks/useMobile'
+import { meuInstrutorAPI } from '../services/api'
 
 interface MensagensColaboradorProps {
   onNavigate: (page: string) => void
@@ -19,19 +20,31 @@ const BASE_URL = _apiUrl.replace(/\/api\/?$/, '')
 export function MensagensColaborador({ onNavigate, onLogout }: MensagensColaboradorProps) {
   const { C } = useTheme()
   const isMobile = useMobile()
-  const { nome, iniciais, id: meuId } = useUsuarioLogado()
-  const { mensagens, conversa, status, enviando, enviarMensagem, uploadArquivo } = useChat()
+  const { nome, id: meuId } = useUsuarioLogado()
+  const { mensagens, conversaAtiva, status, enviando, enviarMensagem, uploadArquivo, selecionarConversa } = useChat()
 
   const [texto,          setTexto]          = useState('')
   const [arquivoPreview, setArquivoPreview] = useState<{ url: string; nome: string; tipo: string } | null>(null)
   const [uploadando,     setUploadando]     = useState(false)
   const [erroEnvio,      setErroEnvio]      = useState('')
+  const [instrutor,      setInstrutor]      = useState<any>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileRef   = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [mensagens])
+
+  useEffect(() => {
+    meuInstrutorAPI.buscar()
+      .then(inst => setInstrutor(inst))
+      .catch(() => setInstrutor(null))
+  }, [])
+
+  const abrirConversa = (tipo: 'suporte' | 'instrutor') => {
+    const instId = tipo === 'instrutor' ? instrutor?.usuario_id : null
+    selecionarConversa(tipo, instId)
+  }
 
   const handleEnviar = async () => {
     if ((!texto.trim() && !arquivoPreview) || enviando) return
@@ -103,15 +116,7 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
       <Sidebar paginaAtiva="mensagens" onNavigate={onNavigate} onLogout={onLogout} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar
-          navItems={[
-            { label: 'Início',    ativo: false, onClick: () => onNavigate('dashboard') },
-            { label: 'Mensagens', ativo: true },
-          ]}
-          userName={nome} userInitials={iniciais}
-          userRole="Colaborador"
-          onNavigate={onNavigate}
-        />
+        <Topbar titulo="Mensagens" subtitulo="Comunicação interna" onNavigate={onNavigate} />
 
         {/* Layout 2 colunas */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -130,55 +135,64 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
               </h2>
             </div>
 
-            {/* Conversa única do aluno */}
+            {/* Lista dinâmica de contatos */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
-              <div style={{
-                padding: '12px 16px',
-                borderBottom: `1px solid ${C.border}`,
-                background: 'rgba(26,86,255,0.06)',
-                borderLeft: `3px solid ${C.blue}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '38px', height: '38px', borderRadius: '50%',
-                    background: 'rgba(26,86,255,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px', flexShrink: 0,
-                  }}>
-                    🎓
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: 0 }}>
-                        Suporte EAD
-                      </p>
-                      <div style={{
-                        width: '8px', height: '8px', borderRadius: '50%',
-                        background: corStatus, flexShrink: 0,
-                      }} />
-                    </div>
-                    <p style={{
-                      fontSize: '11px', color: C.muted,
-                      margin: '2px 0 0',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              {[
+                {
+                  tipo:  'suporte' as const,
+                  nome:  'Suporte EAD',
+                  emoji: '🎓',
+                  sub:   conversaAtiva?.tipo_contato === 'suporte'
+                    ? (conversaAtiva?.ultima_mensagem ?? 'Tire suas dúvidas aqui')
+                    : 'Tire suas dúvidas aqui',
+                },
+                ...(instrutor?.usuario_id
+                  ? [{
+                      tipo:  'instrutor' as const,
+                      nome:  instrutor.instrutor_nome ?? instrutor.usuario_nome ?? 'Instrutor',
+                      emoji: '👨‍🏫',
+                      sub:   'Seu instrutor do curso',
+                    }]
+                  : []),
+              ].map(contato => (
+                <div
+                  key={contato.tipo}
+                  onClick={() => abrirConversa(contato.tipo)}
+                  style={{
+                    padding: '12px 16px',
+                    borderBottom: `1px solid ${C.border}`,
+                    cursor: 'pointer',
+                    background: conversaAtiva?.tipo_contato === contato.tipo
+                      ? 'rgba(26,86,255,0.06)' : 'transparent',
+                    borderLeft: conversaAtiva?.tipo_contato === contato.tipo
+                      ? `3px solid ${C.blue}` : '3px solid transparent',
+                    transition: 'all 150ms',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '38px', height: '38px', borderRadius: '50%',
+                      background: 'rgba(26,86,255,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '18px', flexShrink: 0,
                     }}>
-                      {conversa?.ultima_mensagem ?? 'Tire suas dúvidas aqui'}
-                    </p>
+                      {contato.emoji}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: 0 }}>
+                        {contato.nome}
+                      </p>
+                      <p style={{
+                        fontSize: '11px', color: C.muted,
+                        margin: '2px 0 0',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {contato.sub}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                {(conversa?.nao_lidas_aluno ?? 0) > 0 && (
-                  <div style={{ marginTop: '6px', textAlign: 'right' }}>
-                    <span style={{
-                      fontSize: '10px', fontWeight: 700,
-                      color: '#fff', background: '#ef4444',
-                      borderRadius: '10px', padding: '2px 8px',
-                    }}>
-                      {conversa!.nao_lidas_aluno} nova(s)
-                    </span>
-                  </div>
-                )}
-              </div>
-
+              ))}
               {status === 'conectando' && (
                 <div style={{ padding: '20px', textAlign: 'center', color: C.muted, fontSize: '12px' }}>
                   Conectando...
@@ -217,14 +231,18 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
                   background: 'rgba(26,86,255,0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
                 }}>
-                  🎓
+                  {conversaAtiva?.tipo_contato === 'instrutor' ? '👨‍🏫' : '🎓'}
                 </div>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 700, color: C.text, margin: '0 0 1px' }}>
-                    Suporte EAD
+                    {conversaAtiva?.tipo_contato === 'instrutor'
+                      ? (instrutor?.instrutor_nome ?? instrutor?.usuario_nome ?? 'Instrutor')
+                      : 'Suporte EAD'}
                   </p>
                   <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>
-                    Equipe de suporte da Universidade Corporativa
+                    {conversaAtiva?.tipo_contato === 'instrutor'
+                      ? 'Seu instrutor do curso'
+                      : 'Equipe de suporte da Universidade Corporativa'}
                   </p>
                 </div>
               </div>
@@ -248,7 +266,9 @@ export function MensagensColaborador({ onNavigate, onLogout }: MensagensColabora
                     Olá, {nome.split(' ')[0]}!
                   </h3>
                   <p style={{ fontSize: '13px', color: C.muted, margin: 0, maxWidth: '320px', lineHeight: 1.6 }}>
-                    Envie sua dúvida para o Suporte EAD. Responderemos em breve!
+                    {conversaAtiva?.tipo_contato === 'instrutor'
+                      ? 'Envie uma mensagem para seu instrutor.'
+                      : 'Envie sua dúvida para o Suporte EAD. Responderemos em breve!'}
                   </p>
                 </div>
               )}
