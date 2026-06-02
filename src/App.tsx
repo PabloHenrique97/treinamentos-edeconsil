@@ -20,6 +20,7 @@ import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
 import { MensagensAdmin }       from './pages/admin/MensagensAdmin'
+import { NotificacoesAdmin }   from './pages/admin/NotificacoesAdmin'
 import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { EdeconQuiz } from './pages/EdeconQuiz'
 import { ProvaOnline } from './pages/ProvaOnline'
@@ -89,7 +90,7 @@ class ErrorBoundary extends React.Component<
 }
 
 type Perfil = 'colaborador' | 'admin'
-type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'edeconQuiz' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'configuracoesAdmin' | 'permissoesAdmin' | 'certificadosColaborador' | 'apostilas' | 'mensagensAdmin'
+type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'edeconQuiz' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'configuracoesAdmin' | 'permissoesAdmin' | 'certificadosColaborador' | 'apostilas' | 'mensagensAdmin' | 'notificacoesAdmin'
 
 function AppContent() {
   // Limpar sessões antigas (sem campo 'id' no usuário)
@@ -191,6 +192,12 @@ if (pagina === 'configuracoesAdmin') return (
     )
     if (pagina === 'mensagensAdmin') return (
       <MensagensAdmin
+        onNavigate={(p) => setPagina(p as Pagina)}
+        onLogout={handleLogout}
+      />
+    )
+    if (pagina === 'notificacoesAdmin') return (
+      <NotificacoesAdmin
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={handleLogout}
       />

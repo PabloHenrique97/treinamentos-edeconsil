@@ -255,6 +255,14 @@ export const notificacoesAPI = {
 
   marcarTodasLidas: () =>
     apiRequest('/notificacoes/marcar-todas-lidas', { method: 'PATCH' }),
+
+  adminHistorico: (params?: { tipo?: string; pagina?: number; limite?: number }) => {
+    const q = new URLSearchParams()
+    if (params?.tipo)   q.set('tipo',   params.tipo)
+    if (params?.pagina) q.set('pagina', String(params.pagina))
+    if (params?.limite) q.set('limite', String(params.limite))
+    return apiRequest(`/admin/notificacoes?${q.toString()}`)
+  },
 }
 
 export const conversasAPI = {
