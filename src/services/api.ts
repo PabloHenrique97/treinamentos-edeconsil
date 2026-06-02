@@ -141,6 +141,19 @@ export const questoesAPI = {
       method: 'PUT',
       body: JSON.stringify(dados),
     }),
+
+  criar: (dados: {
+    curso_id: string
+    enunciado: string
+    alternativas: Record<string, string>
+    gabarito: string
+    explicacao?: string
+    ordem?: number
+  }) =>
+    apiRequest('/questoes', { method: 'POST', body: JSON.stringify(dados) }),
+
+  excluir: (id: string) =>
+    apiRequest(`/questoes/${id}`, { method: 'DELETE' }),
 }
 
 export const bibliotecaAPI = {
@@ -229,6 +242,17 @@ export const notificacoesAPI = {
 
   marcarTodasLidas: () =>
     apiRequest('/notificacoes/marcar-todas-lidas', { method: 'PATCH' }),
+}
+
+export const modulosAPI = {
+  criar: (dados: { curso_id: string; titulo: string; ordem?: number }) =>
+    apiRequest('/modulos', { method: 'POST', body: JSON.stringify(dados) }),
+
+  atualizar: (id: string, dados: { titulo: string; ordem?: number }) =>
+    apiRequest(`/modulos/${id}`, { method: 'PUT', body: JSON.stringify(dados) }),
+
+  excluir: (id: string) =>
+    apiRequest(`/modulos/${id}`, { method: 'DELETE' }),
 }
 
 export default apiRequest

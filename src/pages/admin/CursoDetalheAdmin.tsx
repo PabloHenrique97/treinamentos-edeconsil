@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import {
   ChevronDown, ChevronUp,
   BookOpen, Users, Clock, ArrowLeft,
-  Play, Edit, Check, TrendingUp, Pencil,
+  Play, Edit, Check, TrendingUp, Pencil, Trash2, Plus,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
-import { cursosAPI, questoesAPI } from '../../services/api'
+import { cursosAPI, questoesAPI, modulosAPI } from '../../services/api'
 
 interface CursoDetalheAdminProps {
   cursoId: string
@@ -29,6 +29,14 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
     explicacao: string
   }>(null)
   const [salvandoQuestao, setSalvandoQuestao] = useState(false)
+
+  const [modalNovaQuestao, setModalNovaQuestao] = useState(false)
+  const [novaQuestao, setNovaQuestao] = useState({
+    enunciado: '', alternativas: { A: '', B: '', C: '', D: '' }, gabarito: 'A', explicacao: '',
+  })
+  const [modalNovoModulo, setModalNovoModulo] = useState(false)
+  const [novoModuloTitulo, setNovoModuloTitulo] = useState('')
+  const [modalEditarModulo, setModalEditarModulo] = useState<{ id: string; titulo: string; ordem: number } | null>(null)
 
   useEffect(() => {
     setCarregando(true)
@@ -74,6 +82,71 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
       alert(err.message ?? 'Erro ao salvar questão')
     } finally {
       setSalvandoQuestao(false)
+    }
+  }
+
+  const handleCriarQuestao = async () => {
+    try {
+      const criada: any = await questoesAPI.criar({
+        curso_id: curso!.id,
+        enunciado: novaQuestao.enunciado,
+        alternativas: novaQuestao.alternativas,
+        gabarito: novaQuestao.gabarito,
+        explicacao: novaQuestao.explicacao || undefined,
+      })
+      setCurso((prev: any) => ({ ...prev, questoes: [...(prev.questoes ?? []), criada] }))
+      setModalNovaQuestao(false)
+      setNovaQuestao({ enunciado: '', alternativas: { A: '', B: '', C: '', D: '' }, gabarito: 'A', explicacao: '' })
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao criar questão')
+    }
+  }
+
+  const handleApagarQuestao = async (id: string) => {
+    if (!window.confirm('Apagar esta questão?')) return
+    try {
+      await questoesAPI.excluir(id)
+      setCurso((prev: any) => ({ ...prev, questoes: prev.questoes.filter((q: any) => q.id !== id) }))
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao apagar questão')
+    }
+  }
+
+  const handleCriarModulo = async () => {
+    if (!novoModuloTitulo.trim()) return
+    try {
+      const criado: any = await modulosAPI.criar({ curso_id: curso!.id, titulo: novoModuloTitulo.trim() })
+      setCurso((prev: any) => ({ ...prev, modulos: [...(prev.modulos ?? []), { ...criado, aulas: [] }] }))
+      setModalNovoModulo(false)
+      setNovoModuloTitulo('')
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao criar módulo')
+    }
+  }
+
+  const handleEditarModulo = async () => {
+    if (!modalEditarModulo) return
+    try {
+      const atualizado: any = await modulosAPI.atualizar(modalEditarModulo.id, { titulo: modalEditarModulo.titulo })
+      setCurso((prev: any) => ({
+        ...prev,
+        modulos: prev.modulos.map((m: any) =>
+          m.id === modalEditarModulo.id ? { ...m, titulo: atualizado.titulo } : m
+        ),
+      }))
+      setModalEditarModulo(null)
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao editar módulo')
+    }
+  }
+
+  const handleExcluirModulo = async (id: string) => {
+    if (!window.confirm('Excluir módulo? Todas as aulas serão removidas.')) return
+    try {
+      await modulosAPI.excluir(id)
+      setCurso((prev: any) => ({ ...prev, modulos: prev.modulos.filter((m: any) => m.id !== id) }))
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao excluir módulo')
     }
   }
 
@@ -199,13 +272,20 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
           )}
 
           {/* Módulos */}
-          {curso.modulos?.length > 0 && (
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 12px' }}>
-                Conteúdo do Curso — {curso.modulos.length} módulo{curso.modulos.length !== 1 ? 's' : ''}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
+                Conteúdo do Curso — {(curso.modulos ?? []).length} módulo{(curso.modulos ?? []).length !== 1 ? 's' : ''}
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {curso.modulos.map((mod: any, idx: number) => {
+              <button
+                onClick={() => setModalNovoModulo(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: C.blue, border: 'none', borderRadius: '7px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+              >
+                <Plus size={13} /> Novo Módulo
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(curso.modulos ?? []).map((mod: any, idx: number) => {
                   const aberto = modulosAbertos.has(mod.id)
                   const aulas: any[] = mod.aulas ?? []
                   return (
@@ -228,6 +308,26 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
                         </div>
                         <span style={{ fontSize: '14px', fontWeight: 600, color: C.text, flex: 1 }}>{mod.titulo}</span>
                         <span style={{ fontSize: '12px', color: C.muted }}>{aulas.length} aula{aulas.length !== 1 ? 's' : ''}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => setModalEditarModulo({ id: mod.id, titulo: mod.titulo, ordem: mod.ordem })}
+                            title="Editar módulo"
+                            style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '5px', padding: '3px 7px', fontSize: '11px', color: C.muted, cursor: 'pointer' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.color = C.blue }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                          >
+                            <Pencil size={10} /> Editar
+                          </button>
+                          <button
+                            onClick={() => handleExcluirModulo(mod.id)}
+                            title="Excluir módulo"
+                            style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', color: '#ef4444', cursor: 'pointer' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#ef4444' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
+                          >
+                            <Trash2 size={10} /> Excluir
+                          </button>
+                        </div>
                         {aberto ? <ChevronUp size={16} color={C.blue} /> : <ChevronDown size={16} color={C.blue} />}
                       </div>
 
@@ -282,43 +382,60 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
                     </div>
                   )
                 })}
-              </div>
             </div>
-          )}
+          </div>
 
           {/* Questões da prova */}
-          {curso.questoes?.length > 0 && (
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 12px' }}>
-                Questões da Prova — {curso.questoes.length} questão{curso.questoes.length !== 1 ? 's' : ''}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
+                Questões da Prova — {(curso.questoes ?? []).length} questão{(curso.questoes ?? []).length !== 1 ? 's' : ''}
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {curso.questoes.map((q: any, i: number) => (
+              <button
+                onClick={() => setModalNovaQuestao(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: C.blue, border: 'none', borderRadius: '7px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+              >
+                <Plus size={13} /> Nova Pergunta
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(curso.questoes ?? []).map((q: any, i: number) => (
                   <div key={q.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '14px 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
                       <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: 0, flex: 1 }}>
                         {i + 1}. {q.enunciado}
                       </p>
-                      <button
-                        onClick={() => setQuestaoEditando({
-                          id:           q.id,
-                          enunciado:    q.enunciado,
-                          alternativas: {
-                            A: q.alternativas?.A ?? '',
-                            B: q.alternativas?.B ?? '',
-                            C: q.alternativas?.C ?? '',
-                            D: q.alternativas?.D ?? '',
-                          },
-                          gabarito:   q.gabarito ?? 'A',
-                          explicacao: q.explicacao ?? '',
-                        })}
-                        title="Editar questão"
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '6px', padding: '4px 8px', fontSize: '11px', color: C.muted, cursor: 'pointer', flexShrink: 0 }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.color = C.blue }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
-                      >
-                        <Pencil size={11} /> Editar
-                      </button>
+                      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                        <button
+                          onClick={() => setQuestaoEditando({
+                            id:           q.id,
+                            enunciado:    q.enunciado,
+                            alternativas: {
+                              A: q.alternativas?.A ?? '',
+                              B: q.alternativas?.B ?? '',
+                              C: q.alternativas?.C ?? '',
+                              D: q.alternativas?.D ?? '',
+                            },
+                            gabarito:   q.gabarito ?? 'A',
+                            explicacao: q.explicacao ?? '',
+                          })}
+                          title="Editar questão"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '6px', padding: '4px 8px', fontSize: '11px', color: C.muted, cursor: 'pointer' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.color = C.blue }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                        >
+                          <Pencil size={11} /> Editar
+                        </button>
+                        <button
+                          onClick={() => handleApagarQuestao(q.id)}
+                          title="Apagar questão"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', color: '#ef4444', cursor: 'pointer' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#ef4444' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
+                        >
+                          <Trash2 size={11} /> Apagar
+                        </button>
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       {(['A', 'B', 'C', 'D'] as const).map(letra => {
@@ -336,9 +453,8 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
                     </div>
                   </div>
                 ))}
-              </div>
             </div>
-          )}
+          </div>
 
         </div>
       </div>
@@ -411,6 +527,153 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
                 style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: '#fff', background: salvandoQuestao ? C.muted : C.blue, border: 'none', borderRadius: '8px', cursor: salvandoQuestao ? 'not-allowed' : 'pointer' }}
               >
                 {salvandoQuestao ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nova Pergunta */}
+      {modalNovaQuestao && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={e => { if (e.target === e.currentTarget) setModalNovaQuestao(false) }}
+        >
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '14px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '28px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 20px' }}>Nova Pergunta</h3>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '6px' }}>Enunciado</label>
+              <textarea
+                value={novaQuestao.enunciado}
+                onChange={e => setNovaQuestao(prev => ({ ...prev, enunciado: e.target.value }))}
+                rows={3}
+                style={{ width: '100%', padding: '10px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+              />
+            </div>
+
+            {(['A', 'B', 'C', 'D'] as const).map(letra => (
+              <div key={letra} style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '4px' }}>{letra})</label>
+                <input
+                  type="text"
+                  value={novaQuestao.alternativas[letra]}
+                  onChange={e => setNovaQuestao(prev => ({ ...prev, alternativas: { ...prev.alternativas, [letra]: e.target.value } }))}
+                  style={{ width: '100%', padding: '8px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+                />
+              </div>
+            ))}
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '6px' }}>Resposta correta</label>
+              <select
+                value={novaQuestao.gabarito}
+                onChange={e => setNovaQuestao(prev => ({ ...prev, gabarito: e.target.value }))}
+                style={{ padding: '8px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                {['A', 'B', 'C', 'D'].map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '6px' }}>
+                Explicação <span style={{ fontWeight: 400 }}>(opcional)</span>
+              </label>
+              <textarea
+                value={novaQuestao.explicacao}
+                onChange={e => setNovaQuestao(prev => ({ ...prev, explicacao: e.target.value }))}
+                rows={2}
+                style={{ width: '100%', padding: '10px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setModalNovaQuestao(false)}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: C.muted, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCriarQuestao}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: '#fff', background: C.blue, border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Novo Módulo */}
+      {modalNovoModulo && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={e => { if (e.target === e.currentTarget) { setModalNovoModulo(false); setNovoModuloTitulo('') } }}
+        >
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '14px', width: '100%', maxWidth: '480px', padding: '28px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 20px' }}>Novo Módulo</h3>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '6px' }}>Título do módulo</label>
+              <input
+                type="text"
+                value={novoModuloTitulo}
+                onChange={e => setNovoModuloTitulo(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleCriarModulo() }}
+                placeholder="Ex: Módulo 1 — Introdução"
+                autoFocus
+                style={{ width: '100%', padding: '10px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setModalNovoModulo(false); setNovoModuloTitulo('') }}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: C.muted, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCriarModulo}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: '#fff', background: C.blue, border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Criar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Módulo */}
+      {modalEditarModulo && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={e => { if (e.target === e.currentTarget) setModalEditarModulo(null) }}
+        >
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '14px', width: '100%', maxWidth: '480px', padding: '28px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 20px' }}>Editar Módulo</h3>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: C.muted, marginBottom: '6px' }}>Título do módulo</label>
+              <input
+                type="text"
+                value={modalEditarModulo.titulo}
+                onChange={e => setModalEditarModulo(prev => prev ? { ...prev, titulo: e.target.value } : null)}
+                onKeyDown={e => { if (e.key === 'Enter') handleEditarModulo() }}
+                autoFocus
+                style={{ width: '100%', padding: '10px 12px', fontSize: '13px', color: C.text, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setModalEditarModulo(null)}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: C.muted, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEditarModulo}
+                style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: '#fff', background: C.blue, border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Salvar
               </button>
             </div>
           </div>
