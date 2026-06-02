@@ -1,26 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { instrutoresAPI } from '../../services/api'
+import { instrutoresAPI, turmasAPI } from '../../services/api'
 
-const TURMAS = [
-  'Coordenação de Suprimentos',
-  'Recursos Humanos',
-  'Segurança do Trabalho',
-  'Serviços Gerais',
-  'Comunicação',
-  'Engenharia',
-  'Manutenções - Oficina',
-  'Tecnologia da Informação',
-  'Coordenação de Pessoal',
-  'Coordenação de Qualidade',
-  'Gerência Financeira',
-  'Gerência Jurídica e Compliance',
-  'Gerência de Auditoria',
-  'Gerência de Controladoria',
-  'Gerência de Gestão de Pessoas',
-  'Saúde Ocupacional',
-  'Patrimônio',
-]
 
 interface EditarInstrutorProps {
   instrutor?: any
@@ -40,11 +21,16 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
   const [status,         setStatus]         = useState('ativo')
   const [cpf,            setCpf]            = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
-  const [salvando,       setSalvando]       = useState(false)
-  const [erro,           setErro]           = useState('')
-  const [sucesso,        setSucesso]        = useState(false)
+  const [salvando,         setSalvando]         = useState(false)
+  const [erro,             setErro]             = useState('')
+  const [sucesso,          setSucesso]          = useState(false)
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([])
 
   useEffect(() => {
+    turmasAPI.listar()
+      .then((lista: any) =>
+        setTurmasDisponiveis((lista as any[]).filter((t: any) => t.status === 'ativa')))
+      .catch(() => setTurmasDisponiveis([]))
     if (!instrutor) return
     setNome(instrutor.nome                ?? '')
     setEmail(instrutor.email              ?? '')
@@ -275,8 +261,10 @@ export function EditarInstrutor({ instrutor, onFechar, onSucesso }: EditarInstru
             style={{ ...inputStyle, cursor: 'pointer' }}
           >
             <option value="">Selecione uma turma...</option>
-            {TURMAS.map(t => (
-              <option key={t} value={t}>{t}</option>
+            {turmasDisponiveis.map((t: any) => (
+              <option key={t.id} value={t.nome}>
+                {t.cargo_grupo || t.nome}
+              </option>
             ))}
           </select>
         </div>
