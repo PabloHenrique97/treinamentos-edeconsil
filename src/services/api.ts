@@ -228,6 +228,15 @@ export const meuInstrutorAPI = {
 
 export const turmasAPI = {
   listar: () => apiRequest<unknown[]>('/turmas'),
+  criar: (dados: {
+    nome: string; cargo_grupo: string; setor?: string; responsavel?: string
+    icone?: string; cor?: string; status?: string; instrutor_id?: string | null
+  }) => apiRequest('/turmas', { method: 'POST', body: JSON.stringify(dados) }),
+  atualizar: (id: string, dados: {
+    nome: string; cargo_grupo: string; setor?: string; responsavel?: string
+    icone?: string; cor?: string; status?: string; instrutor_id?: string | null
+  }) => apiRequest(`/turmas/${id}`, { method: 'PUT', body: JSON.stringify(dados) }),
+  excluir: (id: string) => apiRequest(`/turmas/${id}`, { method: 'DELETE' }),
 }
 
 export const indicadoresAPI = {

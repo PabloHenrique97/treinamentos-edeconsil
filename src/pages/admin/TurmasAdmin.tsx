@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Users, BookOpen, GraduationCap, RefreshCw } from 'lucide-react'
+import { Search, Users, BookOpen, GraduationCap, RefreshCw, Pencil, Trash2, Plus, X } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { turmasAPI } from '../../services/api'
@@ -59,6 +59,56 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
   const [erro,         setErro]         = useState('')
   const [busca,        setBusca]        = useState('')
   const [filtroStatus, setFiltroStatus] = useState('todos')
+  const [modalTurma,   setModalTurma]   = useState<{ modo: 'criar' | 'editar'; turma?: any } | null>(null)
+  const [formTurma,    setFormTurma]    = useState({
+    nome: '', cargo_grupo: '', setor: '', responsavel: '',
+    icone: '🏢', cor: '#0d2550', status: 'ativa', instrutor_id: ''
+  })
+
+  const abrirCriar = () => {
+    setFormTurma({ nome: '', cargo_grupo: '', setor: '', responsavel: '', icone: '🏢', cor: '#0d2550', status: 'ativa', instrutor_id: '' })
+    setModalTurma({ modo: 'criar' })
+  }
+
+  const abrirEditar = (turma: any) => {
+    setFormTurma({
+      nome:         turma.nome         ?? '',
+      cargo_grupo:  turma.cargo_grupo  ?? '',
+      setor:        turma.setor        ?? '',
+      responsavel:  turma.responsavel  ?? '',
+      icone:        turma.icone        ?? '🏢',
+      cor:          turma.cor          ?? '#0d2550',
+      status:       turma.status       ?? 'ativa',
+      instrutor_id: turma.instrutor_id ?? '',
+    })
+    setModalTurma({ modo: 'editar', turma })
+  }
+
+  const salvarTurma = async () => {
+    const dados = { ...formTurma, instrutor_id: formTurma.instrutor_id || null }
+    try {
+      if (modalTurma?.modo === 'criar') {
+        const nova = await turmasAPI.criar(dados) as any
+        setTurmas(prev => [nova, ...prev])
+      } else {
+        const atualizada = await turmasAPI.atualizar(modalTurma!.turma.id, dados) as any
+        setTurmas(prev => prev.map(t => t.id === atualizada.id ? { ...t, ...atualizada } : t))
+      }
+      setModalTurma(null)
+    } catch (err: any) {
+      alert(err?.message ?? 'Erro ao salvar turma')
+    }
+  }
+
+  const excluirTurma = async (turma: any) => {
+    if (!window.confirm(`Excluir a turma "${turma.nome}"?\nEsta ação não pode ser desfeita.`)) return
+    try {
+      await turmasAPI.excluir(turma.id)
+      setTurmas(prev => prev.filter(t => t.id !== turma.id))
+    } catch (err: any) {
+      alert(err?.message ?? 'Erro ao excluir turma')
+    }
+  }
 
   const carregar = useCallback(async () => {
     setCarregando(true)
@@ -116,6 +166,19 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
               {turmas.length} turmas cadastradas no sistema
             </p>
           </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={abrirCriar}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '7px 14px', background: '#F5C400', color: '#0d2550',
+              border: 'none', borderRadius: '7px', fontWeight: 700,
+              fontSize: '13px', cursor: 'pointer',
+            }}
+          >
+            <Plus size={14} />
+            Nova Turma
+          </button>
           <button
             onClick={carregar}
             disabled={carregando}
@@ -133,6 +196,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
             />
             Atualizar
           </button>
+          </div>
         </div>
 
         {/* Métricas */}
@@ -259,6 +323,7 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
                     borderRadius: '12px',
                     overflow:     'hidden',
                     transition:   'transform 200ms, box-shadow 200ms',
+                    position:     'relative',
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform  = 'translateY(-3px)'
@@ -269,6 +334,24 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
                     e.currentTarget.style.boxShadow  = 'none'
                   }}
                 >
+                  {/* Ações */}
+                  <div style={{ display: 'flex', gap: '6px', position: 'absolute', top: '12px', right: '12px' }}>
+                    <button
+                      onClick={e => { e.stopPropagation(); abrirEditar(turma) }}
+                      title="Editar turma"
+                      style={{ background: 'rgba(13,37,80,0.08)', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Pencil size={13} color="#0d2550" />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); excluirTurma(turma) }}
+                      title="Excluir turma"
+                      style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Trash2 size={13} color="#ef4444" />
+                    </button>
+                  </div>
+
                   {/* Header */}
                   <div style={{ padding: '18px 20px 14px' }}>
                     <div style={{
@@ -427,6 +510,121 @@ export function TurmasAdmin({ onNavigate, onLogout }: TurmasAdminProps) {
         )}
 
       </div>
+
+      {/* Modal Nova Turma / Editar Turma */}
+      {modalTurma && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '16px',
+        }}>
+          <div style={{
+            background: C.surface, borderRadius: '14px',
+            padding: '28px', width: '100%', maxWidth: '480px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          }}>
+            {/* Cabeçalho modal */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: 0 }}>
+                {modalTurma.modo === 'criar' ? 'Nova Turma' : 'Editar Turma'}
+              </h2>
+              <button onClick={() => setModalTurma(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                <X size={18} color={C.muted} />
+              </button>
+            </div>
+
+            {/* Campos */}
+            {([
+              { label: 'Nome da turma *', field: 'nome',        placeholder: 'Ex: Recursos Humanos' },
+              { label: 'Grupo / Cargo',   field: 'cargo_grupo', placeholder: 'Ex: Recursos Humanos' },
+              { label: 'Setor',           field: 'setor',       placeholder: 'Ex: Administrativo'    },
+              { label: 'Responsável',     field: 'responsavel', placeholder: 'Nome do responsável'   },
+              { label: 'Ícone (emoji)',   field: 'icone',       placeholder: '🏢'                    },
+            ] as { label: string; field: keyof typeof formTurma; placeholder: string }[]).map(({ label, field, placeholder }) => (
+              <div key={field} style={{ marginBottom: '14px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>
+                  {label}
+                </label>
+                <input
+                  value={formTurma[field] as string}
+                  onChange={e => setFormTurma(p => ({ ...p, [field]: e.target.value }))}
+                  placeholder={placeholder}
+                  style={{
+                    width: '100%', padding: '9px 12px', background: C.surface2,
+                    border: `1px solid ${C.border}`, borderRadius: '8px',
+                    fontSize: '13px', color: C.text, outline: 'none', boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            ))}
+
+            {/* Cor */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>Cor</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="color"
+                  value={formTurma.cor}
+                  onChange={e => setFormTurma(p => ({ ...p, cor: e.target.value }))}
+                  style={{ width: '40px', height: '36px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: 'none' }}
+                />
+                <input
+                  value={formTurma.cor}
+                  onChange={e => setFormTurma(p => ({ ...p, cor: e.target.value }))}
+                  placeholder="#0d2550"
+                  style={{
+                    flex: 1, padding: '9px 12px', background: C.surface2,
+                    border: `1px solid ${C.border}`, borderRadius: '8px',
+                    fontSize: '13px', color: C.text, outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div style={{ marginBottom: '22px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>Status</label>
+              <select
+                value={formTurma.status}
+                onChange={e => setFormTurma(p => ({ ...p, status: e.target.value }))}
+                style={{
+                  width: '100%', padding: '9px 12px', background: C.surface2,
+                  border: `1px solid ${C.border}`, borderRadius: '8px',
+                  fontSize: '13px', color: C.text, outline: 'none', cursor: 'pointer',
+                }}
+              >
+                <option value="ativa">Ativa</option>
+                <option value="inativa">Inativa</option>
+                <option value="arquivada">Arquivada</option>
+              </select>
+            </div>
+
+            {/* Botões */}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setModalTurma(null)}
+                style={{
+                  padding: '9px 18px', background: 'none',
+                  border: `1px solid ${C.border}`, borderRadius: '8px',
+                  fontSize: '13px', color: C.muted, cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarTurma}
+                style={{
+                  padding: '9px 20px', background: C.blue, border: 'none',
+                  borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                  color: '#fff', cursor: 'pointer',
+                }}
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </LayoutAdmin>
   )
 }
