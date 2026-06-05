@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Camera } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { usuariosAPI } from '../../services/api'
+
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 
 interface EditarAlunoProps {
   aluno: any
@@ -41,6 +44,9 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
   const [dataAdmissao,   setDataAdmissao]   = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
   const [status,         setStatus]         = useState('ativo')
+  const [origem,         setOrigem]         = useState('Empregado')
+  const [empresaTerceiro, setEmpresaTerceiro] = useState('')
+  const [fotoPreview,    setFotoPreview]    = useState<string | null>(null)
   const [salvando,     setSalvando]     = useState(false)
   const [erro,         setErro]         = useState('')
   const [sucesso,      setSucesso]      = useState(false)
@@ -55,6 +61,9 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
     setCelular(aluno.celular     ?? '')
     setCentroCusto(aluno.centro_custo ?? '')
     setStatus(aluno.status === 'Ativo' ? 'ativo' : (aluno.status ?? 'ativo'))
+    setOrigem(aluno.origem ?? 'Empregado')
+    setEmpresaTerceiro(aluno.empresa_terceiro ?? '')
+    setFotoPreview(null)
 
     if (aluno.data_admissao) {
       const d = new Date(aluno.data_admissao)
@@ -90,6 +99,8 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
         data_admissao:   dataAdmissao   || null,
         data_nascimento: dataNascimento || null,
         status,
+        origem,
+        empresa_terceiro: origem === 'Terceiro' ? (empresaTerceiro || null) : null,
       }) as any
 
       setSucesso(true)
@@ -182,6 +193,46 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
         </div>
       </div>
 
+      {/* Avatar do colaborador */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', padding: '16px', background: C.surface2, borderRadius: '10px', border: `1px solid ${C.border}` }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', background: '#e8edf5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '3px solid #0d2550' }}>
+          {fotoPreview || aluno?.foto_url ? (
+            <img
+              src={fotoPreview ?? `${BACKEND_URL}${aluno.foto_url}`}
+              alt={nome}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <span style={{ fontSize: '28px' }}>👤</span>
+          )}
+        </div>
+        <div>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>Foto do colaborador</p>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#0d2550', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+            <Camera size={13} />
+            Alterar foto
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: 'none' }}
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setFotoPreview(URL.createObjectURL(file))
+                const fd = new FormData()
+                fd.append('foto', file)
+                try {
+                  await (usuariosAPI as any).uploadFoto(aluno.id, fd)
+                } catch {
+                  alert('Erro ao fazer upload da foto.')
+                }
+              }}
+            />
+          </label>
+          <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>JPG, PNG ou WEBP até 5MB</p>
+        </div>
+      </div>
+
       {erro && (
         <div style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#ef4444', marginBottom: '16px' }}>
           ⚠️ {erro}
@@ -235,6 +286,41 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
           </select>
         </div>
       </div>
+
+      {/* Origem */}
+      <div style={{ marginBottom: '14px' }}>
+        <label style={labelStyle}>Origem</label>
+        <select
+          value={origem}
+          onChange={e => { setOrigem(e.target.value); if (e.target.value !== 'Terceiro') setEmpresaTerceiro('') }}
+          onKeyDown={stopKeys}
+          onFocus={onFocusInput}
+          onBlur={onBlurInput}
+          style={{ ...inputStyle, cursor: 'pointer' }}
+        >
+          <option value="Empregado">Empregado</option>
+          <option value="Parceiro">Parceiro</option>
+          <option value="Terceiro">Terceiro</option>
+        </select>
+      </div>
+
+      {/* Empresa terceirizada — só quando Terceiro */}
+      {origem === 'Terceiro' && (
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>Empresa Terceirizada</label>
+          <input
+            type="text"
+            value={empresaTerceiro}
+            onChange={e => setEmpresaTerceiro(e.target.value)}
+            onKeyDown={stopKeys}
+            onFocus={onFocusInput}
+            onBlur={onBlurInput}
+            placeholder="Nome da empresa terceirizada"
+            style={inputStyle}
+            autoComplete="off"
+          />
+        </div>
+      )}
 
       {/* Setor / Turma */}
       <div style={{ marginBottom: '14px' }}>

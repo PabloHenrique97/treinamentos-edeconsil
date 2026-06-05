@@ -75,6 +75,8 @@ export const usuariosAPI = {
     }),
   deletar: (id: string) =>
     apiRequest(`/usuarios/${id}`, { method: 'DELETE' }),
+  uploadFoto: (id: string, formData: FormData) =>
+    apiRequest(`/usuarios/${id}/foto`, { method: 'POST', body: formData }),
 }
 
 export const cursosAPI = {

@@ -2,6 +2,9 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Users, UserCheck, UserX, X, UserPlus } from 'lucide-react'
+import { turmasAPI } from '../../services/api'
+
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 import { CadastroAluno } from './CadastroAluno'
 import { EditarAluno } from './EditarAluno'
 import { ImportarAlunosModal } from '../../components/admin/ImportarAlunosModal'
@@ -71,6 +74,10 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const [paginaAtual, setPaginaAtual]                 = useState(1)
   const [ordenacao, setOrdenacao]                     = useState<CampoOrdem>('nome')
   const [ordemDir, setOrdemDir]                       = useState<'asc' | 'desc'>('asc')
+  const [cargoFiltro,  setCargoFiltro]                = useState('')
+  const [turmaFiltro,  setTurmaFiltro]                = useState('')
+  const [origemFiltro, setOrigemFiltro]               = useState('Todos')
+  const [turmasDisponiveis, setTurmasDisponiveis]     = useState<any[]>([])
 
   const carregarAlunos = useCallback(async () => {
     setCarregando(true)
@@ -96,7 +103,12 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
     }
   }, [])
 
-  useEffect(() => { carregarAlunos() }, [carregarAlunos])
+  useEffect(() => {
+    carregarAlunos()
+    turmasAPI.listar()
+      .then((lista: any) => setTurmasDisponiveis(Array.isArray(lista) ? lista : []))
+      .catch(() => {})
+  }, [carregarAlunos])
 
   function toggleOrdem(campo: CampoOrdem) {
     if (campo === ordenacao) {
@@ -113,18 +125,22 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
     setSetorFiltro('Todos')
     setCrFiltro('')
     setStatusFiltro('Todos')
+    setCargoFiltro('')
+    setTurmaFiltro('')
+    setOrigemFiltro('Todos')
     setPaginaAtual(1)
   }
 
   const alunosFiltrados = useMemo(() => {
-    let lista = alunos.filter(a => {
-      const buscaOk = busca === '' ||
-        a.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        a.email.toLowerCase().includes(busca.toLowerCase())
+    let lista = alunos.filter((a: any) => {
+      const buscaOk  = busca === '' || a.nome.toLowerCase().includes(busca.toLowerCase()) || a.email.toLowerCase().includes(busca.toLowerCase())
       const crOk     = crFiltro === '' || a.cr.toLowerCase().includes(crFiltro.toLowerCase())
       const setorOk  = setorFiltro === 'Todos' || a.setor === setorFiltro
       const statusOk = statusFiltro === 'Todos' || a.status === statusFiltro
-      return buscaOk && crOk && setorOk && statusOk
+      const cargoOk  = cargoFiltro === '' || (a.cargo ?? '').toLowerCase().includes(cargoFiltro.toLowerCase())
+      const turmaOk  = turmaFiltro === '' || a.turma_id === turmaFiltro
+      const origemOk = origemFiltro === 'Todos' || (a as any).origem === origemFiltro
+      return buscaOk && crOk && setorOk && statusOk && cargoOk && turmaOk && origemOk
     })
 
     lista = [...lista].sort((a, b) => {
@@ -279,8 +295,40 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             <option value="Inativo">Inativo</option>
           </select>
 
+          {/* Filtro cargo */}
+          <input
+            value={cargoFiltro}
+            onChange={e => { setCargoFiltro(e.target.value); setPaginaAtual(1) }}
+            placeholder="Filtrar por cargo..."
+            style={{ ...inputStyle, width: '160px' }}
+          />
+
+          {/* Filtro turma */}
+          <select
+            value={turmaFiltro}
+            onChange={e => { setTurmaFiltro(e.target.value); setPaginaAtual(1) }}
+            style={{ ...inputStyle, cursor: 'pointer' }}
+          >
+            <option value="">Todas as turmas</option>
+            {turmasDisponiveis.map((t: any) => (
+              <option key={t.id} value={t.id}>{t.cargo_grupo || t.nome}</option>
+            ))}
+          </select>
+
+          {/* Filtro origem */}
+          <select
+            value={origemFiltro}
+            onChange={e => { setOrigemFiltro(e.target.value); setPaginaAtual(1) }}
+            style={{ ...inputStyle, cursor: 'pointer' }}
+          >
+            <option value="Todos">Todas as origens</option>
+            <option value="Empregado">Empregado</option>
+            <option value="Parceiro">Parceiro</option>
+            <option value="Terceiro">Terceiro</option>
+          </select>
+
           {/* Limpar */}
-          {(busca || crFiltro || setorFiltro !== 'Todos' || statusFiltro !== 'Todos') && (
+          {(busca || crFiltro || setorFiltro !== 'Todos' || statusFiltro !== 'Todos' || cargoFiltro || turmaFiltro || origemFiltro !== 'Todos') && (
             <button
               onClick={limparFiltros}
               style={{
@@ -406,17 +454,19 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                   {/* Aluno */}
                   <td style={{ padding: '12px 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{
-                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                        background: corAvatar(aluno.id),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '12px', fontWeight: 700, color: '#fff',
-                      }}>
-                        {getIniciais(aluno.nome)}
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: corAvatar(aluno.id), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#fff' }}>
+                        {(aluno as any).foto_url ? (
+                          <img src={`${BACKEND_URL}${(aluno as any).foto_url}`} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : getIniciais(aluno.nome)}
                       </div>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: C.text }}>{aluno.nome}</div>
                         <div style={{ fontSize: '11px', color: C.muted }}>{aluno.email}</div>
+                        {(aluno as any).origem && (aluno as any).origem !== 'Empregado' && (
+                          <span style={{ fontSize: '10px', padding: '1px 5px', background: (aluno as any).origem === 'Terceiro' ? '#fef3c7' : '#ede9fe', color: (aluno as any).origem === 'Terceiro' ? '#92400e' : '#5b21b6', borderRadius: '4px', fontWeight: 600, display: 'inline-block', marginTop: '2px' }}>
+                            {(aluno as any).origem}{(aluno as any).origem === 'Terceiro' && (aluno as any).empresa_terceiro ? ` · ${(aluno as any).empresa_terceiro}` : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </td>
