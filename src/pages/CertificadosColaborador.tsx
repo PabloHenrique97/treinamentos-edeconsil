@@ -10,6 +10,14 @@ import { certificadosAPI } from '../services/api'
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 
+const tipoArquivo = (url: string) => {
+  if (!url) return 'desconhecido'
+  const ext = url.split('.').pop()?.toLowerCase()
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(ext ?? '')) return 'imagem'
+  if (ext === 'pdf') return 'pdf'
+  return 'desconhecido'
+}
+
 interface CertificadosColaboradorProps {
   onNavigate: (page: string) => void
   onLogout:   () => void
@@ -303,6 +311,35 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
                         {cert.codigo}
                       </p>
                     </div>
+
+                    {cert.tipo === 'externo' && cert.url_pdf && (
+                      <>
+                        {tipoArquivo(cert.url_pdf) === 'imagem' ? (
+                          <a href={`${BASE_URL}${cert.url_pdf}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: '12px' }}>
+                            <img
+                              src={`${BASE_URL}${cert.url_pdf}`}
+                              alt={cert.curso_titulo ?? cert.titulo_externo}
+                              style={{ width: '100%', borderRadius: '8px', objectFit: 'cover', maxHeight: '180px', border: `1px solid ${C.border}`, cursor: 'pointer', display: 'block' }}
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                            <span style={{ fontSize: '11px', color: C.blue, fontWeight: 600, display: 'block', marginTop: '4px' }}>Ver certificado completo →</span>
+                          </a>
+                        ) : (
+                          <a
+                            href={`${BASE_URL}${cert.url_pdf}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', padding: '10px 12px', background: 'rgba(239,68,68,0.06)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.15)', textDecoration: 'none', cursor: 'pointer' }}
+                          >
+                            <span style={{ fontSize: '22px' }}>📄</span>
+                            <div>
+                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', margin: 0 }}>Abrir PDF</p>
+                              <p style={{ fontSize: '10px', color: C.muted, margin: 0 }}>{cert.curso_titulo ?? cert.titulo_externo}</p>
+                            </div>
+                          </a>
+                        )}
+                      </>
+                    )}
 
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button

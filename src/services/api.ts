@@ -287,4 +287,8 @@ export const modulosAPI = {
     apiRequest(`/modulos/${id}`, { method: 'DELETE' }),
 }
 
+if (typeof window !== 'undefined') {
+  setInterval(() => { apiRequest('/ping').catch(() => {}) }, 4 * 60 * 1000)
+}
+
 export default apiRequest

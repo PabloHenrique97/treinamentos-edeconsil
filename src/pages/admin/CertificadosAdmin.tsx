@@ -6,6 +6,14 @@ import { certificadosAPI, usuariosAPI } from '../../services/api'
 
 const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 
+const tipoArquivo = (url: string) => {
+  if (!url) return 'desconhecido'
+  const ext = url.split('.').pop()?.toLowerCase()
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(ext ?? '')) return 'imagem'
+  if (ext === 'pdf') return 'pdf'
+  return 'desconhecido'
+}
+
 interface CertificadosAdminProps {
   onNavigate: (page: string) => void
   onLogout:   () => void
@@ -236,21 +244,40 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
                     )}
                   </div>
 
-                  {/* Rodapé — código + link */}
-                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Pré-visualização do arquivo externo */}
+                  {cert.tipo === 'externo' && cert.url_pdf && (
+                    <>
+                      {tipoArquivo(cert.url_pdf) === 'imagem' ? (
+                        <a href={`${BACKEND_URL}${cert.url_pdf}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '10px' }}>
+                          <img
+                            src={`${BACKEND_URL}${cert.url_pdf}`}
+                            alt={cert.titulo_externo}
+                            style={{ width: '100%', borderRadius: '8px', objectFit: 'cover', maxHeight: '160px', border: `1px solid ${C.border}`, cursor: 'pointer', display: 'block' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          />
+                          <span style={{ fontSize: '11px', color: '#0d2550', fontWeight: 600, display: 'block', marginTop: '4px' }}>Ver certificado completo →</span>
+                        </a>
+                      ) : (
+                        <a
+                          href={`${BACKEND_URL}${cert.url_pdf}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', padding: '10px 12px', background: 'rgba(239,68,68,0.06)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.15)', textDecoration: 'none', cursor: 'pointer' }}
+                        >
+                          <span style={{ fontSize: '22px' }}>📄</span>
+                          <div>
+                            <p style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', margin: 0 }}>Abrir PDF</p>
+                            <p style={{ fontSize: '10px', color: C.muted, margin: 0 }}>{cert.titulo_externo}</p>
+                          </div>
+                        </a>
+                      )}
+                    </>
+                  )}
+                  {/* Rodapé — código */}
+                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: `1px solid ${C.border}` }}>
                     <span style={{ fontSize: '10px', color: C.muted, fontFamily: 'monospace' }}>
                       {cert.codigo}
                     </span>
-                    {cert.tipo === 'externo' && cert.url_pdf && (
-                      <a
-                        href={`${BACKEND_URL}${cert.url_pdf}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ fontSize: '11px', color: '#0d2550', fontWeight: 600, textDecoration: 'none' }}
-                      >
-                        Ver arquivo →
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
