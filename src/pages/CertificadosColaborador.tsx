@@ -8,6 +8,8 @@ import { useResponsive } from '../hooks/useResponsive'
 import { useUsuarioLogado } from '../hooks/useUsuarioLogado'
 import { certificadosAPI } from '../services/api'
 
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
+
 interface CertificadosColaboradorProps {
   onNavigate: (page: string) => void
   onLogout:   () => void
@@ -272,13 +274,18 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
                     <p style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>{cert.aluno_nome}</p>
                     <p style={{ fontSize: '12px', color: C.muted, margin: '0 0 14px', lineHeight: 1.5 }}>
                       concluiu com êxito <strong style={{ color: C.text }}>{cert.curso_titulo}</strong>
+                      {cert.tipo === 'externo' && (
+                        <span style={{ fontSize: '10px', padding: '2px 6px', background: '#f59e0b', color: '#fff', borderRadius: '4px', fontWeight: 700, marginLeft: '6px', verticalAlign: 'middle' }}>
+                          EXTERNO
+                        </span>
+                      )}
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
                       {[
                         { label: 'Emitido em',    valor: formatarData(cert.data_emissao) },
                         { label: 'Válido até',    valor: cert.data_validade ? formatarData(cert.data_validade) : 'Sem validade' },
-                        { label: 'Nota obtida',   valor: cert.nota_obtida ? `${cert.nota_obtida}%` : '—' },
+                        { label: cert.tipo === 'externo' ? 'Entidade' : 'Nota obtida', valor: cert.nota_obtida != null ? `${cert.nota_obtida}%` : (cert.entidade_emissora ?? '—') },
                         { label: 'Carga horária', valor: cert.carga_horaria ?? '—' },
                       ].map(d => (
                         <div key={d.label} style={{ background: C.surface2, borderRadius: '8px', padding: '8px 10px' }}>
@@ -299,7 +306,13 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
 
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
-                        onClick={() => imprimirCertificado(cert)}
+                        onClick={() => {
+                          if (cert.tipo === 'externo' && cert.url_pdf) {
+                            window.open(`${BASE_URL}${cert.url_pdf}`, '_blank')
+                          } else {
+                            imprimirCertificado(cert)
+                          }
+                        }}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}
                       >
                         <Download size={14} /> Baixar PDF
@@ -392,7 +405,14 @@ export function CertificadosColaborador({ onNavigate, onLogout }: CertificadosCo
                 style={{ padding: '9px 18px', background: 'none', border: '1.5px solid #ddd', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>
                 Fechar
               </button>
-              <button onClick={() => imprimirCertificado(certSelecionado)}
+              <button
+                onClick={() => {
+                  if (certSelecionado.tipo === 'externo' && certSelecionado.url_pdf) {
+                    window.open(`${BASE_URL}${certSelecionado.url_pdf}`, '_blank')
+                  } else {
+                    imprimirCertificado(certSelecionado)
+                  }
+                }}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 18px', background: '#0d2550', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
                 <Download size={14} /> Baixar PDF
               </button>

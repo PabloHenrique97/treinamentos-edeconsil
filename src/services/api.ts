@@ -9,7 +9,7 @@ export async function apiRequest<T>(
   const token = localStorage.getItem('edeconsil_token')
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string>),
   }
 
@@ -195,6 +195,12 @@ export const certificadosAPI = {
     const q = params ? '?' + new URLSearchParams(params).toString() : ''
     return apiRequest(`/admin/certificados${q}`)
   },
+
+  uploadExterno: (formData: FormData) =>
+    apiRequest('/admin/certificados', { method: 'POST', body: formData }),
+
+  excluirExterno: (id: string) =>
+    apiRequest(`/admin/certificados/${id}`, { method: 'DELETE' }),
 }
 
 export const instrutoresAPI = {

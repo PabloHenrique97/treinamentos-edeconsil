@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Search, FileDown } from 'lucide-react'
+import { Search, FileDown, Upload } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
-import { certificadosAPI } from '../../services/api'
+import { certificadosAPI, usuariosAPI } from '../../services/api'
 
 interface CertificadosAdminProps {
   onNavigate: (page: string) => void
@@ -16,6 +16,14 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
   const [carregando,   setCarregando]   = useState(true)
   const [busca,        setBusca]        = useState('')
   const [pagina,       setPagina]       = useState(1)
+  const [modalUpload,   setModalUpload]   = useState(false)
+  const [uploadForm,    setUploadForm]    = useState({
+    usuario_id: '', titulo_externo: '', entidade_emissora: '',
+    data_emissao: '', data_validade: '', carga_horaria: '',
+  })
+  const [uploadArquivo, setUploadArquivo] = useState<File | null>(null)
+  const [usuarios,      setUsuarios]      = useState<any[]>([])
+  const [enviando,      setEnviando]      = useState(false)
 
   const carregar = async (p = 1, b = busca) => {
     setCarregando(true)
@@ -34,6 +42,38 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
   }
 
   useEffect(() => { carregar() }, [])
+
+  const abrirModalUpload = async () => {
+    if (usuarios.length === 0) {
+      try {
+        const data = await usuariosAPI.listar()
+        setUsuarios((data as any[]).filter((u: any) => u.perfil === 'colaborador'))
+      } catch {}
+    }
+    setModalUpload(true)
+  }
+
+  const enviarCertificado = async () => {
+    if (!uploadArquivo || !uploadForm.usuario_id || !uploadForm.titulo_externo) {
+      alert('Preencha aluno, título e arquivo.')
+      return
+    }
+    setEnviando(true)
+    try {
+      const fd = new FormData()
+      fd.append('arquivo', uploadArquivo)
+      Object.entries(uploadForm).forEach(([k, v]) => v && fd.append(k, v))
+      await certificadosAPI.uploadExterno(fd)
+      setModalUpload(false)
+      setUploadArquivo(null)
+      setUploadForm({ usuario_id: '', titulo_externo: '', entidade_emissora: '', data_emissao: '', data_validade: '', carga_horaria: '' })
+      carregar(1)
+    } catch (err: any) {
+      alert(err?.message ?? 'Erro ao enviar.')
+    } finally {
+      setEnviando(false)
+    }
+  }
 
   const formatarData = (iso: string) => {
     if (!iso) return '—'
@@ -60,6 +100,19 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
               {total} certificado{total !== 1 ? 's' : ''} emitido{total !== 1 ? 's' : ''}
             </p>
           </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={abrirModalUpload}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '8px 16px', background: '#0d2550', color: '#fff',
+              border: 'none', borderRadius: '8px', fontWeight: 700,
+              fontSize: '13px', cursor: 'pointer',
+            }}
+          >
+            <Upload size={16} />
+            Certificado Externo
+          </button>
           <a
             href="/treinamentos-edeconsil/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
             download
@@ -80,6 +133,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
             <FileDown size={16} />
             Modelo de Certificado
           </a>
+          </div>
         </div>
 
         {/* Busca */}
@@ -140,15 +194,20 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
                     </p>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: C.text }}>
-                    {cert.curso_titulo}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      {cert.curso_titulo}
+                      {cert.tipo === 'externo' && (
+                        <span style={{ fontSize: '10px', padding: '2px 5px', background: '#f59e0b', color: '#fff', borderRadius: '4px', fontWeight: 700 }}>EXT</span>
+                      )}
+                    </span>
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: C.blue, fontFamily: 'monospace', background: 'rgba(26,86,255,0.08)', border: '1px solid rgba(26,86,255,0.20)', borderRadius: '6px', padding: '3px 8px' }}>
                       {cert.codigo}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 600, color: (cert.nota_obtida ?? 0) >= 70 ? '#10b981' : '#ef4444' }}>
-                    {cert.nota_obtida ?? '—'}%
+                  <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 600, color: cert.nota_obtida != null ? (cert.nota_obtida >= 70 ? '#10b981' : '#ef4444') : C.muted }}>
+                    {cert.nota_obtida != null ? `${cert.nota_obtida}%` : (cert.tipo === 'externo' ? (cert.entidade_emissora ?? '—') : '—')}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '12px', color: C.muted }}>
                     {formatarData(cert.data_emissao)}
@@ -183,6 +242,100 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
         )}
 
       </div>
+
+      {/* Modal upload certificado externo */}
+      {modalUpload && (
+        <div
+          onClick={() => setModalUpload(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 20px' }}>
+              Emitir Certificado Externo
+            </h2>
+
+            <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Aluno *</label>
+            <select
+              value={uploadForm.usuario_id}
+              onChange={e => setUploadForm(f => ({ ...f, usuario_id: e.target.value }))}
+              style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, marginBottom: '14px' }}
+            >
+              <option value="">Selecione o aluno</option>
+              {usuarios.map((u: any) => (
+                <option key={u.id} value={u.id}>{u.nome}</option>
+              ))}
+            </select>
+
+            <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Título do Certificado *</label>
+            <input
+              value={uploadForm.titulo_externo}
+              onChange={e => setUploadForm(f => ({ ...f, titulo_externo: e.target.value }))}
+              placeholder="Ex: NR-35 Trabalho em Altura"
+              style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, marginBottom: '14px', boxSizing: 'border-box' }}
+            />
+
+            <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Entidade Emissora</label>
+            <input
+              value={uploadForm.entidade_emissora}
+              onChange={e => setUploadForm(f => ({ ...f, entidade_emissora: e.target.value }))}
+              placeholder="Ex: SENAI, SESI..."
+              style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, marginBottom: '14px', boxSizing: 'border-box' }}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Data de Emissão</label>
+                <input type="date" value={uploadForm.data_emissao}
+                  onChange={e => setUploadForm(f => ({ ...f, data_emissao: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Data de Validade</label>
+                <input type="date" value={uploadForm.data_validade}
+                  onChange={e => setUploadForm(f => ({ ...f, data_validade: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, boxSizing: 'border-box' }} />
+              </div>
+            </div>
+
+            <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Carga Horária</label>
+            <input
+              value={uploadForm.carga_horaria}
+              onChange={e => setUploadForm(f => ({ ...f, carga_horaria: e.target.value }))}
+              placeholder="Ex: 8h"
+              style={{ width: '100%', padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, marginBottom: '14px', boxSizing: 'border-box' }}
+            />
+
+            <label style={{ fontSize: '12px', color: C.muted, display: 'block', marginBottom: '4px' }}>Arquivo (PDF, JPG, PNG) *</label>
+            <input
+              type="file" accept=".pdf,.jpg,.jpeg,.png"
+              onChange={e => setUploadArquivo(e.target.files?.[0] ?? null)}
+              style={{ width: '100%', fontSize: '13px', color: C.text, marginBottom: '4px' }}
+            />
+            {uploadArquivo && (
+              <p style={{ fontSize: '11px', color: C.muted, margin: '0 0 14px' }}>📎 {uploadArquivo.name}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button
+                onClick={() => setModalUpload(false)}
+                style={{ padding: '9px 18px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={enviarCertificado}
+                disabled={enviando}
+                style={{ padding: '9px 18px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.7 : 1 }}
+              >
+                {enviando ? 'Enviando...' : 'Enviar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </LayoutAdmin>
   )
 }
