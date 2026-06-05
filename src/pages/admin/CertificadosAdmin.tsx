@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Search, FileDown, Upload } from 'lucide-react'
+import { Search, FileDown, Upload, LayoutGrid, List } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { LayoutAdmin } from '../../components/admin/LayoutAdmin'
 import { certificadosAPI, usuariosAPI } from '../../services/api'
+
+const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 
 interface CertificadosAdminProps {
   onNavigate: (page: string) => void
@@ -24,6 +26,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
   const [uploadArquivo, setUploadArquivo] = useState<File | null>(null)
   const [usuarios,      setUsuarios]      = useState<any[]>([])
   const [enviando,      setEnviando]      = useState(false)
+  const [visuMural,     setVisuMural]     = useState(true)
 
   const carregar = async (p = 1, b = busca) => {
     setCarregando(true)
@@ -46,9 +49,12 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
   const abrirModalUpload = async () => {
     if (usuarios.length === 0) {
       try {
-        const data = await usuariosAPI.listar()
-        setUsuarios((data as any[]).filter((u: any) => u.perfil === 'colaborador'))
-      } catch {}
+        const data = await usuariosAPI.listar({ perfil: 'colaborador', limite: '500' }) as any
+        const lista = Array.isArray(data) ? data : (data.usuarios ?? [])
+        setUsuarios(lista.filter((u: any) => u.perfil === 'colaborador'))
+      } catch (err) {
+        console.error('Erro ao buscar alunos:', err)
+      }
     }
     setModalUpload(true)
   }
@@ -100,7 +106,24 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
               {total} certificado{total !== 1 ? 's' : ''} emitido{total !== 1 ? 's' : ''}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* Toggle mural / tabela */}
+          <div style={{ display: 'flex' }}>
+            <button
+              onClick={() => setVisuMural(true)}
+              title="Mural"
+              style={{ padding: '6px 10px', background: visuMural ? '#0d2550' : 'transparent', color: visuMural ? '#fff' : '#0d2550', border: '1px solid #0d2550', borderRadius: '6px 0 0 6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              onClick={() => setVisuMural(false)}
+              title="Tabela"
+              style={{ padding: '6px 10px', background: !visuMural ? '#0d2550' : 'transparent', color: !visuMural ? '#fff' : '#0d2550', border: '1px solid #0d2550', borderLeft: 'none', borderRadius: '0 6px 6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <List size={15} />
+            </button>
+          </div>
           <button
             onClick={abrirModalUpload}
             style={{
@@ -111,7 +134,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
             }}
           >
             <Upload size={16} />
-            Certificado Externo
+            Adicionar Certificado
           </button>
           <a
             href="/treinamentos-edeconsil/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
@@ -154,7 +177,89 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
           </button>
         </div>
 
+        {/* Mural visual */}
+        {visuMural && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            {carregando ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px', color: C.muted, fontSize: '14px' }}>
+                Carregando...
+              </div>
+            ) : certificados.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px', color: C.muted, fontSize: '14px' }}>
+                Nenhum certificado encontrado.
+              </div>
+            ) : certificados.map((cert: any) => (
+              <div key={cert.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', position: 'relative' }}>
+                {/* Faixa colorida */}
+                <div style={{ height: '6px', background: cert.tipo === 'externo' ? '#f59e0b' : '#0d2550' }} />
+
+                <div style={{ padding: '16px' }}>
+                  {/* Ícone + título */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: cert.tipo === 'externo' ? '#fef3c7' : '#e8edf5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                      {cert.curso_icone ?? '📜'}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: '13px', color: C.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {cert.curso_titulo ?? cert.titulo_externo ?? 'Certificado'}
+                      </p>
+                      <p style={{ fontSize: '11px', color: C.muted, margin: 0 }}>
+                        {cert.aluno_nome}
+                      </p>
+                    </div>
+                    {cert.tipo === 'externo' && (
+                      <span style={{ fontSize: '10px', padding: '2px 6px', background: '#f59e0b', color: '#fff', borderRadius: '4px', fontWeight: 700, flexShrink: 0 }}>EXT</span>
+                    )}
+                  </div>
+
+                  {/* Informações */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                    <div>
+                      <p style={{ color: C.muted, margin: '0 0 2px' }}>Emitido em</p>
+                      <p style={{ fontWeight: 600, color: C.text, margin: 0 }}>
+                        {cert.data_emissao ? new Date(cert.data_emissao).toLocaleDateString('pt-BR') : '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ color: C.muted, margin: '0 0 2px' }}>{cert.nota_obtida != null ? 'Nota' : 'Setor'}</p>
+                      <p style={{ fontWeight: 600, color: C.text, margin: 0 }}>
+                        {cert.nota_obtida != null ? `${cert.nota_obtida}%` : (cert.aluno_setor ?? '—')}
+                      </p>
+                    </div>
+                    {cert.data_validade && (
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <p style={{ color: C.muted, margin: '0 0 2px' }}>Válido até</p>
+                        <p style={{ fontWeight: 600, color: C.text, margin: 0 }}>
+                          {new Date(cert.data_validade).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Rodapé — código + link */}
+                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', color: C.muted, fontFamily: 'monospace' }}>
+                      {cert.codigo}
+                    </span>
+                    {cert.tipo === 'externo' && cert.url_pdf && (
+                      <a
+                        href={`${BACKEND_URL}${cert.url_pdf}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontSize: '11px', color: '#0d2550', fontWeight: 600, textDecoration: 'none' }}
+                      >
+                        Ver arquivo →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Tabela */}
+        {!visuMural && (
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -223,6 +328,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Paginação */}
         {total > 20 && (
