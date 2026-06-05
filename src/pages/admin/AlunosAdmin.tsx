@@ -408,6 +408,9 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                     CR <SortIcon campo="cr" />
                   </span>
                 </th>
+                <th style={thStyle}>
+                  Origem
+                </th>
                 <th style={thStyle} onClick={() => toggleOrdem('setor')}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     Setor / Turma <SortIcon campo="setor" />
@@ -429,13 +432,13 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             <tbody>
               {carregando ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
+                  <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
                     Carregando alunos...
                   </td>
                 </tr>
               ) : alunosPagina.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
+                  <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: C.muted, fontSize: '14px' }}>
                     {alunos.length === 0
                       ? 'Nenhum aluno cadastrado ainda.'
                       : 'Nenhum aluno encontrado com os filtros aplicados.'}
@@ -480,6 +483,21 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
                     }}>
                       {aluno.cr}
                     </span>
+                  </td>
+                  {/* Origem */}
+                  <td style={{ padding: '12px 12px' }}>
+                    {(aluno as any).origem && (aluno as any).origem !== 'Empregado' ? (
+                      <span style={{
+                        display: 'inline-block', padding: '2px 8px',
+                        borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+                        background: (aluno as any).origem === 'Terceiro' ? '#fef3c7' : '#ede9fe',
+                        color: (aluno as any).origem === 'Terceiro' ? '#92400e' : '#5b21b6',
+                      }}>
+                        {(aluno as any).origem}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '11px', color: C.muted }}>Empregado</span>
+                    )}
                   </td>
 
                   {/* Setor */}
