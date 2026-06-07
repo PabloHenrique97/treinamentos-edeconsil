@@ -218,11 +218,15 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
               onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                setFotoPreview(URL.createObjectURL(file))
+                const preview = URL.createObjectURL(file)
+                setFotoPreview(preview)
                 const fd = new FormData()
                 fd.append('foto', file)
                 try {
-                  await (usuariosAPI as any).uploadFoto(aluno.id, fd)
+                  const resultado = await (usuariosAPI as any).uploadFoto(aluno.id, fd) as any
+                  if (resultado?.foto_url) {
+                    aluno.foto_url = resultado.foto_url
+                  }
                 } catch {
                   alert('Erro ao fazer upload da foto.')
                 }
