@@ -102,7 +102,7 @@ function AppContent() {
   const [logado, setLogado] = useState(() => sessaoAtiva())
   const [perfil, setPerfil] = useState<Perfil>(() => {
     const u = getUsuario<{ perfil: string }>()
-    return u?.perfil === 'admin' ? 'admin' : 'colaborador'
+    return (u?.perfil === 'admin' || u?.perfil === 'instrutor') ? 'admin' : 'colaborador'
   })
   const [pagina, setPagina] = useState<Pagina>('dashboard')
   const [cursoAtivoId, setCursoAtivoId] = useState<string>('coord-suprimentos')
