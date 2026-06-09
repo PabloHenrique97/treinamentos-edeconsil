@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
+import { turmasAPI } from '../../services/api'
 
 interface FormAluno {
   nome:            string
@@ -18,26 +19,6 @@ interface CadastroAlunoProps {
   onSucesso: (usuario: any) => void
 }
 
-const TURMAS = [
-  'Coordenação de Suprimentos',
-  'Recursos Humanos',
-  'Segurança do Trabalho',
-  'Serviços Gerais',
-  'Comunicação',
-  'Engenharia',
-  'Manutenções - Oficina',
-  'Tecnologia da Informação',
-  'Coordenação de Pessoal',
-  'Coordenação de Qualidade',
-  'Gerência Financeira',
-  'Gerência Jurídica e Compliance',
-  'Gerência de Auditoria',
-  'Gerência de Controladoria',
-  'Gerência de Gestão de Pessoas',
-  'Saúde Ocupacional',
-  'Patrimônio',
-]
-
 const FORM_INICIAL: FormAluno = {
   nome: '', cpf: '', data_nascimento: '',
   matricula: '', cargo: '', setor: '',
@@ -47,9 +28,19 @@ const FORM_INICIAL: FormAluno = {
 export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
   const { C } = useTheme()
   const [form, setForm]         = useState<FormAluno>(FORM_INICIAL)
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro]         = useState('')
   const [sucesso, setSucesso]   = useState<any>(null)
+
+  useEffect(() => {
+    turmasAPI.listar()
+      .then((lista: any) => {
+        const arr = Array.isArray(lista) ? lista : (lista.turmas ?? [])
+        setTurmasDisponiveis(arr.filter((t: any) => t.status === 'ativa'))
+      })
+      .catch(() => {})
+  }, [])
 
   const handleChange = useCallback((campo: keyof FormAluno) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -246,7 +237,9 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
           onBlur={e  => (e.target.style.borderColor = C.border)}
         >
           <option value="">Selecione o setor / turma</option>
-          {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
+          {turmasDisponiveis.map((t: any) => (
+            <option key={t.id} value={t.cargo_grupo || t.nome}>{t.cargo_grupo || t.nome}</option>
+          ))}
         </select>
         <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
           Define os cursos disponíveis para o aluno

@@ -9,8 +9,9 @@ import type { AlunoImportado } from '../../utils/importarExcel'
 import { usuariosAPI } from '../../services/api'
 
 interface ImportarAlunosModalProps {
-  onFechar:  () => void
-  onSucesso: (total: number) => void
+  onFechar:      () => void
+  onSucesso:     (total: number) => void
+  turmasDoBanco?: any[]
 }
 
 type Etapa = 'upload' | 'preview' | 'importando' | 'resultado'
@@ -23,7 +24,7 @@ interface ResultadoImportacao {
   falhas:     any[]
 }
 
-export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModalProps) {
+export function ImportarAlunosModal({ onFechar, onSucesso, turmasDoBanco }: ImportarAlunosModalProps) {
   const { C } = useTheme()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -43,7 +44,7 @@ export function ImportarAlunosModal({ onFechar, onSucesso }: ImportarAlunosModal
     setErro('')
     setCarregando(true)
     try {
-      const dados = await lerPlanilhaExcel(file)
+      const dados = await lerPlanilhaExcel(file, turmasDoBanco)
       if (dados.length === 0) {
         setErro('Planilha vazia ou sem dados reconhecíveis.')
         return

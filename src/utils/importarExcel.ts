@@ -53,11 +53,26 @@ const ALIASES_TURMAS: Record<string, string> = {
   'tecnologia':                  'Tecnologia da Informação',
 }
 
-export function resolverTurmaFrontend(nome: string | null | undefined): string | null {
+export function resolverTurmaFrontend(nome: string | null | undefined, turmasDoBanco?: any[]): string | null {
   if (!nome) return null
-  const exato = TURMAS_OFICIAIS.find(t => t === nome.trim())
+  const nomeTrimado = nome.trim()
+  if (turmasDoBanco?.length) {
+    const exatoBanco = turmasDoBanco.find(
+      (t: any) => t.cargo_grupo === nomeTrimado || t.nome === nomeTrimado
+    )
+    if (exatoBanco) return exatoBanco.cargo_grupo || exatoBanco.nome
+    const norm2 = normalizarStr(nomeTrimado)
+    const parcialBanco = turmasDoBanco.find(
+      (t: any) =>
+        normalizarStr(t.cargo_grupo || '') === norm2 ||
+        normalizarStr(t.cargo_grupo || '').includes(norm2) ||
+        norm2.includes(normalizarStr(t.cargo_grupo || ''))
+    )
+    if (parcialBanco) return parcialBanco.cargo_grupo || parcialBanco.nome
+  }
+  const exato = TURMAS_OFICIAIS.find(t => t === nomeTrimado)
   if (exato) return exato
-  const norm = normalizarStr(nome)
+  const norm = normalizarStr(nomeTrimado)
   if (ALIASES_TURMAS[norm]) return ALIASES_TURMAS[norm]
   const parcial = TURMAS_OFICIAIS.find(t =>
     normalizarStr(t) === norm ||
@@ -127,7 +142,7 @@ function limparCpf(valor: any): string {
   return String(valor).replace(/[.\-\s]/g, '').trim()
 }
 
-export function lerPlanilhaExcel(arquivo: File): Promise<AlunoImportado[]> {
+export function lerPlanilhaExcel(arquivo: File, turmasDoBanco?: any[]): Promise<AlunoImportado[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
@@ -177,7 +192,7 @@ export function lerPlanilhaExcel(arquivo: File): Promise<AlunoImportado[]> {
           const matricula       = matriculaRaw ? String(matriculaRaw).trim() : null
           const centro_custo    = centroCustoRaw ? String(centroCustoRaw).trim() : null
           const setorStr        = setorRaw ? String(setorRaw).trim() : null
-          const setor           = setorStr ? (resolverTurmaFrontend(setorStr) ?? setorStr) : null
+          const setor           = setorStr ? (resolverTurmaFrontend(setorStr, turmasDoBanco) ?? setorStr) : null
           const senhaInicial    = dataNascimentoParaSenha(data_nascimento)
 
           const erros: string[] = []

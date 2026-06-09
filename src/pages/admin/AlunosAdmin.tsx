@@ -24,18 +24,6 @@ interface Aluno {
 
 const ITENS_POR_PAGINA = 10
 const CORES_AVATAR = ['#1a56ff','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316']
-const SETORES = [
-  'Todos',
-  'Coordenação de Suprimentos',
-  'Recursos Humanos',
-  'Segurança do Trabalho',
-  'Serviços Gerais',
-  'Comunicação',
-  'Engenharia',
-  'Manutenções - Oficina',
-  'Tecnologia da Informação',
-]
-
 function getIniciais(nome: string) {
   const partes = nome.trim().split(' ')
   if (partes.length === 1) return partes[0][0].toUpperCase()
@@ -68,7 +56,6 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
   const [excluindoId, setExcluindoId]                 = useState<string | null>(null)
   const [alunoEditando, setAlunoEditando]             = useState<any>(null)
   const [busca, setBusca]                             = useState('')
-  const [setorFiltro, setSetorFiltro]                 = useState('Todos')
   const [crFiltro, setCrFiltro]                       = useState('')
   const [statusFiltro, setStatusFiltro]               = useState('Todos')
   const [paginaAtual, setPaginaAtual]                 = useState(1)
@@ -122,7 +109,6 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
 
   function limparFiltros() {
     setBusca('')
-    setSetorFiltro('Todos')
     setCrFiltro('')
     setStatusFiltro('Todos')
     setCargoFiltro('')
@@ -135,12 +121,11 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
     let lista = alunos.filter((a: any) => {
       const buscaOk  = busca === '' || a.nome.toLowerCase().includes(busca.toLowerCase()) || a.email.toLowerCase().includes(busca.toLowerCase())
       const crOk     = crFiltro === '' || a.cr.toLowerCase().includes(crFiltro.toLowerCase())
-      const setorOk  = setorFiltro === 'Todos' || a.setor === setorFiltro
       const statusOk = statusFiltro === 'Todos' || a.status === statusFiltro
       const cargoOk  = cargoFiltro === '' || (a.cargo ?? '').toLowerCase().includes(cargoFiltro.toLowerCase())
       const turmaOk  = turmaFiltro === '' || a.turma_id === turmaFiltro
       const origemOk = origemFiltro === 'Todos' || (a as any).origem === origemFiltro
-      return buscaOk && crOk && setorOk && statusOk && cargoOk && turmaOk && origemOk
+      return buscaOk && crOk && statusOk && cargoOk && turmaOk && origemOk
     })
 
     lista = [...lista].sort((a, b) => {
@@ -154,7 +139,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
     })
 
     return lista
-  }, [alunos, busca, setorFiltro, crFiltro, statusFiltro, ordenacao, ordemDir])
+  }, [alunos, busca, crFiltro, statusFiltro, ordenacao, ordemDir])
 
   const totalPaginas = Math.max(1, Math.ceil(alunosFiltrados.length / ITENS_POR_PAGINA))
   const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA
@@ -275,15 +260,6 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             style={{ ...inputStyle, width: '140px' }}
           />
 
-          {/* Setor */}
-          <select
-            value={setorFiltro}
-            onChange={e => { setSetorFiltro(e.target.value); setPaginaAtual(1) }}
-            style={{ ...inputStyle, cursor: 'pointer' }}
-          >
-            {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-
           {/* Status */}
           <select
             value={statusFiltro}
@@ -328,7 +304,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
           </select>
 
           {/* Limpar */}
-          {(busca || crFiltro || setorFiltro !== 'Todos' || statusFiltro !== 'Todos' || cargoFiltro || turmaFiltro || origemFiltro !== 'Todos') && (
+          {(busca || crFiltro || statusFiltro !== 'Todos' || cargoFiltro || turmaFiltro || origemFiltro !== 'Todos') && (
             <button
               onClick={limparFiltros}
               style={{
@@ -668,6 +644,7 @@ export function AlunosAdmin({ onNavigate, onLogout }: AlunosAdminProps) {
             </div>
             <ImportarAlunosModal
               onFechar={() => setModalImportar(false)}
+              turmasDoBanco={turmasDisponiveis}
               onSucesso={async (total) => {
                 setModalImportar(false)
                 await carregarAlunos()

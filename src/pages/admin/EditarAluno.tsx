@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Camera } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { usuariosAPI } from '../../services/api'
+import { usuariosAPI, turmasAPI } from '../../services/api'
 
 const BACKEND_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api').replace(/\/api\/?$/, '')
 
@@ -10,26 +10,6 @@ interface EditarAlunoProps {
   onFechar:  () => void
   onSucesso: (alunoAtualizado: any) => void
 }
-
-const TURMAS = [
-  'Coordenação de Suprimentos',
-  'Recursos Humanos',
-  'Segurança do Trabalho',
-  'Serviços Gerais',
-  'Comunicação',
-  'Engenharia',
-  'Manutenções - Oficina',
-  'Tecnologia da Informação',
-  'Coordenação de Pessoal',
-  'Coordenação de Qualidade',
-  'Gerência Financeira',
-  'Gerência Jurídica e Compliance',
-  'Gerência de Auditoria',
-  'Gerência de Controladoria',
-  'Gerência de Gestão de Pessoas',
-  'Saúde Ocupacional',
-  'Patrimônio',
-]
 
 export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
   const { C } = useTheme()
@@ -47,9 +27,19 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
   const [origem,         setOrigem]         = useState('Empregado')
   const [empresaTerceiro, setEmpresaTerceiro] = useState('')
   const [fotoPreview,    setFotoPreview]    = useState<string | null>(null)
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([])
   const [salvando,     setSalvando]     = useState(false)
   const [erro,         setErro]         = useState('')
   const [sucesso,      setSucesso]      = useState(false)
+
+  useEffect(() => {
+    turmasAPI.listar()
+      .then((lista: any) => {
+        const arr = Array.isArray(lista) ? lista : (lista.turmas ?? [])
+        setTurmasDisponiveis(arr.filter((t: any) => t.status === 'ativa'))
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!aluno) return
@@ -338,7 +328,9 @@ export function EditarAluno({ aluno, onFechar, onSucesso }: EditarAlunoProps) {
           style={{ ...inputStyle, cursor: 'pointer', color: setor ? C.text : C.muted }}
         >
           <option value="">Selecione o setor / turma</option>
-          {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
+          {turmasDisponiveis.map((t: any) => (
+            <option key={t.id} value={t.cargo_grupo || t.nome}>{t.cargo_grupo || t.nome}</option>
+          ))}
         </select>
         <p style={{ fontSize: '11px', color: C.muted, margin: '4px 0 0' }}>
           Alterar o setor atualiza os cursos disponíveis para o aluno
