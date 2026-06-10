@@ -10,7 +10,7 @@ import { authAPI } from '../services/api'
 import { salvarSessao } from '../services/authStorage'
 
 interface LoginProps {
-  onLogin: (perfil: 'colaborador' | 'admin') => void
+  onLogin: (perfil: 'colaborador' | 'admin' | 'instrutor') => void
 }
 
 
@@ -93,11 +93,10 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       const resposta = await authAPI.login(cpfLimpo, senha)
       salvarSessao(resposta.token, resposta.usuario)
-      if (resposta.usuario.perfil === 'admin' || resposta.usuario.perfil === 'instrutor') {
-        onLogin('admin')
-      } else {
-        onLogin('colaborador')
-      }
+      const p = resposta.usuario.perfil as string
+      if (p === 'admin') onLogin('admin')
+      else if (p === 'instrutor') onLogin('instrutor')
+      else onLogin('colaborador')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'CPF ou senha inválidos'
       setErroLogin(msg)

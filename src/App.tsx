@@ -24,6 +24,7 @@ import { NotificacoesAdmin }   from './pages/admin/NotificacoesAdmin'
 import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { EdeconQuiz } from './pages/EdeconQuiz'
 import { ProvaOnline } from './pages/ProvaOnline'
+import { PainelInstrutor } from './layouts/PainelInstrutor'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { getUsuario, sessaoAtiva, limparSessao } from './services/authStorage'
 import './App.css'
@@ -89,7 +90,7 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-type Perfil = 'colaborador' | 'admin'
+type Perfil = 'colaborador' | 'admin' | 'instrutor'
 type Pagina = 'dashboard' | 'meusCursos' | 'meusCursosLista' | 'cursoDetalhe' | 'videoAula' | 'trilha' | 'mensagens' | 'anotacoes' | 'prova' | 'edeconQuiz' | 'admin' | 'cursosAdmin' | 'cursoDetalheAdmin' | 'indicadoresAdmin' | 'turmasAdmin' | 'alunosAdmin' | 'instrutoresAdmin' | 'certificadosAdmin' | 'bibliotecaAdmin' | 'configuracoesAdmin' | 'permissoesAdmin' | 'certificadosColaborador' | 'apostilas' | 'mensagensAdmin' | 'notificacoesAdmin'
 
 function AppContent() {
@@ -102,7 +103,9 @@ function AppContent() {
   const [logado, setLogado] = useState(() => sessaoAtiva())
   const [perfil, setPerfil] = useState<Perfil>(() => {
     const u = getUsuario<{ perfil: string }>()
-    return (u?.perfil === 'admin' || u?.perfil === 'instrutor') ? 'admin' : 'colaborador'
+    if (u?.perfil === 'admin') return 'admin'
+    if (u?.perfil === 'instrutor') return 'instrutor'
+    return 'colaborador'
   })
   const [pagina, setPagina] = useState<Pagina>('dashboard')
   const [cursoAtivoId, setCursoAtivoId] = useState<string>('coord-suprimentos')
@@ -119,10 +122,18 @@ function AppContent() {
 
   if (!logado) {
     return (
-      <Login onLogin={(p: Perfil) => {
-        setPerfil(p)
+      <Login onLogin={(p) => {
+        setPerfil(p as Perfil)
         setLogado(true)
       }} />
+    )
+  }
+
+  if (perfil === 'instrutor') {
+    return (
+      <PainelInstrutor
+        onLogout={handleLogout}
+      />
     )
   }
 

@@ -11,6 +11,7 @@ interface UsuarioLogado {
   cargo: string
   setor: string
   foto_url: string | null
+  turma_id?: string | null
 }
 
 export function useUsuarioLogado() {
@@ -37,13 +38,15 @@ export function useUsuarioLogado() {
     usuario,
     iniciais,
     primeiroNome,
-    id:     usuario?.id     ?? '',
-    nome:   usuario?.nome   ?? 'Usuário',
-    email:  usuario?.email  ?? '',
-    perfil: usuario?.perfil ?? 'colaborador',
-    cargo:  usuario?.cargo  ?? '',
-    setor:  usuario?.setor  ?? '',
+    id:       usuario?.id       ?? '',
+    nome:     usuario?.nome     ?? 'Usuário',
+    email:    usuario?.email    ?? '',
+    perfil:   usuario?.perfil   ?? 'colaborador',
+    cargo:    usuario?.cargo    ?? '',
+    setor:    usuario?.setor    ?? '',
+    turma_id: usuario?.turma_id ?? null,
     isAdmin:       usuario?.perfil === 'admin',
+    isInstrutor:   usuario?.perfil === 'instrutor',
     isColaborador: usuario?.perfil === 'colaborador',
   }
 }

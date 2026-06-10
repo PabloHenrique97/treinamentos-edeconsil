@@ -234,6 +234,10 @@ export const meuInstrutorAPI = {
   buscar: () => apiRequest<any>('/meu-instrutor'),
 }
 
+export const instrutorAPI = {
+  minhaTurma: () => apiRequest<any>('/minha-turma'),
+}
+
 export const turmasAPI = {
   listar: () => apiRequest<unknown[]>('/turmas'),
   criar: (dados: {
