@@ -9,9 +9,9 @@ import { DashboardInstrutor } from '../pages/instrutor/DashboardInstrutor'
 import { TurmaInstrutor } from '../pages/instrutor/TurmaInstrutor'
 import { AlunosInstrutor } from '../pages/instrutor/AlunosInstrutor'
 import { CursosInstrutor } from '../pages/instrutor/CursosInstrutor'
-import { MensagensAdmin } from '../pages/admin/MensagensAdmin'
-import { BibliotecaAdmin } from '../pages/admin/BibliotecaAdmin'
-import { CursoDetalheAdmin } from '../pages/admin/CursoDetalheAdmin'
+import { MensagensConteudo } from '../pages/admin/MensagensConteudo'
+import { BibliotecaConteudo } from '../pages/admin/BibliotecaConteudo'
+import { CursoDetalheConteudo } from '../pages/admin/CursoDetalheConteudo'
 import { CertificadosInstrutor } from '../pages/instrutor/CertificadosInstrutor'
 import { IndicadoresInstrutor } from '../pages/instrutor/IndicadoresInstrutor'
 import { NotificacoesInstrutor } from '../pages/instrutor/NotificacoesInstrutor'
@@ -78,17 +78,16 @@ export function PainelInstrutor({ onLogout }: PainelInstrutorProps) {
         )
       case 'cursoDetalheInstrutor':
         return (
-          <CursoDetalheAdmin
+          <CursoDetalheConteudo
             cursoId={cursoAtivoId}
             onNavigate={navegar}
-            onLogout={onLogout}
             onVoltar={() => setPagina('cursosInstrutor')}
           />
         )
       case 'mensagensInstrutor':
-        return <MensagensAdmin onNavigate={navegar} onLogout={onLogout} />
+        return <MensagensConteudo onNavigate={navegar} />
       case 'bibliotecaInstrutor':
-        return <BibliotecaAdmin onNavigate={navegar} onLogout={onLogout} />
+        return <BibliotecaConteudo onNavigate={navegar} />
       case 'certificadosInstrutor':
         return <CertificadosInstrutor />
       case 'indicadoresInstrutor':
