@@ -105,8 +105,10 @@ export function TurmaInstrutor() {
         background: C.surface,
         border: `1px solid ${C.border}`,
         borderRadius: '16px',
-        padding: '28px',
+        overflow: 'hidden',
       }}>
+      <div style={{ borderTop: `4px solid ${turma.cor || '#0d2550'}` }} />
+      <div style={{ padding: '28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
           <div style={{
             width: '72px', height: '72px', borderRadius: '16px',
@@ -149,6 +151,7 @@ export function TurmaInstrutor() {
             </div>
           ))}
         </div>
+      </div>
       </div>
 
       {/* Modal editar */}

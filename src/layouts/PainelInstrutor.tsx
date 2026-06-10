@@ -12,6 +12,9 @@ import { CursosInstrutor } from '../pages/instrutor/CursosInstrutor'
 import { MensagensAdmin } from '../pages/admin/MensagensAdmin'
 import { BibliotecaAdmin } from '../pages/admin/BibliotecaAdmin'
 import { CursoDetalheAdmin } from '../pages/admin/CursoDetalheAdmin'
+import { CertificadosInstrutor } from '../pages/instrutor/CertificadosInstrutor'
+import { IndicadoresInstrutor } from '../pages/instrutor/IndicadoresInstrutor'
+import { NotificacoesInstrutor } from '../pages/instrutor/NotificacoesInstrutor'
 
 type PaginaInstrutor =
   | 'dashboardInstrutor'
@@ -21,19 +24,25 @@ type PaginaInstrutor =
   | 'cursoDetalheInstrutor'
   | 'mensagensInstrutor'
   | 'bibliotecaInstrutor'
+  | 'certificadosInstrutor'
+  | 'indicadoresInstrutor'
+  | 'notificacoesInstrutor'
 
 interface PainelInstrutorProps {
   onLogout: () => void
 }
 
 const TITULOS: Record<PaginaInstrutor, string> = {
-  dashboardInstrutor:   'Painel do Instrutor',
-  turmaInstrutor:       'Minha Turma',
-  alunosInstrutor:      'Alunos',
-  cursosInstrutor:      'Cursos',
-  cursoDetalheInstrutor:'Detalhe do Curso',
-  mensagensInstrutor:   'Mensagens',
-  bibliotecaInstrutor:  'Biblioteca',
+  dashboardInstrutor:      'Painel do Instrutor',
+  turmaInstrutor:          'Minha Turma',
+  alunosInstrutor:         'Alunos',
+  cursosInstrutor:         'Cursos',
+  cursoDetalheInstrutor:   'Detalhe do Curso',
+  mensagensInstrutor:      'Mensagens',
+  bibliotecaInstrutor:     'Biblioteca',
+  certificadosInstrutor:   'Certificados',
+  indicadoresInstrutor:    'Indicadores',
+  notificacoesInstrutor:   'Notificações',
 }
 
 export function PainelInstrutor({ onLogout }: PainelInstrutorProps) {
@@ -80,6 +89,12 @@ export function PainelInstrutor({ onLogout }: PainelInstrutorProps) {
         return <MensagensAdmin onNavigate={navegar} onLogout={onLogout} />
       case 'bibliotecaInstrutor':
         return <BibliotecaAdmin onNavigate={navegar} onLogout={onLogout} />
+      case 'certificadosInstrutor':
+        return <CertificadosInstrutor />
+      case 'indicadoresInstrutor':
+        return <IndicadoresInstrutor />
+      case 'notificacoesInstrutor':
+        return <NotificacoesInstrutor />
       default:
         return <DashboardInstrutor onNavigate={navegar} />
     }

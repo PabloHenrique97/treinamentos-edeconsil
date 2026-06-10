@@ -33,7 +33,8 @@ export function AlunosInstrutor() {
           perfil: 'colaborador',
           limite: '500',
         }) as Aluno[]
-        setAlunos(Array.isArray(data) ? data : [])
+        const lista = Array.isArray(data) ? data : (data as any)?.usuarios ?? []
+        setAlunos(lista)
       } catch {
         setErro('Não foi possível carregar os alunos.')
       } finally {
