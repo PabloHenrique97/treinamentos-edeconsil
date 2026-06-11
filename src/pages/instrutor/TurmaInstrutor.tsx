@@ -1,275 +1,617 @@
-import { useState, useEffect } from 'react'
-import { Pencil, X, Save, RefreshCw, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Search, Users, BookOpen, GraduationCap, RefreshCw, Pencil, Trash2, Plus, X } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { instrutorAPI, turmasAPI } from '../../services/api'
+import { turmasAPI, instrutorAPI } from '../../services/api'
+import { useBreakpoint } from '../../hooks/useMobile'
 
-interface Turma {
-  id: string
-  nome: string
-  cargo_grupo: string
-  setor: string
-  responsavel: string
-  icone: string
-  cor: string
-  status: string
-  instrutor_id: string
-  instrutor_nome: string
-  total_alunos: number
-  total_cursos: number
+interface TurmaInstrutorProps {
+  onNavigate: (page: string) => void
 }
 
-export function TurmaInstrutor() {
+const ICONES: Record<string, string> = {
+  'Coordenação de Suprimentos':       '📦',
+  'Recursos Humanos':                  '👥',
+  'Segurança do Trabalho':             '🛡️',
+  'Serviços Gerais':                   '🏗️',
+  'Comunicação':                       '📢',
+  'Engenharia':                        '📐',
+  'Manutenções - Oficina':             '⚙️',
+  'Tecnologia da Informação':          '💻',
+  'Coordenação de Pessoal':            '👤',
+  'Coordenação de Qualidade':          '✅',
+  'Gerência Financeira':               '💰',
+  'Gerência Jurídica e Compliance':    '⚖️',
+  'Gerência de Auditoria':             '🔍',
+  'Gerência de Controladoria':         '📊',
+  'Gerência de Gestão de Pessoas':     '🤝',
+  'Saúde Ocupacional':                 '🏥',
+  'Patrimônio':                        '🏛️',
+}
+
+const CORES: Record<string, string> = {
+  'Coordenação de Suprimentos':       '#f59e0b',
+  'Recursos Humanos':                  '#10b981',
+  'Segurança do Trabalho':             '#ef4444',
+  'Serviços Gerais':                   '#6366f1',
+  'Comunicação':                       '#ec4899',
+  'Engenharia':                        '#0891b2',
+  'Manutenções - Oficina':             '#78716c',
+  'Tecnologia da Informação':          '#1a56ff',
+  'Coordenação de Pessoal':            '#8b5cf6',
+  'Coordenação de Qualidade':          '#14b8a6',
+  'Gerência Financeira':               '#f59e0b',
+  'Gerência Jurídica e Compliance':    '#7c3aed',
+  'Gerência de Auditoria':             '#dc2626',
+  'Gerência de Controladoria':         '#0284c7',
+  'Gerência de Gestão de Pessoas':     '#db2777',
+  'Saúde Ocupacional':                 '#0d9488',
+  'Patrimônio':                        '#92400e',
+}
+
+export function TurmaInstrutor({ onNavigate }: TurmaInstrutorProps) {
   const { C } = useTheme()
-  const [turma, setTurma] = useState<Turma | null>(null)
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState('')
-  const [salvando, setSalvando] = useState(false)
-  const [modalAberto, setModalAberto] = useState(false)
-  const [form, setForm] = useState({
+  const { cols } = useBreakpoint()
+
+  const [turmas,       setTurmas]       = useState<any[]>([])
+  const [carregando,   setCarregando]   = useState(true)
+  const [erro,         setErro]         = useState('')
+  const [busca,        setBusca]        = useState('')
+  const [filtroStatus, setFiltroStatus] = useState('todos')
+  const [modalTurma,   setModalTurma]   = useState<{ modo: 'criar' | 'editar'; turma?: any } | null>(null)
+  const [formTurma,    setFormTurma]    = useState({
     nome: '', cargo_grupo: '', setor: '', responsavel: '',
-    icone: '🏢', cor: '#0d2550', status: 'ativa',
+    icone: '🏢', cor: '#0d2550', status: 'ativa', instrutor_id: ''
   })
 
-  useEffect(() => {
-    instrutorAPI.minhaTurma()
-      .then((t: Turma) => {
-        setTurma(t)
-        if (t) setForm({
-          nome:         t.nome         || '',
-          cargo_grupo:  t.cargo_grupo  || '',
-          setor:        t.setor        || '',
-          responsavel:  t.responsavel  || '',
-          icone:        t.icone        || '🏢',
-          cor:          t.cor          || '#0d2550',
-          status:       t.status       || 'ativa',
-        })
-      })
-      .catch(() => setErro('Não foi possível carregar a turma.'))
-      .finally(() => setCarregando(false))
-  }, [])
+  const abrirCriar = () => {
+    setFormTurma({ nome: '', cargo_grupo: '', setor: '', responsavel: '', icone: '🏢', cor: '#0d2550', status: 'ativa', instrutor_id: '' })
+    setModalTurma({ modo: 'criar' })
+  }
 
-  async function salvar() {
-    if (!turma) return
-    setSalvando(true)
+  const abrirEditar = (turma: any) => {
+    setFormTurma({
+      nome:         turma.nome         ?? '',
+      cargo_grupo:  turma.cargo_grupo  ?? '',
+      setor:        turma.setor        ?? '',
+      responsavel:  turma.responsavel  ?? '',
+      icone:        turma.icone        ?? '🏢',
+      cor:          turma.cor          ?? '#0d2550',
+      status:       turma.status       ?? 'ativa',
+      instrutor_id: turma.instrutor_id ?? '',
+    })
+    setModalTurma({ modo: 'editar', turma })
+  }
+
+  const salvarTurma = async () => {
+    const dados = { ...formTurma, instrutor_id: formTurma.instrutor_id || null }
     try {
-      await turmasAPI.atualizar(turma.id, { ...form, instrutor_id: turma.instrutor_id })
-      setTurma({ ...turma, ...form })
-      setModalAberto(false)
-    } catch {
-      alert('Erro ao salvar. Tente novamente.')
-    } finally {
-      setSalvando(false)
+      if (modalTurma?.modo === 'criar') {
+        const nova = await turmasAPI.criar(dados) as any
+        setTurmas(prev => [nova, ...prev])
+      } else {
+        const atualizada = await turmasAPI.atualizar(modalTurma!.turma.id, dados) as any
+        setTurmas(prev => prev.map(t => t.id === atualizada.id ? { ...t, ...atualizada } : t))
+      }
+      setModalTurma(null)
+    } catch (err: any) {
+      alert(err?.message ?? 'Erro ao salvar turma')
     }
   }
 
-  if (carregando) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-      <RefreshCw size={24} color={C.blue} style={{ animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  )
+  const excluirTurma = async (turma: any) => {
+    if (!window.confirm(`Excluir a turma "${turma.nome}"?\nEsta ação não pode ser desfeita.`)) return
+    try {
+      await turmasAPI.excluir(turma.id)
+      setTurmas(prev => prev.filter(t => t.id !== turma.id))
+    } catch (err: any) {
+      alert(err?.message ?? 'Erro ao excluir turma')
+    }
+  }
 
-  if (erro || !turma) return (
-    <div style={{ padding: '48px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center' }}>
-      <AlertCircle size={40} color={C.muted} />
-      <div style={{ fontSize: '18px', fontWeight: 600, color: C.text }}>
-        {erro || 'Nenhuma turma vinculada'}
-      </div>
-      <div style={{ fontSize: '14px', color: C.muted, maxWidth: '360px' }}>
-        Entre em contato com o administrador para vincular uma turma à sua conta.
-      </div>
-    </div>
-  )
+  const carregar = useCallback(async () => {
+    setCarregando(true)
+    setErro('')
+    try {
+      const data = await instrutorAPI.minhaTurma() as any
+      setTurmas(data ? [data] : [])
+    } catch (err: any) {
+      setErro('Erro ao carregar turma. Verifique a conexão.')
+      console.error(err)
+    } finally {
+      setCarregando(false)
+    }
+  }, [])
+
+  useEffect(() => { carregar() }, [carregar])
+
+  const turmasFiltradas = turmas.filter(t => {
+    const matchBusca = !busca ||
+      t.cargo_grupo?.toLowerCase().includes(busca.toLowerCase()) ||
+      t.instrutor_nome?.toLowerCase().includes(busca.toLowerCase())
+    const matchStatus =
+      filtroStatus === 'todos' ||
+      (filtroStatus === 'com_curso'      && parseInt(t.total_cursos) > 0) ||
+      (filtroStatus === 'sem_curso'      && parseInt(t.total_cursos) === 0) ||
+      (filtroStatus === 'com_instrutor'  && t.instrutor_nome)
+    return matchBusca && matchStatus
+  })
+
+  const totalAlunos  = turmas.reduce((s, t) => s + (parseInt(t.total_alunos) || 0), 0)
+  const totalCursos  = turmas.reduce((s, t) => s + (parseInt(t.total_cursos) || 0), 0)
+  const comInstrutor = turmas.filter(t => t.instrutor_nome).length
+  const comCurso     = turmas.filter(t => parseInt(t.total_cursos) > 0).length
 
   return (
-    <div style={{ padding: '32px', maxWidth: '700px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.text, margin: 0 }}>Minha Turma</h1>
-          <p style={{ fontSize: '13px', color: C.muted, margin: '4px 0 0' }}>Detalhes e edição da sua turma</p>
-        </div>
-        <button
-          onClick={() => setModalAberto(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '10px 18px', background: C.blue, color: '#fff',
-            border: 'none', borderRadius: '8px', cursor: 'pointer',
-            fontSize: '13px', fontWeight: 600,
-          }}
-        >
-          <Pencil size={14} /> Editar
-        </button>
-      </div>
+    <>
+      <div style={{ padding: '28px 24px' }}>
 
-      <div style={{
-        background: C.surface,
-        border: `1px solid ${C.border}`,
-        borderRadius: '16px',
-        overflow: 'hidden',
-      }}>
-      <div style={{ borderTop: `4px solid ${turma.cor || '#0d2550'}` }} />
-      <div style={{ padding: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-          <div style={{
-            width: '72px', height: '72px', borderRadius: '16px',
-            background: `${turma.cor || '#1a56ff'}22`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '36px',
-          }}>
-            {turma.icone || '🏢'}
-          </div>
+        {/* Cabeçalho */}
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', marginBottom: '24px',
+        }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, color: C.text, margin: '0 0 6px' }}>
-              {turma.cargo_grupo || turma.nome}
-            </h2>
-            <span style={{
-              fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
-              background: turma.status === 'ativa' ? '#10b98118' : '#6b728018',
-              color: turma.status === 'ativa' ? '#10b981' : C.muted,
-              border: `1px solid ${turma.status === 'ativa' ? '#10b98133' : '#6b728033'}`,
-              textTransform: 'uppercase' as const,
-            }}>
-              {turma.status}
-            </span>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: C.text, margin: '0 0 4px' }}>
+              Minha Turma
+            </h1>
+            <p style={{ fontSize: '13px', color: C.muted, margin: 0 }}>
+              {turmas.length} turma{turmas.length !== 1 ? 's' : ''} cadastrada{turmas.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={abrirCriar}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '7px 14px', background: '#F5C400', color: '#0d2550',
+                border: 'none', borderRadius: '7px', fontWeight: 700,
+                fontSize: '13px', cursor: 'pointer',
+              }}
+            >
+              <Plus size={14} />
+              Nova Turma
+            </button>
+            <button
+              onClick={carregar}
+              disabled={carregando}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '8px 14px', background: 'none',
+                border: `1px solid ${C.border}`,
+                borderRadius: '8px', fontSize: '12px',
+                color: C.muted, cursor: 'pointer',
+              }}
+            >
+              <RefreshCw
+                size={13}
+                style={{ animation: carregando ? 'spin 0.8s linear infinite' : 'none' }}
+              />
+              Atualizar
+            </button>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Métricas */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: `repeat(${cols(2, 2, 4)}, 1fr)`,
+          gap: '12px', marginBottom: '24px',
+        }}>
           {[
-            { label: 'Nome interno', valor: turma.nome },
-            { label: 'Cargo / Grupo', valor: turma.cargo_grupo },
-            { label: 'Setor', valor: turma.setor },
-            { label: 'Responsável', valor: turma.responsavel },
-            { label: 'Alunos ativos', valor: String(turma.total_alunos) },
-            { label: 'Cursos vinculados', valor: String(turma.total_cursos) },
-          ].map(item => (
-            <div key={item.label}>
-              <div style={{ fontSize: '11px', color: C.muted, fontWeight: 600, textTransform: 'uppercase' as const, marginBottom: '4px' }}>
-                {item.label}
+            { label: 'Total de Turmas',  valor: turmas.length, icone: '🏫',  cor: C.blue    },
+            { label: 'Total de Alunos',  valor: totalAlunos,   icone: '👥',  cor: '#10b981' },
+            { label: 'Cursos Ativos',    valor: totalCursos,   icone: '📚',  cor: '#f59e0b' },
+            { label: 'Com Instrutor',    valor: comInstrutor,  icone: '👨‍🏫', cor: '#7c3aed' },
+          ].map(s => (
+            <div key={s.label} style={{
+              background: C.surface, border: `1px solid ${C.border}`,
+              borderRadius: '12px', padding: '16px', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '24px', marginBottom: '6px' }}>{s.icone}</div>
+              <div style={{ fontSize: '26px', fontWeight: 800, color: s.cor }}>
+                {carregando ? '…' : s.valor}
               </div>
-              <div style={{ fontSize: '15px', color: C.text }}>{item.valor || '—'}</div>
+              <div style={{ fontSize: '11px', color: C.muted, marginTop: '3px' }}>{s.label}</div>
             </div>
           ))}
         </div>
-      </div>
-      </div>
 
-      {/* Modal editar */}
-      {modalAberto && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000,
-        }}>
+        {/* Busca e filtros */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            background: C.surface, border: `1px solid ${C.border}`,
+            borderRadius: '8px', padding: '8px 14px', flex: 1, minWidth: '200px',
+          }}>
+            <Search size={14} color={C.muted} />
+            <input
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              onKeyDown={e => e.stopPropagation()}
+              placeholder="Buscar por turma ou instrutor..."
+              style={{
+                background: 'none', border: 'none', outline: 'none',
+                fontSize: '13px', color: C.text, flex: 1,
+              }}
+            />
+          </div>
+          <select
+            value={filtroStatus}
+            onChange={e => setFiltroStatus(e.target.value)}
+            style={{
+              padding: '8px 14px', background: C.surface,
+              border: `1px solid ${C.border}`, borderRadius: '8px',
+              fontSize: '13px', color: C.text, cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <option value="todos">Todas as turmas</option>
+            <option value="com_curso">Com curso</option>
+            <option value="sem_curso">Sem curso</option>
+            <option value="com_instrutor">Com instrutor</option>
+          </select>
+        </div>
+
+        {/* Erro */}
+        {erro && (
+          <div style={{
+            background: 'rgba(239,68,68,0.10)',
+            border: '1px solid rgba(239,68,68,0.25)',
+            borderRadius: '8px', padding: '12px 16px',
+            fontSize: '13px', color: '#ef4444', marginBottom: '16px',
+          }}>
+            ⚠️ {erro}
+          </div>
+        )}
+
+        {/* Loading */}
+        {carregando && (
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'center', padding: '60px', gap: '12px', color: C.muted,
+          }}>
+            <div style={{
+              width: '24px', height: '24px',
+              border: `3px solid ${C.border}`, borderTopColor: C.blue,
+              borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+            }} />
+            Carregando turma...
+          </div>
+        )}
+
+        {/* Vazio */}
+        {!carregando && turmasFiltradas.length === 0 && (
           <div style={{
             background: C.surface, border: `1px solid ${C.border}`,
-            borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '500px',
+            borderRadius: '12px', padding: '48px', textAlign: 'center',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: C.text }}>Editar Turma</h3>
-              <button onClick={() => setModalAberto(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏫</div>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: C.text, margin: '0 0 6px' }}>
+              {busca ? 'Nenhuma turma encontrada' : 'Nenhuma turma cadastrada'}
+            </p>
+          </div>
+        )}
+
+        {/* Grid de cards */}
+        {!carregando && turmasFiltradas.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '16px',
+          }}>
+            {turmasFiltradas.map(turma => {
+              const nome      = turma.cargo_grupo ?? turma.nome
+              const icone     = turma.icone     ?? ICONES[nome] ?? '🏫'
+              const cor       = turma.cor       ?? CORES[nome]  ?? C.blue
+              const alunos    = parseInt(turma.total_alunos) || 0
+              const cursos    = parseInt(turma.total_cursos) || 0
+              const instrutor = turma.instrutor_nome ?? null
+
+              return (
+                <div
+                  key={turma.id}
+                  style={{
+                    background:   C.surface,
+                    border:       `1px solid ${C.border}`,
+                    borderTop:    `4px solid ${cor}`,
+                    borderRadius: '12px',
+                    overflow:     'hidden',
+                    transition:   'transform 200ms, box-shadow 200ms',
+                    position:     'relative',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform  = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow  = '0 8px 24px rgba(0,0,0,0.10)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform  = 'translateY(0)'
+                    e.currentTarget.style.boxShadow  = 'none'
+                  }}
+                >
+                  {/* Ações */}
+                  <div style={{ display: 'flex', gap: '6px', position: 'absolute', top: '12px', right: '12px' }}>
+                    <button
+                      onClick={e => { e.stopPropagation(); abrirEditar(turma) }}
+                      title="Editar turma"
+                      style={{ background: 'rgba(13,37,80,0.08)', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Pencil size={13} color="#0d2550" />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); excluirTurma(turma) }}
+                      title="Excluir turma"
+                      style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Trash2 size={13} color="#ef4444" />
+                    </button>
+                  </div>
+
+                  {/* Header */}
+                  <div style={{ padding: '18px 20px 14px' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'flex-start',
+                      gap: '12px', marginBottom: '12px',
+                    }}>
+                      <div style={{
+                        width: '44px', height: '44px', borderRadius: '10px',
+                        background: `${cor}18`,
+                        display: 'flex', alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '22px', flexShrink: 0,
+                      }}>
+                        {icone}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          fontSize: '14px', fontWeight: 700,
+                          color: C.text, margin: '0 0 4px',
+                          whiteSpace: 'nowrap', overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
+                          {nome}
+                        </p>
+                        <span style={{
+                          fontSize: '10px', fontWeight: 700,
+                          padding: '2px 8px', borderRadius: '10px',
+                          background: cursos > 0
+                            ? 'rgba(16,185,129,0.12)'
+                            : 'rgba(245,158,11,0.12)',
+                          color:      cursos > 0 ? '#10b981' : '#f59e0b',
+                          border:     `1px solid ${cursos > 0
+                            ? 'rgba(16,185,129,0.30)'
+                            : 'rgba(245,158,11,0.30)'}`,
+                        }}>
+                          {cursos > 0
+                            ? `${cursos} curso${cursos > 1 ? 's' : ''}`
+                            : 'Aguardando curso'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{
+                        background: C.surface2, borderRadius: '8px', padding: '10px',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                      }}>
+                        <Users size={14} color={C.muted} />
+                        <div>
+                          <p style={{ fontSize: '16px', fontWeight: 800, color: C.text, margin: 0, lineHeight: 1 }}>
+                            {alunos}
+                          </p>
+                          <p style={{ fontSize: '10px', color: C.muted, margin: '2px 0 0' }}>
+                            aluno{alunos !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div style={{
+                        background: C.surface2, borderRadius: '8px', padding: '10px',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                      }}>
+                        <BookOpen size={14} color={C.muted} />
+                        <div>
+                          <p style={{ fontSize: '16px', fontWeight: 800, color: C.text, margin: 0, lineHeight: 1 }}>
+                            {cursos}
+                          </p>
+                          <p style={{ fontSize: '10px', color: C.muted, margin: '2px 0 0' }}>
+                            curso{cursos !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Instrutor */}
+                  <div style={{
+                    padding: '12px 20px',
+                    borderTop: `1px solid ${C.border}`,
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                  }}>
+                    {instrutor ? (
+                      <>
+                        <div style={{
+                          width: '30px', height: '30px', borderRadius: '50%',
+                          background: `${cor}18`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '12px', fontWeight: 700, color: cor, flexShrink: 0,
+                        }}>
+                          {instrutor.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{
+                            fontSize: '12px', fontWeight: 600, color: C.text, margin: 0,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>
+                            {instrutor}
+                          </p>
+                          <p style={{ fontSize: '10px', color: C.muted, margin: 0 }}>Instrutor / Tutor</p>
+                        </div>
+                        <GraduationCap size={14} color={C.muted} />
+                      </>
+                    ) : (
+                      <>
+                        <div style={{
+                          width: '30px', height: '30px', borderRadius: '50%',
+                          background: C.surface2,
+                          display: 'flex', alignItems: 'center',
+                          justifyContent: 'center', flexShrink: 0,
+                        }}>
+                          <GraduationCap size={13} color={C.muted} />
+                        </div>
+                        <p style={{ fontSize: '12px', color: C.muted, margin: 0, fontStyle: 'italic', flex: 1 }}>
+                          Instrutor não vinculado
+                        </p>
+                        <button
+                          onClick={() => onNavigate('dashboardInstrutor')}
+                          style={{
+                            fontSize: '11px', color: C.blue,
+                            background: 'none', border: 'none',
+                            cursor: 'pointer', fontWeight: 600,
+                            padding: 0, flexShrink: 0,
+                          }}
+                        >
+                          + Vincular
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Rodapé resumo */}
+        {!carregando && turmasFiltradas.length > 0 && (
+          <div style={{
+            marginTop: '20px', padding: '12px 16px',
+            background: C.surface, border: `1px solid ${C.border}`,
+            borderRadius: '8px', display: 'flex', gap: '20px', flexWrap: 'wrap',
+          }}>
+            <span style={{ fontSize: '12px', color: C.muted }}>
+              Mostrando <strong style={{ color: C.text }}>{turmasFiltradas.length}</strong> de {turmas.length} turmas
+            </span>
+            <span style={{ fontSize: '12px', color: C.muted }}>
+              <strong style={{ color: '#10b981' }}>{comCurso}</strong> com curso
+            </span>
+            <span style={{ fontSize: '12px', color: C.muted }}>
+              <strong style={{ color: '#f59e0b' }}>{turmas.length - comCurso}</strong> aguardando curso
+            </span>
+            <span style={{ fontSize: '12px', color: C.muted }}>
+              <strong style={{ color: '#7c3aed' }}>{comInstrutor}</strong> com instrutor
+            </span>
+          </div>
+        )}
+
+      </div>
+
+      {/* Modal Nova Turma / Editar Turma */}
+      {modalTurma && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '16px',
+        }}>
+          <div style={{
+            background: C.surface, borderRadius: '14px',
+            padding: '28px', width: '100%', maxWidth: '480px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: 700, color: C.text, margin: 0 }}>
+                {modalTurma.modo === 'criar' ? 'Nova Turma' : 'Editar Turma'}
+              </h2>
+              <button onClick={() => setModalTurma(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
                 <X size={18} color={C.muted} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {([ ['nome', 'Nome Interno'], ['cargo_grupo', 'Cargo / Grupo'], ['setor', 'Setor'], ['responsavel', 'Responsável'] ] as const).map(([campo, label]) => (
-                <div key={campo}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase' as const }}>
-                    {label}
-                  </label>
-                  <input
-                    value={form[campo]}
-                    onChange={e => setForm(f => ({ ...f, [campo]: e.target.value }))}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      background: C.bg, border: `1px solid ${C.border}`,
-                      borderRadius: '8px', padding: '10px 12px',
-                      color: C.text, fontSize: '14px', outline: 'none',
-                    }}
-                  />
-                </div>
-              ))}
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase' as const }}>
-                    Ícone
-                  </label>
-                  <input
-                    value={form.icone}
-                    onChange={e => setForm(f => ({ ...f, icone: e.target.value }))}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      background: C.bg, border: `1px solid ${C.border}`,
-                      borderRadius: '8px', padding: '10px 12px',
-                      color: C.text, fontSize: '20px', outline: 'none',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase' as const }}>
-                    Cor
-                  </label>
-                  <input
-                    type="color"
-                    value={form.cor}
-                    onChange={e => setForm(f => ({ ...f, cor: e.target.value }))}
-                    style={{
-                      width: '100%', height: '42px', boxSizing: 'border-box',
-                      background: C.bg, border: `1px solid ${C.border}`,
-                      borderRadius: '8px', cursor: 'pointer',
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px', textTransform: 'uppercase' as const }}>
-                  Status
+            {([
+              { label: 'Nome da turma *', field: 'nome',        placeholder: 'Ex: Recursos Humanos' },
+              { label: 'Grupo / Cargo',   field: 'cargo_grupo', placeholder: 'Ex: Recursos Humanos' },
+              { label: 'Setor',           field: 'setor',       placeholder: 'Ex: Administrativo'    },
+              { label: 'Responsável',     field: 'responsavel', placeholder: 'Nome do responsável'   },
+              { label: 'Ícone (emoji)',   field: 'icone',       placeholder: '🏢'                    },
+            ] as { label: string; field: keyof typeof formTurma; placeholder: string }[]).map(({ label, field, placeholder }) => (
+              <div key={field} style={{ marginBottom: '14px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>
+                  {label}
                 </label>
-                <select
-                  value={form.status}
-                  onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                <input
+                  value={formTurma[field] as string}
+                  onChange={e => setFormTurma(p => ({ ...p, [field]: e.target.value }))}
+                  placeholder={placeholder}
                   style={{
-                    width: '100%', background: C.bg, border: `1px solid ${C.border}`,
-                    borderRadius: '8px', padding: '10px 12px',
-                    color: C.text, fontSize: '14px', outline: 'none',
+                    width: '100%', padding: '9px 12px', background: C.surface2,
+                    border: `1px solid ${C.border}`, borderRadius: '8px',
+                    fontSize: '13px', color: C.text, outline: 'none', boxSizing: 'border-box',
                   }}
-                >
-                  <option value="ativa">Ativa</option>
-                  <option value="inativa">Inativa</option>
-                </select>
+                />
+              </div>
+            ))}
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>Cor</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="color"
+                  value={formTurma.cor}
+                  onChange={e => setFormTurma(p => ({ ...p, cor: e.target.value }))}
+                  style={{ width: '40px', height: '36px', border: 'none', borderRadius: '6px', cursor: 'pointer', background: 'none' }}
+                />
+                <input
+                  value={formTurma.cor}
+                  onChange={e => setFormTurma(p => ({ ...p, cor: e.target.value }))}
+                  placeholder="#0d2550"
+                  style={{
+                    flex: 1, padding: '9px 12px', background: C.surface2,
+                    border: `1px solid ${C.border}`, borderRadius: '8px',
+                    fontSize: '13px', color: C.text, outline: 'none',
+                  }}
+                />
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setModalAberto(false)}
+            <div style={{ marginBottom: '22px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '5px' }}>Status</label>
+              <select
+                value={formTurma.status}
+                onChange={e => setFormTurma(p => ({ ...p, status: e.target.value }))}
                 style={{
-                  padding: '10px 18px', background: 'transparent',
+                  width: '100%', padding: '9px 12px', background: C.surface2,
                   border: `1px solid ${C.border}`, borderRadius: '8px',
-                  color: C.muted, cursor: 'pointer', fontSize: '13px',
+                  fontSize: '13px', color: C.text, outline: 'none', cursor: 'pointer',
+                }}
+              >
+                <option value="ativa">Ativa</option>
+                <option value="inativa">Inativa</option>
+                <option value="arquivada">Arquivada</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setModalTurma(null)}
+                style={{
+                  padding: '9px 18px', background: 'none',
+                  border: `1px solid ${C.border}`, borderRadius: '8px',
+                  fontSize: '13px', color: C.muted, cursor: 'pointer',
                 }}
               >
                 Cancelar
               </button>
               <button
-                onClick={salvar}
-                disabled={salvando}
+                onClick={salvarTurma}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '10px 18px', background: C.blue, color: '#fff',
-                  border: 'none', borderRadius: '8px', cursor: salvando ? 'not-allowed' : 'pointer',
-                  fontSize: '13px', fontWeight: 600, opacity: salvando ? 0.7 : 1,
+                  padding: '9px 20px', background: C.blue, border: 'none',
+                  borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                  color: '#fff', cursor: 'pointer',
                 }}
               >
-                <Save size={14} /> {salvando ? 'Salvando...' : 'Salvar'}
+                Salvar
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

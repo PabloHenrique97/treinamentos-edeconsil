@@ -15,8 +15,9 @@ interface FormAluno {
 }
 
 interface CadastroAlunoProps {
-  onFechar:  () => void
-  onSucesso: (usuario: any) => void
+  onFechar:     () => void
+  onSucesso:    (usuario: any) => void
+  setorInicial?: string
 }
 
 const FORM_INICIAL: FormAluno = {
@@ -25,9 +26,9 @@ const FORM_INICIAL: FormAluno = {
   centro_custo: '', ramal: '', celular: '',
 }
 
-export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
+export function CadastroAluno({ onFechar, onSucesso, setorInicial }: CadastroAlunoProps) {
   const { C } = useTheme()
-  const [form, setForm]         = useState<FormAluno>(FORM_INICIAL)
+  const [form, setForm]         = useState<FormAluno>(() => ({ ...FORM_INICIAL, setor: setorInicial ?? '' }))
   const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro]         = useState('')
@@ -120,7 +121,7 @@ export function CadastroAluno({ onFechar, onSucesso }: CadastroAlunoProps) {
         </div>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button
-            onClick={() => { setSucesso(null); setForm(FORM_INICIAL); setErro('') }}
+            onClick={() => { setSucesso(null); setForm({ ...FORM_INICIAL, setor: setorInicial ?? '' }); setErro('') }}
             style={{ padding: '10px 20px', background: C.blue, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
           >
             + Cadastrar outro

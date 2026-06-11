@@ -64,12 +64,13 @@ export function PainelInstrutor({ onLogout }: PainelInstrutorProps) {
       case 'dashboardInstrutor':
         return <DashboardInstrutor onNavigate={navegar} />
       case 'turmaInstrutor':
-        return <TurmaInstrutor />
+        return <TurmaInstrutor onNavigate={navegar} />
       case 'alunosInstrutor':
-        return <AlunosInstrutor />
+        return <AlunosInstrutor onNavigate={navegar} />
       case 'cursosInstrutor':
         return (
           <CursosInstrutor
+            onNavigate={navegar}
             onAbrirCurso={(slug) => {
               setCursoAtivoId(slug)
               setPagina('cursoDetalheInstrutor')
@@ -89,11 +90,11 @@ export function PainelInstrutor({ onLogout }: PainelInstrutorProps) {
       case 'bibliotecaInstrutor':
         return <BibliotecaConteudo onNavigate={navegar} />
       case 'certificadosInstrutor':
-        return <CertificadosInstrutor />
+        return <CertificadosInstrutor onNavigate={navegar} />
       case 'indicadoresInstrutor':
-        return <IndicadoresInstrutor />
+        return <IndicadoresInstrutor onNavigate={navegar} />
       case 'notificacoesInstrutor':
-        return <NotificacoesInstrutor />
+        return <NotificacoesInstrutor onNavigate={navegar} />
       default:
         return <DashboardInstrutor onNavigate={navegar} />
     }
