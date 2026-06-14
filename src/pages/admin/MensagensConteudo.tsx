@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, Paperclip, X, Download, Search } from 'lucide-react'
+import { Send, Paperclip, X, Download, Search, Plus } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getToken } from '../../services/authStorage'
 import { useUsuarioLogado } from '../../hooks/useUsuarioLogado'
@@ -71,6 +71,18 @@ function useAdminChat(convSelecionadaRef: { current: any }) {
     }))
   }, [])
 
+  const enviarParaAluno = useCallback((alunoId: string, conteudo: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+    wsRef.current.send(JSON.stringify({
+      tipo:         'mensagem',
+      conteudo:     conteudo,
+      aluno_id:     alunoId,
+      arquivo_url:  null,
+      arquivo_nome: null,
+      arquivo_tipo: null,
+    }))
+  }, [])
+
   const uploadArquivo = useCallback(async (file: File) => {
     const token = getToken()
     const form  = new FormData()
@@ -83,7 +95,7 @@ function useAdminChat(convSelecionadaRef: { current: any }) {
     return resp.json()
   }, [])
 
-  return { mensagens, setMensagens, status, enviar, uploadArquivo }
+  return { mensagens, setMensagens, status, enviar, enviarParaAluno, uploadArquivo }
 }
 
 export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudoProps) {
@@ -96,11 +108,18 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   const [texto,          setTexto]          = useState('')
   const [arquivoPreview, setArquivoPreview] = useState<{ url: string; nome: string; tipo: string } | null>(null)
   const [uploadando,     setUploadando]     = useState(false)
+  const [modalNovaMsg,   setModalNovaMsg]   = useState(false)
+  const [destinatarios,  setDestinatarios]  = useState<any[]>([])
+  const [destSelecionado,setDestSelecionado]= useState<any>(null)
+  const [carregandoDest, setCarregandoDest] = useState(false)
   const bottomRef          = useRef<HTMLDivElement>(null)
   const fileRef            = useRef<HTMLInputElement>(null)
   const convSelecionadaRef = useRef<any>(null)
 
-  const { mensagens, setMensagens, status, enviar, uploadArquivo } = useAdminChat(convSelecionadaRef)
+  const { mensagens, setMensagens, status, enviar, enviarParaAluno, uploadArquivo } = useAdminChat(convSelecionadaRef)
+
+  const usuarioLogado = JSON.parse(localStorage.getItem('edeconsil_usuario') ?? '{}')
+  const isInstrutor   = usuarioLogado?.perfil === 'instrutor'
 
   useEffect(() => {
     const token = getToken()
@@ -130,6 +149,47 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [mensagens])
+
+  const abrirNovaMsg = async () => {
+    setModalNovaMsg(true)
+    setCarregandoDest(true)
+    try {
+      const t = getToken()
+      const [alunosRes, instRes] = await Promise.all([
+        fetch(`${baseUrl}/api/usuarios?perfil=colaborador&limite=500`, { headers: { Authorization: `Bearer ${t}` } }),
+        fetch(`${baseUrl}/api/instrutores`,                             { headers: { Authorization: `Bearer ${t}` } }),
+      ])
+      const alunosData = await alunosRes.json()
+      const instData   = await instRes.json()
+
+      const alunos = (Array.isArray(alunosData) ? alunosData : alunosData.usuarios ?? [])
+        .map((u: any) => ({ ...u, _tipo: 'aluno',    _label: `${u.nome} — ${u.setor ?? 'Aluno'}` }))
+
+      const instrutores = (Array.isArray(instData) ? instData : [])
+        .filter((i: any) => i.usuario_id !== usuarioLogado.id)
+        .map((i: any) => ({ ...i, id: i.usuario_id ?? i.id, _tipo: 'instrutor', _label: `${i.nome} — Instrutor` }))
+
+      setDestinatarios([...alunos, ...instrutores])
+    } catch (err) {
+      console.error('Erro ao carregar destinatários:', err)
+    } finally {
+      setCarregandoDest(false)
+    }
+  }
+
+  const iniciarConversa = () => {
+    if (!destSelecionado) return
+    enviarParaAluno(String(destSelecionado.id), '👋 Olá! Iniciei uma conversa com você.')
+    setModalNovaMsg(false)
+    setDestSelecionado(null)
+    setTimeout(() => {
+      const t = getToken()
+      fetch(`${baseUrl}/api/conversas`, { headers: { Authorization: `Bearer ${t}` } })
+        .then(r => r.json())
+        .then(data => setConversas(Array.isArray(data) ? data : []))
+        .catch(() => {})
+    }, 1000)
+  }
 
   const handleEnviar = () => {
     if (!texto.trim() && !arquivoPreview) return
@@ -175,14 +235,27 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   )
 
   return (
+    <>
     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
 
       {/* Lista de conversas */}
       <div style={{ width: '300px', borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '16px', borderBottom: `1px solid ${C.border}` }}>
-          <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: '0 0 10px' }}>
-            Mensagens
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
+              Mensagens
+            </h2>
+            {isInstrutor && (
+              <button
+                onClick={abrirNovaMsg}
+                title="Nova conversa"
+                style={{ background: '#0d2550', border: 'none', borderRadius: '8px', padding: '5px 10px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <Plus size={13} />
+                Nova
+              </button>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 10px' }}>
             <Search size={13} color={C.muted} />
             <input
@@ -405,5 +478,61 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
         )}
       </div>
     </div>
+
+    {modalNovaMsg && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: C.surface, borderRadius: '12px', padding: '24px', width: '400px', maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.text, margin: '0 0 16px' }}>
+            Nova Mensagem
+          </h3>
+
+          {carregandoDest ? (
+            <p style={{ color: C.muted, fontSize: '13px', margin: '0 0 16px' }}>Carregando destinatários...</p>
+          ) : (
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: C.muted, display: 'block', marginBottom: '6px' }}>
+                Selecione o destinatário
+              </label>
+              <select
+                value={destSelecionado?.id ?? ''}
+                onChange={e => setDestSelecionado(destinatarios.find(d => String(d.id) === e.target.value) ?? null)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: '13px', marginBottom: '16px', boxSizing: 'border-box' }}
+              >
+                <option value="">Selecione...</option>
+                <optgroup label="Alunos">
+                  {destinatarios.filter(d => d._tipo === 'aluno').map(d => (
+                    <option key={d.id} value={d.id}>{d._label}</option>
+                  ))}
+                </optgroup>
+                {destinatarios.some(d => d._tipo === 'instrutor') && (
+                  <optgroup label="Instrutores">
+                    {destinatarios.filter(d => d._tipo === 'instrutor').map(d => (
+                      <option key={d.id} value={d.id}>{d._label}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => { setModalNovaMsg(false); setDestSelecionado(null) }}
+              style={{ padding: '8px 16px', border: `1px solid ${C.border}`, borderRadius: '8px', background: 'transparent', color: C.text, cursor: 'pointer', fontSize: '13px' }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={iniciarConversa}
+              disabled={!destSelecionado}
+              style={{ padding: '8px 16px', background: destSelecionado ? '#0d2550' : C.border, border: 'none', borderRadius: '8px', color: destSelecionado ? '#fff' : C.muted, cursor: destSelecionado ? 'pointer' : 'not-allowed', fontSize: '13px', fontWeight: 700 }}
+            >
+              Iniciar conversa
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
