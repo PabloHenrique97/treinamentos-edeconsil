@@ -34,22 +34,22 @@ const IconMicrosoft = () => (
 
 const diferenciais = [
   {
-    icone: <HardHat size={20} color="#1a56ff" />,
+    icone: <HardHat size={16} color="#1a56ff" />,
     titulo: 'Especialização Técnica',
     desc: 'Cursos desenvolvidos por especialistas da construção civil.',
   },
   {
-    icone: <ShieldCheck size={20} color="#1a56ff" />,
+    icone: <ShieldCheck size={16} color="#1a56ff" />,
     titulo: 'Segurança em 1º Lugar',
     desc: 'Treinamentos essenciais para promover um ambiente de trabalho seguro.',
   },
   {
-    icone: <BookOpen size={20} color="#1a56ff" />,
+    icone: <BookOpen size={16} color="#1a56ff" />,
     titulo: 'Aprendizado Flexível',
     desc: 'Estude onde e quando quiser com conteúdo 100% online.',
   },
   {
-    icone: <TrendingUp size={20} color="#1a56ff" />,
+    icone: <TrendingUp size={16} color="#1a56ff" />,
     titulo: 'Desempenho que Constrói',
     desc: 'Acompanhe seu progresso e evolua constantemente.',
   },
@@ -178,19 +178,19 @@ export default function Login({ onLogin }: LoginProps) {
           left: '48px',
           display: 'flex',
           alignItems: 'center',
-          gap: '20px',
+          gap: '16px',
           zIndex: 10,
         }}>
-          <Logo height={72} forceClara />
+          <Logo height={58} forceClara />
           <div style={{
             width: '1.5px',
-            height: '48px',
+            height: '38px',
             background: 'rgba(255,255,255,0.25)',
             flexShrink: 0,
           }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <span style={{
-              fontSize: '15px',
+              fontSize: '12px',
               fontWeight: 700,
               color: '#ffffff',
               letterSpacing: '3px',
@@ -201,7 +201,7 @@ export default function Login({ onLogin }: LoginProps) {
               Universidade
             </span>
             <span style={{
-              fontSize: '15px',
+              fontSize: '12px',
               fontWeight: 700,
               color: '#1a56ff',
               letterSpacing: '3px',
@@ -217,7 +217,7 @@ export default function Login({ onLogin }: LoginProps) {
         {/* CONTEÚDO CENTRAL */}
         <div style={{
           position: 'relative', zIndex: 1,
-          padding: '48px 56px',
+          padding: '38px 45px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
           height: '100%',
         }}>
@@ -228,7 +228,7 @@ export default function Login({ onLogin }: LoginProps) {
               border: '1px solid rgba(26,86,255,0.60)',
               background: 'rgba(5,15,40,0.75)',
               borderRadius: 20, padding: '6px 16px',
-              color: '#1a56ff', fontSize: 11, fontWeight: 600, letterSpacing: 3,
+              color: '#1a56ff', fontSize: 9, fontWeight: 600, letterSpacing: 3,
             }}>PLATAFORMA EAD</span>
           </div>
 
@@ -236,16 +236,16 @@ export default function Login({ onLogin }: LoginProps) {
           <div style={{ marginTop: 20 }}>
             <div style={{ fontSize: 48, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>Capacitação</div>
             <div style={{
-              fontSize: 48, fontWeight: 800, lineHeight: 1.1,
+              fontSize: 38, fontWeight: 800, lineHeight: 1.1,
               background: 'linear-gradient(90deg, #1a56ff, #60a5fa)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>Inteligente</div>
-            <div style={{ fontSize: 40, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>para Construção Civil</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>para Construção Civil</div>
           </div>
 
           {/* Subtítulo */}
-          <div style={{ marginTop: 16, fontSize: 15, color: '#8899aa', lineHeight: 1.6 }}>
+          <div style={{ marginTop: 16, fontSize: 12, color: '#8899aa', lineHeight: 1.6 }}>
             Formação técnica, segurança e excelência<br />
             para quem constrói o <span style={{ color: '#1a56ff' }}>futuro.</span>
           </div>
@@ -255,7 +255,7 @@ export default function Login({ onLogin }: LoginProps) {
             {diferenciais.map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 44, height: 44, background: 'rgba(5,15,40,0.75)',
+                  width: 35, height: 35, background: 'rgba(5,15,40,0.75)',
                   border: '1px solid rgba(26,86,255,0.55)', borderRadius: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
@@ -263,8 +263,8 @@ export default function Login({ onLogin }: LoginProps) {
                   {item.icone}
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>{item.titulo}</p>
-                  <p style={{ fontSize: 12, color: '#8899aa', margin: 0, lineHeight: 1.5 }}>{item.desc}</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#fff', margin: 0 }}>{item.titulo}</p>
+                  <p style={{ fontSize: 10, color: '#8899aa', margin: 0, lineHeight: 1.5 }}>{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -284,42 +284,42 @@ export default function Login({ onLogin }: LoginProps) {
         right: isSmall ? 'auto' : '48px',
         top: isSmall ? 'auto' : '50%',
         transform: isSmall ? 'none' : 'translateY(-50%)',
-        width: isSmall ? '100%' : '440px',
-        maxWidth: isSmall ? '460px' : 'none',
+        width: isSmall ? '100%' : '352px',
+        maxWidth: isSmall ? '368px' : 'none',
         margin: isSmall ? 'auto' : '0',
         background: 'linear-gradient(160deg, rgba(10,22,40,0.97) 0%, rgba(5,13,26,0.99) 100%)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid rgba(26,86,255,0.22)',
         borderRadius: isSmall ? '20px' : '28px',
-        padding: isSmall ? '32px 24px' : '48px 44px',
+        padding: isSmall ? '26px 19px' : '38px 35px',
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(26,86,255,0.10)',
         zIndex: 10,
         alignSelf: isSmall ? 'center' : 'auto',
       }}>
-        <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 340 }}>
+        <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 272 }}>
 
           {/* Ícone topo */}
           <div style={{
-            width: 72, height: 72,
+            width: 58, height: 58,
             background: 'linear-gradient(135deg, #1a56ff22, #1a56ff44)',
             border: '1px solid #1a56ff55',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 24px',
+            margin: '0 auto 19px',
           }}>
-            <GraduationCap size={32} color="#1a56ff" />
+            <GraduationCap size={26} color="#1a56ff" />
           </div>
 
           {/* Título */}
           <h1 style={{
-            fontSize: 28, fontWeight: 700, color: '#fff',
+            fontSize: 22, fontWeight: 700, color: '#fff',
             textAlign: 'center', margin: '0 0 8px',
           }}>Bem-vindo!</h1>
 
           {/* Subtítulo */}
           <p style={{
-            fontSize: 15, color: '#8899aa', textAlign: 'center',
+            fontSize: 12, color: '#8899aa', textAlign: 'center',
             lineHeight: 1.6, margin: '0 0 32px',
           }}>
             Acesse sua conta para continuar<br />
@@ -329,7 +329,7 @@ export default function Login({ onLogin }: LoginProps) {
           {/* Campo CPF */}
           <div>
             <label htmlFor="cpf" style={{
-              display: 'block', fontSize: 13, fontWeight: 500,
+              display: 'block', fontSize: 10, fontWeight: 500,
               color: '#ccddee', margin: '0 0 8px',
             }}>CPF</label>
             <div style={{ position: 'relative' }}>
@@ -350,10 +350,10 @@ export default function Login({ onLogin }: LoginProps) {
                 autoComplete="off"
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  padding: '15px 44px 15px 44px',
+                  padding: '12px 35px 12px 35px',
                   background: '#0d1f3c',
                   border: `1px solid ${focusCpf ? '#1a56ff' : '#1a56ff33'}`,
-                  borderRadius: 10, color: '#fff', fontSize: 15,
+                  borderRadius: 10, color: '#fff', fontSize: 12,
                   outline: 'none', transition: 'all 200ms',
                   boxShadow: focusCpf ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
@@ -385,7 +385,7 @@ export default function Login({ onLogin }: LoginProps) {
           {/* Campo Senha */}
           <div style={{ marginTop: 16 }}>
             <label htmlFor="senha" style={{
-              display: 'block', fontSize: 13, fontWeight: 500,
+              display: 'block', fontSize: 10, fontWeight: 500,
               color: '#ccddee', margin: '0 0 8px',
             }}>Senha</label>
             <div style={{ position: 'relative' }}>
@@ -404,10 +404,10 @@ export default function Login({ onLogin }: LoginProps) {
                 required
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  padding: '15px 44px 15px 44px',
+                  padding: '12px 35px 12px 35px',
                   background: '#0d1f3c',
                   border: `1px solid ${focusSenha ? '#1a56ff' : '#1a56ff33'}`,
-                  borderRadius: 10, color: '#fff', fontSize: 15,
+                  borderRadius: 10, color: '#fff', fontSize: 12,
                   outline: 'none', transition: 'all 200ms',
                   boxShadow: focusSenha ? '0 0 0 3px #1a56ff22' : 'none',
                   fontFamily: "'Inter', sans-serif",
@@ -497,9 +497,9 @@ export default function Login({ onLogin }: LoginProps) {
             className="login-btn"
             style={{
               marginTop: 24,
-              width: '100%', padding: '16px',
+              width: '100%', padding: '13px',
               background: 'linear-gradient(90deg, #1a56ff, #3b82f6)',
-              color: '#fff', fontSize: 16, fontWeight: 700,
+              color: '#fff', fontSize: 13, fontWeight: 700,
               border: 'none', borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: '0 4px 20px #1a56ff44',
@@ -519,7 +519,7 @@ export default function Login({ onLogin }: LoginProps) {
             ) : (
               <>
                 Entrar
-                <ArrowRight size={18} />
+                <ArrowRight size={14} />
               </>
             )}
           </button>
