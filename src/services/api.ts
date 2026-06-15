@@ -280,6 +280,8 @@ export const notificacoesAPI = {
 export const conversasAPI = {
   listar: () => apiRequest<any[]>('/conversas'),
   mensagens: (id: string) => apiRequest<any[]>(`/conversas/${id}/mensagens`),
+  criar: (dados: { destinatario_id: string; tipo_contato?: string }) =>
+    apiRequest<any>('/conversas', { method: 'POST', body: JSON.stringify(dados) }),
 }
 
 export const modulosAPI = {

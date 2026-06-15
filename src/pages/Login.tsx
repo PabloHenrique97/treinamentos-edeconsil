@@ -284,20 +284,20 @@ export default function Login({ onLogin }: LoginProps) {
         right: isSmall ? 'auto' : '48px',
         top: isSmall ? 'auto' : '50%',
         transform: isSmall ? 'none' : 'translateY(-50%)',
-        width: isSmall ? '100%' : '352px',
-        maxWidth: isSmall ? '368px' : 'none',
+        width: isSmall ? '100%' : '420px',
+        maxWidth: isSmall ? '440px' : 'none',
         margin: isSmall ? 'auto' : '0',
         background: 'linear-gradient(160deg, rgba(10,22,40,0.97) 0%, rgba(5,13,26,0.99) 100%)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid rgba(26,86,255,0.22)',
         borderRadius: isSmall ? '20px' : '28px',
-        padding: isSmall ? '26px 19px' : '38px 35px',
+        padding: isSmall ? '26px 24px' : '38px 44px',
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(26,86,255,0.10)',
         zIndex: 10,
         alignSelf: isSmall ? 'center' : 'auto',
       }}>
-        <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 272 }}>
+        <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 340 }}>
 
           {/* Ícone topo */}
           <div style={{

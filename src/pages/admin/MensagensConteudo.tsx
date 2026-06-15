@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Paperclip, X, Download, Search, Plus } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getToken } from '../../services/authStorage'
+import { conversasAPI } from '../../services/api'
 import { useUsuarioLogado } from '../../hooks/useUsuarioLogado'
 
 interface MensagensConteudoProps {
@@ -116,10 +117,9 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   const fileRef            = useRef<HTMLInputElement>(null)
   const convSelecionadaRef = useRef<any>(null)
 
-  const { mensagens, setMensagens, status, enviar, enviarParaAluno, uploadArquivo } = useAdminChat(convSelecionadaRef)
+  const { mensagens, setMensagens, status, enviar, uploadArquivo } = useAdminChat(convSelecionadaRef)
 
   const usuarioLogado = JSON.parse(localStorage.getItem('edeconsil_usuario') ?? '{}')
-  const isInstrutor   = usuarioLogado?.perfil === 'instrutor'
 
   useEffect(() => {
     const token = getToken()
@@ -177,18 +177,27 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
     }
   }
 
-  const iniciarConversa = () => {
+  const iniciarConversa = async () => {
     if (!destSelecionado) return
-    enviarParaAluno(String(destSelecionado.id), '👋 Olá! Iniciei uma conversa com você.')
-    setModalNovaMsg(false)
-    setDestSelecionado(null)
-    setTimeout(() => {
+    try {
+      const conv = await conversasAPI.criar({
+        destinatario_id: String(destSelecionado.id),
+        tipo_contato: destSelecionado._tipo === 'instrutor' ? 'instrutor' : 'suporte',
+      })
+      setConvSelecionada(conv)
+      convSelecionadaRef.current = conv
+      setMensagens([])
       const t = getToken()
       fetch(`${baseUrl}/api/conversas`, { headers: { Authorization: `Bearer ${t}` } })
         .then(r => r.json())
         .then(data => setConversas(Array.isArray(data) ? data : []))
         .catch(() => {})
-    }, 1000)
+      setModalNovaMsg(false)
+      setDestSelecionado(null)
+    } catch (err) {
+      console.error('Erro ao criar conversa:', err)
+      alert('Erro ao iniciar conversa.')
+    }
   }
 
   const handleEnviar = () => {
@@ -245,16 +254,14 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
             <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
               Mensagens
             </h2>
-            {isInstrutor && (
-              <button
-                onClick={abrirNovaMsg}
-                title="Nova conversa"
-                style={{ background: '#0d2550', border: 'none', borderRadius: '8px', padding: '5px 10px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                <Plus size={13} />
-                Nova
-              </button>
-            )}
+            <button
+              onClick={abrirNovaMsg}
+              title="Nova conversa"
+              style={{ background: '#0d2550', border: 'none', borderRadius: '8px', padding: '5px 10px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <Plus size={13} />
+              Nova
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 10px' }}>
             <Search size={13} color={C.muted} />

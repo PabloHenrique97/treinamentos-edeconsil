@@ -171,7 +171,13 @@ export function TopbarAdmin({
           <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>
             {usuarioLogado?.nome?.split(' ')[0] ?? 'Administrador'}
           </div>
-          <div style={{ fontSize: '10px', color: C.muted }}>Administrador</div>
+          <div style={{ fontSize: '10px', color: C.muted }}>
+            {usuarioLogado?.perfil === 'instrutor'
+              ? 'Instrutor'
+              : usuarioLogado?.perfil === 'admin'
+              ? 'Administrador'
+              : 'Colaborador'}
+          </div>
         </div>
       </div>
     </div>
