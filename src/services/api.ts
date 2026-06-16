@@ -158,6 +158,32 @@ export const questoesAPI = {
     apiRequest(`/questoes/${id}`, { method: 'DELETE' }),
 }
 
+export const aulasAPI = {
+  criar: (moduloId: string, dados: {
+    titulo: string
+    descricao?: string
+    duracao?: string
+    ordem?: number
+    video_url?: string
+    video_tipo?: string
+  }) =>
+    apiRequest(`/modulos/${moduloId}/aulas`, {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    }),
+
+  atualizar: (id: string, dados: any) =>
+    apiRequest(`/aulas/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+    }),
+
+  excluir: (id: string) =>
+    apiRequest(`/aulas/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
 export const bibliotecaAPI = {
   listar: (params?: Record<string, string>) => {
     const q = params ? '?' + new URLSearchParams(params).toString() : ''

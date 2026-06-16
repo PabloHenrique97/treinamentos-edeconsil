@@ -55,7 +55,9 @@
       "Bash(git subtree *)",
       "Bash(curl *)",
       "Bash(railway --version)",
-      "Bash(railway whoami *)"
+      "Bash(railway whoami *)",
+      "Bash(python -m json.tool)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['token']\\)\")"
     ]
   }
 }
