@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   ChevronDown, ChevronUp,
   BookOpen, Users, Clock, ArrowLeft,
   Play, Edit, Check, TrendingUp, Pencil, Trash2, Plus,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { cursosAPI, questoesAPI, modulosAPI } from '../../services/api'
+import { cursosAPI, questoesAPI, modulosAPI, aulasAPI } from '../../services/api'
+import { isYoutube } from '../../utils/youtube'
 
 interface CursoDetalheConteudoProps {
   cursoId: string
@@ -35,8 +36,14 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
   const [modalNovoModulo, setModalNovoModulo] = useState(false)
   const [novoModuloTitulo, setNovoModuloTitulo] = useState('')
   const [modalEditarModulo, setModalEditarModulo] = useState<{ id: string; titulo: string; ordem: number } | null>(null)
+  const [modalAula, setModalAula] = useState(false)
+  const [aulaEdit, setAulaEdit] = useState<any>(null)
+  const [moduloAtivoId, setModuloAtivoId] = useState<string | null>(null)
+  const [formAula, setFormAula] = useState({
+    titulo: '', descricao: '', duracao: '', ordem: 1, video_url: '', video_tipo: 'youtube'
+  })
 
-  useEffect(() => {
+  const carregarCurso = useCallback(() => {
     setCarregando(true)
     setErro('')
     cursosAPI.buscarPorSlug(cursoId as any)
@@ -50,6 +57,10 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
         setCarregando(false)
       })
   }, [cursoId])
+
+  useEffect(() => {
+    carregarCurso()
+  }, [carregarCurso])
 
   const toggleModulo = (id: number) => {
     setModulosAbertos(prev => {
@@ -145,6 +156,56 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
       setCurso((prev: any) => ({ ...prev, modulos: prev.modulos.filter((m: any) => m.id !== id) }))
     } catch (err: any) {
       alert(err.message ?? 'Erro ao excluir módulo')
+    }
+  }
+
+  const lblStyle = { display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '5px', marginTop: '10px' } as const
+  const inpStyle = { width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' as const }
+
+  const abrirNovaAula = (moduloId: string) => {
+    setModuloAtivoId(moduloId)
+    setAulaEdit(null)
+    setFormAula({ titulo: '', descricao: '', duracao: '', ordem: 1, video_url: '', video_tipo: 'youtube' })
+    setModalAula(true)
+  }
+
+  const abrirEditarAula = (aula: any, mId: any) => {
+    setAulaEdit(aula)
+    setModuloAtivoId(String(mId))
+    setFormAula({
+      titulo: aula.titulo ?? '',
+      descricao: aula.descricao ?? '',
+      duracao: aula.duracao ?? '',
+      ordem: aula.ordem ?? 1,
+      video_url: aula.video_url ?? '',
+      video_tipo: aula.video_tipo ?? 'youtube',
+    })
+    setModalAula(true)
+  }
+
+  const salvarAula = async () => {
+    try {
+      const tipo = isYoutube(formAula.video_url) ? 'youtube' : formAula.video_tipo
+      const dados = { ...formAula, video_tipo: tipo }
+      if (aulaEdit) {
+        await aulasAPI.atualizar(String(aulaEdit.id), dados)
+      } else if (moduloAtivoId) {
+        await aulasAPI.criar(moduloAtivoId, dados)
+      }
+      setModalAula(false)
+      carregarCurso()
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao salvar aula.')
+    }
+  }
+
+  const excluirAula = async (aula: any) => {
+    if (!window.confirm(`Excluir a aula "${aula.titulo}"?`)) return
+    try {
+      await aulasAPI.excluir(String(aula.id))
+      carregarCurso()
+    } catch (err: any) {
+      alert(err.message ?? 'Erro ao excluir aula.')
     }
   }
 
@@ -297,6 +358,13 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
                         <span style={{ fontSize: '12px', color: C.muted }}>{aulas.length} aula{aulas.length !== 1 ? 's' : ''}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={e => e.stopPropagation()}>
                           <button
+                            onClick={() => abrirNovaAula(String(mod.id))}
+                            title="Nova aula"
+                            style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#0d2550', border: 'none', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}
+                          >
+                            <Plus size={10} /> Nova Aula
+                          </button>
+                          <button
                             onClick={() => setModalEditarModulo({ id: mod.id, titulo: mod.titulo, ordem: mod.ordem })}
                             title="Editar módulo"
                             style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '5px', padding: '3px 7px', fontSize: '11px', color: C.muted, cursor: 'pointer' }}
@@ -361,6 +429,20 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
                                 }}>
                                   {aula.video_disponivel ? 'Vídeo' : 'Em breve'}
                                 </span>
+                                <button
+                                  onClick={e => { e.stopPropagation(); abrirEditarAula(aula, mod.id) }}
+                                  title="Editar aula"
+                                  style={{ background: 'rgba(13,37,80,0.08)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px', color: '#0d2550' }}
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  onClick={e => { e.stopPropagation(); excluirAula(aula) }}
+                                  title="Excluir aula"
+                                  style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px', color: '#ef4444' }}
+                                >
+                                  Excluir
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -661,6 +743,76 @@ export function CursoDetalheConteudo({ cursoId, onNavigate: _onNavigate, onVolta
                 style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 600, color: '#fff', background: C.blue, border: 'none', borderRadius: '8px', cursor: 'pointer' }}
               >
                 Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Nova / Editar Aula */}
+      {modalAula && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', width: '480px', maxWidth: '92vw', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '16px', color: '#0d2550' }}>
+              {aulaEdit ? 'Editar Aula' : 'Nova Aula'}
+            </h3>
+
+            <label style={lblStyle}>Título *</label>
+            <input
+              value={formAula.titulo}
+              onChange={e => setFormAula({ ...formAula, titulo: e.target.value })}
+              style={inpStyle}
+              placeholder="Ex: Aula 1 — Introdução"
+            />
+
+            <label style={lblStyle}>Descrição</label>
+            <textarea
+              value={formAula.descricao}
+              onChange={e => setFormAula({ ...formAula, descricao: e.target.value })}
+              style={{ ...inpStyle, minHeight: '70px', resize: 'vertical' as const }}
+              placeholder="Breve descrição da aula"
+            />
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={lblStyle}>Duração</label>
+                <input
+                  value={formAula.duracao}
+                  onChange={e => setFormAula({ ...formAula, duracao: e.target.value })}
+                  style={inpStyle}
+                  placeholder="Ex: 48 min"
+                />
+              </div>
+              <div style={{ width: '90px' }}>
+                <label style={lblStyle}>Ordem</label>
+                <input
+                  type="number"
+                  value={formAula.ordem}
+                  onChange={e => setFormAula({ ...formAula, ordem: Number(e.target.value) })}
+                  style={inpStyle}
+                />
+              </div>
+            </div>
+
+            <label style={lblStyle}>🔗 Link do vídeo do YouTube</label>
+            <input
+              value={formAula.video_url}
+              onChange={e => setFormAula({ ...formAula, video_url: e.target.value })}
+              style={inpStyle}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', marginBottom: '16px' }}>
+              Cole o link do vídeo do canal do YouTube. O vídeo será reproduzido dentro do portal.
+            </p>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setModalAula(false)}
+                style={{ padding: '9px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#fff', cursor: 'pointer', fontSize: '13px' }}>
+                Cancelar
+              </button>
+              <button onClick={salvarAula}
+                disabled={!formAula.titulo}
+                style={{ padding: '9px 16px', background: formAula.titulo ? '#0d2550' : '#94a3b8', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>
+                {aulaEdit ? 'Salvar' : 'Criar Aula'}
               </button>
             </div>
           </div>

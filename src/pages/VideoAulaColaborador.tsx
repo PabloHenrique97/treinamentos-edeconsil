@@ -9,6 +9,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { Sidebar } from '../components/Sidebar'
 import { Topbar } from '../components/Topbar'
 import { cursosAPI } from '../services/api'
+import { isYoutube, montarEmbedUrl } from '../utils/youtube'
 import modeloTreinamento from '../assets/modelo-treinamento.png'
 import logoEdeconsil from '../assets/logo-edeconsil.png'
 
@@ -38,7 +39,7 @@ export function VideoAulaColaborador({
       aulas: {
         id: number; dbId: number; numero: number; titulo: string; descricao: string
         duracao: string; status: string; progresso: number
-        videoUrl: string; videoDisponivel: boolean
+        videoUrl: string; videoDisponivel: boolean; videoTipo: string
         materiais: { nome: string; tamanho: string; tipo: string; url: string }[]
       }[]
       aulasConcluidas: number; totalAulas: number
@@ -46,6 +47,8 @@ export function VideoAulaColaborador({
   } | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const ytIframeRef = useRef<HTMLIFrameElement>(null)
+  const ytPlayerRef = useRef<any>(null)
   const ultimoSalvoRef = useRef(-1)
   const aulaDbIdRef = useRef<number | null>(null)
   const [tocando, setTocando] = useState(false)
@@ -79,6 +82,7 @@ export function VideoAulaColaborador({
             progresso: a.progresso?.percentual ?? 0,
             videoUrl: a.video_url ?? '',
             videoDisponivel: a.video_disponivel ?? false,
+            videoTipo: a.video_tipo ?? 'mp4',
             materiais: a.materiais ?? [],
           }))
           const conc = aulas.filter((a: any) => a.status === 'Concluída').length
@@ -97,13 +101,54 @@ export function VideoAulaColaborador({
     return () => { cancelado = true }
   }, [cursoId])
 
+  const [aulaVideoUrl, setAulaVideoUrl] = useState('')
+
   useEffect(() => {
     if (!dados) return
     const mod = dados.modulos.find(m => m.id === moduloId) ?? dados.modulos[0]
     const aula = mod?.aulas.find(a => a.id === aulaId) ?? mod?.aulas[0]
     aulaDbIdRef.current = aula?.dbId ?? null
     ultimoSalvoRef.current = -1
+    setAulaVideoUrl(aula?.videoUrl ?? '')
   }, [dados, moduloId, aulaId])
+
+  useEffect(() => {
+    if (!aulaVideoUrl || !isYoutube(aulaVideoUrl)) return
+    if (!(window as any).YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      document.body.appendChild(tag)
+    }
+    let intervalo: ReturnType<typeof setInterval> | null = null
+    const initPlayer = () => {
+      const YT = (window as any).YT
+      if (!YT || !YT.Player || !ytIframeRef.current) return
+      ytPlayerRef.current = new YT.Player(ytIframeRef.current, {
+        events: {
+          onReady: () => {
+            intervalo = setInterval(() => {
+              const p = ytPlayerRef.current
+              if (!p?.getCurrentTime) return
+              const atual = p.getCurrentTime()
+              const total = p.getDuration()
+              if (total > 0 && aulaDbIdRef.current) {
+                const pct = Math.round((atual / total) * 100)
+                cursosAPI.salvarProgresso(cursoId, aulaDbIdRef.current, {
+                  percentual: pct, concluida: pct >= 90,
+                }).catch(() => {})
+              }
+            }, 10000)
+          },
+        },
+      })
+    }
+    ;(window as any).onYouTubeIframeAPIReady = initPlayer
+    if ((window as any).YT?.Player) initPlayer()
+    return () => {
+      if (intervalo) clearInterval(intervalo)
+      if (ytPlayerRef.current?.destroy) ytPlayerRef.current.destroy()
+    }
+  }, [aulaVideoUrl, cursoId])
 
   const togglePlay = () => {
     if (!videoRef.current) { setTocando(!tocando); return }
@@ -222,66 +267,80 @@ export function VideoAulaColaborador({
             {/* Player */}
             <div style={{ padding: '0 20px', flexShrink: 0 }}>
               {aulaAtiva.videoUrl && aulaAtiva.videoDisponivel ? (
-                /* ── Player de vídeo real ── */
-                <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${C.border}`, position: 'relative' }}>
-                  <video
-                    ref={videoRef}
-                    src={aulaAtiva.videoUrl}
-                    style={{ width: '100%', display: 'block', maxHeight: '480px', background: '#000' }}
-                    onTimeUpdate={onTimeUpdate}
-                    onLoadedMetadata={onTimeUpdate}
-                    onEnded={() => setTocando(false)}
-                    onClick={togglePlay}
-                    muted={mutado}
-                    controls={false}
-                    playsInline
-                  />
-                  {/* Botão play central — visível quando pausado */}
-                  {!tocando && (
-                    <button
+                isYoutube(aulaAtiva.videoUrl) ? (
+                  /* ── Player YouTube ── */
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+                    <iframe
+                      ref={ytIframeRef}
+                      src={montarEmbedUrl(aulaAtiva.videoUrl) ?? ''}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={aulaAtiva.titulo}
+                    />
+                  </div>
+                ) : (
+                  /* ── Player de vídeo mp4 ── */
+                  <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${C.border}`, position: 'relative' }}>
+                    <video
+                      ref={videoRef}
+                      src={aulaAtiva.videoUrl}
+                      style={{ width: '100%', display: 'block', maxHeight: '480px', background: '#000' }}
+                      onTimeUpdate={onTimeUpdate}
+                      onLoadedMetadata={onTimeUpdate}
+                      onEnded={() => setTocando(false)}
                       onClick={togglePlay}
-                      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 2, width: '56px', height: '56px', borderRadius: '50%', background: C.blue, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 14px rgba(26,86,255,0.18)`, transition: 'all 200ms' }}
-                      onMouseEnter={e => e.currentTarget.style.transform = 'translate(-50%,-50%) scale(1.08)'}
-                      onMouseLeave={e => e.currentTarget.style.transform = 'translate(-50%,-50%)'}
-                    >
-                      <Play size={22} color="#fff" style={{ marginLeft: '2px' }} />
-                    </button>
-                  )}
-                  {/* Barra de controles */}
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(to top, rgba(5,13,26,0.95), transparent)', zIndex: 2 }}>
-                    <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', height: '4px', marginBottom: '10px', cursor: 'pointer', position: 'relative' }}>
-                      <div style={{ background: C.blue, height: '4px', borderRadius: '4px', width: `${progresso}%` }} />
-                      <div style={{ position: 'absolute', top: '50%', left: `${progresso}%`, transform: 'translate(-50%,-50%)', width: '12px', height: '12px', background: '#fff', borderRadius: '50%' }} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                        {tocando ? <Pause size={16} /> : <Play size={16} />}
+                      muted={mutado}
+                      controls={false}
+                      playsInline
+                    />
+                    {/* Botão play central — visível quando pausado */}
+                    {!tocando && (
+                      <button
+                        onClick={togglePlay}
+                        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 2, width: '56px', height: '56px', borderRadius: '50%', background: C.blue, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 14px rgba(26,86,255,0.18)`, transition: 'all 200ms' }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'translate(-50%,-50%) scale(1.08)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'translate(-50%,-50%)'}
+                      >
+                        <Play size={22} color="#fff" style={{ marginLeft: '2px' }} />
                       </button>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><SkipForward size={16} /></button>
-                      <button onClick={() => setMutado(!mutado)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                        {mutado ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                      </button>
-                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{tempoAtual} / {tempoTotal}</span>
-                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
-                        <button onClick={() => setMenuVelocidade(!menuVelocidade)} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>
-                          {velocidade}x
+                    )}
+                    {/* Barra de controles */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(to top, rgba(5,13,26,0.95), transparent)', zIndex: 2 }}>
+                      <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '4px', height: '4px', marginBottom: '10px', cursor: 'pointer', position: 'relative' }}>
+                        <div style={{ background: C.blue, height: '4px', borderRadius: '4px', width: `${progresso}%` }} />
+                        <div style={{ position: 'absolute', top: '50%', left: `${progresso}%`, transform: 'translate(-50%,-50%)', width: '12px', height: '12px', background: '#fff', borderRadius: '50%' }} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
+                          {tocando ? <Pause size={16} /> : <Play size={16} />}
                         </button>
-                        {menuVelocidade && (
-                          <div style={{ position: 'absolute', bottom: '100%', right: 0, background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '4px' }}>
-                            {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
-                              <button key={v} onClick={() => { setVelocidade(v); setMenuVelocidade(false); if (videoRef.current) videoRef.current.playbackRate = v }}
-                                style={{ display: 'block', width: '100%', padding: '7px 16px', background: velocidade === v ? `rgba(26,86,255,0.12)` : 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: velocidade === v ? C.blue : C.text, fontWeight: velocidade === v ? 700 : 400, textAlign: 'left', fontFamily: "'Inter',sans-serif" }}>
-                                {v}x
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Settings size={15} /></button>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Maximize size={15} /></button>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><SkipForward size={16} /></button>
+                        <button onClick={() => setMutado(!mutado)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}>
+                          {mutado ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                        </button>
+                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{tempoAtual} / {tempoTotal}</span>
+                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+                          <button onClick={() => setMenuVelocidade(!menuVelocidade)} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>
+                            {velocidade}x
+                          </button>
+                          {menuVelocidade && (
+                            <div style={{ position: 'absolute', bottom: '100%', right: 0, background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', overflow: 'hidden', marginBottom: '4px' }}>
+                              {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
+                                <button key={v} onClick={() => { setVelocidade(v); setMenuVelocidade(false); if (videoRef.current) videoRef.current.playbackRate = v }}
+                                  style={{ display: 'block', width: '100%', padding: '7px 16px', background: velocidade === v ? `rgba(26,86,255,0.12)` : 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: velocidade === v ? C.blue : C.text, fontWeight: velocidade === v ? 700 : 400, textAlign: 'left', fontFamily: "'Inter',sans-serif" }}>
+                                  {v}x
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Settings size={15} /></button>
+                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex' }}><Maximize size={15} /></button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )
               ) : (
                 /* ── Placeholder quando vídeo indisponível ── */
                 <div style={{
