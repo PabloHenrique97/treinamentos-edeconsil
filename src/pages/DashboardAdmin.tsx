@@ -2,6 +2,7 @@ import {
   GraduationCap, BookOpen, Users, Award,
   UserPlus, TrendingUp, Send, BarChart2,
 } from 'lucide-react'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { useTheme } from '../contexts/ThemeContext'
 import { LayoutAdmin } from '../components/admin/LayoutAdmin'
 import { useMetricasAdmin } from '../hooks/useMetricasAdmin'
@@ -60,9 +61,21 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
     m.carregando ? '...' : `${m.progressoMedio}%`,
   ]
 
+  const variacoes: (number | undefined)[] = [
+    undefined,
+    undefined,
+    m.variacao?.alunos,
+    m.variacao?.alunos,
+    undefined,
+    m.variacao?.matriculas,
+    undefined,
+    undefined,
+  ]
+
   const metricas = metricasBase.map((base, i) => ({
     ...base,
     valor: m.carregando ? '...' : String(valoresMetricas[i]),
+    variacao: variacoes[i],
   }))
 
   return (
@@ -86,6 +99,12 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                   <div>
                     <div style={{ fontSize: '22px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{mt.valor}</div>
                     <div style={{ fontSize: '11px', color: C.muted, marginTop: '2px' }}>{mt.label}</div>
+                    {mt.variacao !== undefined && (
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: mt.variacao >= 0 ? '#16a34a' : '#dc2626', marginTop: '3px' }}>
+                        {mt.variacao >= 0 ? '+' : ''}{mt.variacao}%
+                        <span style={{ color: '#94a3b8', fontWeight: 400, marginLeft: '4px' }}>vs. últimos 30 dias</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
@@ -125,29 +144,56 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                       <div style={{ fontSize: '11px', color: C.muted, lineHeight: 1.4 }}>{aluno.nome} · {aluno.setor ?? aluno.cargo ?? '—'}</div>
                       <div style={{ fontSize: '10px', color: C.muted, marginTop: '2px' }}>{new Date(aluno.criado_em).toLocaleDateString('pt-BR')}</div>
                     </div>
+                    <span style={{ fontSize: '11px', color: '#94a3b8', flexShrink: 0 }}>
+                      {new Date(aluno.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
                 ))}
+                <button
+                  onClick={() => onNavigate('notificacoesAdmin')}
+                  style={{ width: '100%', marginTop: '12px', padding: '8px', background: 'transparent', border: 'none', color: '#1a56ff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }}
+                >
+                  Ver todas as atividades →
+                </button>
               </div>
             </div>
 
             {/* Distribuição de Alunos */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: C.text, marginBottom: '12px' }}>Distribuição de Alunos</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: '13px', color: C.text }}>Total de alunos ativos</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>{m.carregando ? '...' : m.alunos.ativos}</span>
+              <div style={{ position: 'relative', height: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={m.distribuicaoTurmas ?? []}
+                      dataKey="total"
+                      nameKey="nome"
+                      cx="50%" cy="50%"
+                      innerRadius={55}
+                      outerRadius={80}
+                      paddingAngle={2}
+                    >
+                      {(m.distribuicaoTurmas ?? []).map((t, i) => (
+                        <Cell key={i} fill={t.cor} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: C.text }}>{m.alunos.ativos}</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Total</div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
-                  <span style={{ fontSize: '13px', color: C.text }}>Turmas com alunos</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>{m.carregando ? '...' : m.turmas.total}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-                  <span style={{ fontSize: '13px', color: C.text }}>Média por turma</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: C.blue }}>
-                    {m.carregando ? '...' : m.turmas.total > 0 ? Math.round(m.alunos.ativos / m.turmas.total) : 0} alunos
-                  </span>
-                </div>
+              </div>
+              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {(m.distribuicaoTurmas ?? []).map((t, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 2, background: t.cor, display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ color: '#475569' }}>{t.nome}</span>
+                    </div>
+                    <span style={{ fontWeight: 600, color: C.text }}>{t.total}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -194,8 +240,6 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
                   <div style={{ fontSize: '9px', color: C.muted }}>Taxa geral</div>
                 </div>
               </div>
-              <div style={{ fontSize: '13px', color: C.green, fontWeight: 600 }}>↑ 7,8%</div>
-              <div style={{ fontSize: '11px', color: C.muted }}>vs mês anterior</div>
               <div style={{ fontSize: '11px', color: C.muted, marginTop: '4px' }}>⊙ Meta: 70%</div>
             </div>
 

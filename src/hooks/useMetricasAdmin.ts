@@ -12,6 +12,8 @@ export interface MetricasAdmin {
   cursosRecentes:      any[]
   alunosRecentes:      any[]
   cursosMaisAcessados: any[]
+  variacao?:           { alunos: number; matriculas: number }
+  distribuicaoTurmas?: { nome: string; total: number; cor: string }[]
   carregando:          boolean
   erro:                string
 }
