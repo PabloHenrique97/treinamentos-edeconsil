@@ -145,7 +145,7 @@ export function CertificadosAdmin({ onNavigate, onLogout }: CertificadosAdminPro
             Adicionar Certificado
           </button>
           <a
-            href="/treinamentos-edeconsil/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
+            href="/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
             download
             style={{
               display: 'flex',

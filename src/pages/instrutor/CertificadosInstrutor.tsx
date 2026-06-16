@@ -147,7 +147,7 @@ export function CertificadosInstrutor({ onNavigate: _onNavigate }: CertificadosI
             Adicionar Certificado
           </button>
           <a
-            href="/treinamentos-edeconsil/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
+            href="/certificados/FOR-CCR-006.r03_Modelo_de_Certificado.pptx"
             download
             style={{
               display: 'flex',
