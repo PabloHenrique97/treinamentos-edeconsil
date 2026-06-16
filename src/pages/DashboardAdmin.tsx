@@ -115,7 +115,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           </div>
 
           {/* ── LINHA 2: Gráfico + Atividades + Distribuição ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 320px' : '1fr 320px 280px', gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 320px' : '1fr 320px 280px', gap: '16px' }}>
 
             {/* Gráfico Matrículas */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
@@ -199,7 +199,7 @@ export function DashboardAdmin({ onNavigate, onLogout }: { onNavigate: (p: strin
           </div>
 
           {/* ── LINHA 3: Cursos + Taxa Conclusão + Status + Ações Rápidas ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 220px 220px 200px', gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 220px 220px 200px', gap: '16px' }}>
 
             {/* Cursos mais acessados */}
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '16px' }}>
