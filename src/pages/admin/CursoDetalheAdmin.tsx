@@ -222,6 +222,7 @@ export function CursoDetalheAdmin({ cursoId, onNavigate, onLogout, onVoltar }: C
       carregarCurso()
     } catch (err) {
       console.error('Erro ao excluir aula:', err)
+      alert('Erro ao excluir aula. Tente novamente.')
     }
   }
 
