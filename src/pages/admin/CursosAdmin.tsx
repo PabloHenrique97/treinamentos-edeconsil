@@ -269,7 +269,7 @@ export function CursosAdmin({ onNavigate, onLogout, onAbrirCurso }: {
                 <div
                   key={curso.id}
                   onClick={() => onAbrirCurso(curso.slug ?? curso.id)}
-                  style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative', cursor: 'pointer' }}
+                  style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'transform 150ms, box-shadow 150ms', position: 'relative', cursor: 'pointer', zIndex: menuAberto === curso.id ? 60 : undefined }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                 >

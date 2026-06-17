@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { cursosAPI } from '../../services/api'
+import { cursosAPI, turmasAPI } from '../../services/api'
 
 interface CriarCursoProps {
   onFechar:  () => void
@@ -8,12 +8,6 @@ interface CriarCursoProps {
   cursoEditar?: any
 }
 
-const CATEGORIAS = [
-  'Gestão e Suprimentos', 'Segurança do Trabalho',
-  'Obras e Infraestrutura', 'Administrativo',
-  'Equipamentos', 'Tecnologia da Informação',
-  'Recursos Humanos', 'Qualidade',
-]
 
 const CORES = [
   '#1a56ff','#dc2626','#059669','#d97706',
@@ -47,6 +41,8 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
   const [subtitulo,    setSubtitulo]    = useState(cursoEditar?.subtitulo    ?? '')
   const [descricao,    setDescricao]    = useState(cursoEditar?.descricao    ?? '')
   const [categoria,    setCategoria]    = useState(cursoEditar?.categoria    ?? '')
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([])
+  const [turmaSelecionada,  setTurmaSelecionada]  = useState<string>(cursoEditar?.turma_id ?? '')
   const [cargo,        setCargo]        = useState(cursoEditar?.cargo        ?? '')
   const [trilha]                         = useState(cursoEditar?.trilha       ?? '')
   const [cargaHoraria, setCargaHoraria] = useState(cursoEditar?.carga_horaria ?? '')
@@ -63,6 +59,12 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
 
   const stopKeys = useCallback((e: React.KeyboardEvent) => e.stopPropagation(), [])
 
+  useEffect(() => {
+    turmasAPI.listar()
+      .then((data: any) => setTurmasDisponiveis(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
   const handleTituloChange = (val: string) => {
     setTitulo(val)
     if (!slugManual) setSlug(gerarSlug(val))
@@ -72,7 +74,7 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
     setErro('')
     if (!titulo.trim())   { setErro('Título é obrigatório'); return }
     if (!slug.trim())     { setErro('Slug é obrigatório'); return }
-    if (!categoria)       { setErro('Selecione a categoria'); return }
+    if (!ehEdicao && !turmaSelecionada) { setErro('Selecione a turma'); return }
     if (!instrutor.trim()) { setErro('Instrutor é obrigatório'); return }
 
     setSalvando(true)
@@ -81,7 +83,8 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
         titulo: titulo.trim(), slug: slug.trim(),
         subtitulo: subtitulo.trim() || null,
         descricao: descricao.trim() || null,
-        categoria, cargo: cargo.trim() || null,
+        categoria, turma_id: turmaSelecionada || null,
+        cargo: cargo.trim() || null,
         trilha: trilha.trim() || null,
         carga_horaria: cargaHoraria.trim() || null,
         instrutor: instrutor.trim(), cor, icone,
@@ -240,12 +243,19 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
       {/* Categoria + Cargo */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
         <div>
-          <label style={labelStyle}>Categoria <span style={{ color: '#ef4444' }}>*</span></label>
-          <select value={categoria} onChange={e => setCategoria(e.target.value)}
+          <label style={labelStyle}>Turma <span style={{ color: '#ef4444' }}>*</span></label>
+          <select value={turmaSelecionada} onChange={e => {
+            const id = e.target.value
+            setTurmaSelecionada(id)
+            const t = turmasDisponiveis.find((x: any) => x.id === id)
+            if (t) setCategoria(t.cargo_grupo || t.nome)
+          }}
             onKeyDown={stopKeys} onFocus={onFocusI} onBlur={onBlurI}
-            style={{ ...inputStyle, cursor: 'pointer', color: categoria ? C.text : C.muted }}>
-            <option value="">Selecione</option>
-            {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            style={{ ...inputStyle, cursor: 'pointer', color: turmaSelecionada ? C.text : C.muted }}>
+            <option value="">Selecione a turma</option>
+            {turmasDisponiveis.map((t: any) => (
+              <option key={t.id} value={t.id}>{t.cargo_grupo || t.nome}</option>
+            ))}
           </select>
         </div>
         <div>
