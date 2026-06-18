@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, Paperclip, X, Download, Search, Plus } from 'lucide-react'
+import { Send, Paperclip, X, Download, Search, Plus, MoreVertical } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getToken } from '../../services/authStorage'
 import { conversasAPI } from '../../services/api'
@@ -11,6 +11,14 @@ interface MensagensConteudoProps {
 
 const _apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'
 const baseUrl = _apiUrl.replace(/\/api\/?$/, '')
+
+const menuItemStyle = {
+  display: 'block', width: '100%',
+  textAlign: 'left' as const, padding: '10px 14px',
+  background: 'transparent', border: 'none',
+  cursor: 'pointer', fontSize: '13px',
+  color: '#1e293b',
+}
 
 function useAdminChat(convSelecionadaRef: { current: any }) {
   const [mensagens, setMensagens] = useState<any[]>([])
@@ -113,6 +121,9 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   const [destinatarios,  setDestinatarios]  = useState<any[]>([])
   const [destSelecionado,setDestSelecionado]= useState<any>(null)
   const [carregandoDest, setCarregandoDest] = useState(false)
+  const [menuHeaderAberto,      setMenuHeaderAberto]      = useState(false)
+  const [modoSelecao,           setModoSelecao]           = useState(false)
+  const [conversasSelecionadas, setConversasSelecionadas] = useState<string[]>([])
   const bottomRef          = useRef<HTMLDivElement>(null)
   const fileRef            = useRef<HTMLInputElement>(null)
   const convSelecionadaRef = useRef<any>(null)
@@ -200,6 +211,20 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
     }
   }
 
+  const handleMarcarTodasLidas = async () => {
+    try {
+      await conversasAPI.marcarTodasLidas()
+      setMenuHeaderAberto(false)
+      const token = getToken()
+      fetch(`${baseUrl}/api/conversas`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(data => setConversas(Array.isArray(data) ? data : []))
+        .catch(() => {})
+    } catch (err) {
+      console.error('Erro ao marcar todas como lidas:', err)
+    }
+  }
+
   const handleEnviar = () => {
     if (!texto.trim() && !arquivoPreview) return
     const mensagemOptimista = {
@@ -254,14 +279,57 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
             <h2 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
               Mensagens
             </h2>
-            <button
-              onClick={abrirNovaMsg}
-              title="Nova conversa"
-              style={{ background: '#0d2550', border: 'none', borderRadius: '8px', padding: '5px 10px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-            >
-              <Plus size={13} />
-              Nova
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={abrirNovaMsg}
+                title="Nova conversa"
+                style={{ background: '#0d2550', border: 'none', borderRadius: '8px', padding: '5px 10px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <Plus size={13} />
+                Nova
+              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setMenuHeaderAberto(v => !v)}
+                  title="Opções"
+                  style={{
+                    background: 'transparent', border: 'none',
+                    cursor: 'pointer', padding: '6px',
+                    borderRadius: '6px', color: '#64748b',
+                    display: 'flex',
+                  }}
+                >
+                  <MoreVertical size={18} />
+                </button>
+
+                {menuHeaderAberto && (
+                  <div style={{
+                    position: 'absolute', top: '100%', right: 0,
+                    background: '#fff', borderRadius: '8px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                    border: '1px solid #e2e8f0',
+                    minWidth: '200px', zIndex: 100,
+                    overflow: 'hidden',
+                  }}>
+                    <button
+                      onClick={() => {
+                        setModoSelecao(v => !v)
+                        setMenuHeaderAberto(false)
+                      }}
+                      style={menuItemStyle}
+                    >
+                      Selecionar conversas
+                    </button>
+                    <button
+                      onClick={handleMarcarTodasLidas}
+                      style={menuItemStyle}
+                    >
+                      Marcar todas como lidas
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 10px' }}>
             <Search size={13} color={C.muted} />
@@ -274,6 +342,27 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
             />
           </div>
         </div>
+
+        {modoSelecao && (
+          <div style={{
+            display: 'flex', gap: '8px', padding: '8px',
+            borderBottom: `1px solid ${C.border}`,
+            alignItems: 'center',
+          }}>
+            <span style={{ fontSize: '12px', color: C.muted }}>
+              {conversasSelecionadas.length} selecionada(s)
+            </span>
+            <button
+              onClick={() => {
+                setModoSelecao(false)
+                setConversasSelecionadas([])
+              }}
+              style={{ marginLeft: 'auto', fontSize: '12px', border: 'none', background: 'transparent', cursor: 'pointer', color: C.blue }}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {conversasFiltradas.length === 0 ? (
@@ -313,6 +402,20 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {modoSelecao && (
+                  <input
+                    type="checkbox"
+                    checked={conversasSelecionadas.includes(conv.id)}
+                    onChange={e => {
+                      e.stopPropagation()
+                      setConversasSelecionadas(prev =>
+                        prev.includes(conv.id)
+                          ? prev.filter(id => id !== conv.id)
+                          : [...prev, conv.id])
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                )}
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(26,86,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: C.blue, flexShrink: 0 }}>
                   {conv.aluno_nome?.split(' ').slice(0, 2).map((n: string) => n[0]).join('') ?? '?'}
                 </div>

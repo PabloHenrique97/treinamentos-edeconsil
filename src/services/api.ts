@@ -308,6 +308,8 @@ export const conversasAPI = {
   mensagens: (id: string) => apiRequest<any[]>(`/conversas/${id}/mensagens`),
   criar: (dados: { destinatario_id: string; tipo_contato?: string }) =>
     apiRequest<any>('/conversas', { method: 'POST', body: JSON.stringify(dados) }),
+  marcarTodasLidas: () =>
+    apiRequest('/conversas/marcar-todas-lidas', { method: 'PATCH' }),
 }
 
 export const modulosAPI = {
