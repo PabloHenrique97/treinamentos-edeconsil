@@ -19,7 +19,8 @@ import { PermissoesAdmin } from './pages/admin/PermissoesAdmin'
 import { CertificadosColaborador } from './pages/CertificadosColaborador'
 import { ApostilasColaborador } from './pages/ApostilasColaborador'
 import { MensagensColaborador } from './pages/MensagensColaborador'
-import { MensagensAdmin }       from './pages/admin/MensagensAdmin'
+import { MensagensConteudo }    from './pages/admin/MensagensConteudo'
+import { LayoutAdmin }          from './components/admin/LayoutAdmin'
 import { NotificacoesAdmin }   from './pages/admin/NotificacoesAdmin'
 import { AnotacoesColaborador } from './pages/AnotacoesColaborador'
 import { EdeconQuiz } from './pages/EdeconQuiz'
@@ -202,10 +203,14 @@ if (pagina === 'configuracoesAdmin') return (
       />
     )
     if (pagina === 'mensagensAdmin') return (
-      <MensagensAdmin
+      <LayoutAdmin
+        paginaAtiva="mensagensAdmin"
         onNavigate={(p) => setPagina(p as Pagina)}
         onLogout={handleLogout}
-      />
+      >
+        <MensagensConteudo
+          onNavigate={(p) => setPagina(p as Pagina)} />
+      </LayoutAdmin>
     )
     if (pagina === 'notificacoesAdmin') return (
       <NotificacoesAdmin
