@@ -65,6 +65,12 @@ export function CriarCurso({ onFechar, onSucesso, cursoEditar }: CriarCursoProps
       .catch(() => {})
   }, [])
 
+  useEffect(() => {
+    if (cursoEditar?.turma_id) {
+      setTurmaSelecionada(cursoEditar.turma_id)
+    }
+  }, [cursoEditar])
+
   const handleTituloChange = (val: string) => {
     setTitulo(val)
     if (!slugManual) setSlug(gerarSlug(val))
