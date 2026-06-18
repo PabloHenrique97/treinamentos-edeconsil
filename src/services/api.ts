@@ -315,11 +315,16 @@ export const conversasAPI = {
     fixada?: boolean
     silenciada?: boolean
     nao_lida?: boolean
+    bloqueada?: boolean
   }) =>
     apiRequest(`/conversas/${id}/preferencias`, {
       method: 'PATCH',
       body: JSON.stringify(dados),
     }),
+  limpar: (id: string) =>
+    apiRequest(`/conversas/${id}/limpar`, { method: 'PATCH' }),
+  apagar: (id: string) =>
+    apiRequest(`/conversas/${id}/apagar`, { method: 'PATCH' }),
 }
 
 export const modulosAPI = {

@@ -233,7 +233,7 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
 
   const togglePref = async (
     convId: string,
-    campo: 'favorita' | 'fixada' | 'silenciada' | 'nao_lida',
+    campo: 'favorita' | 'fixada' | 'silenciada' | 'nao_lida' | 'bloqueada',
     valorAtual: boolean
   ) => {
     try {
@@ -242,6 +242,34 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
       recarregarConversas()
     } catch (err) {
       console.error('Erro pref:', err)
+    }
+  }
+
+  const handleLimpar = async (convId: string) => {
+    if (!confirm('Limpar o histórico desta conversa? Só você deixará de ver as mensagens antigas.')) return
+    try {
+      await conversasAPI.limpar(convId)
+      setMenuConversa(null)
+      if (convSelecionada?.id === convId) {
+        setMensagens([])
+      }
+      recarregarConversas()
+    } catch (err) {
+      console.error('Erro limpar:', err)
+    }
+  }
+
+  const handleApagar = async (convId: string) => {
+    if (!confirm('Apagar esta conversa? Ela sairá da sua lista, mas reaparecerá se você receber uma nova mensagem.')) return
+    try {
+      await conversasAPI.apagar(convId)
+      setMenuConversa(null)
+      if (convSelecionada?.id === convId) {
+        setConvSelecionada(null)
+      }
+      recarregarConversas()
+    } catch (err) {
+      console.error('Erro apagar:', err)
     }
   }
 
@@ -511,6 +539,21 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
                         style={menuItemStyle}>
                         {conv.favorita ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                       </button>
+
+                      <div style={{ height: 1, background: '#e2e8f0', margin: '4px 0' }} />
+
+                      <button onClick={e => { e.stopPropagation(); togglePref(conv.id, 'bloqueada', conv.bloqueada) }}
+                        style={menuItemStyle}>
+                        {conv.bloqueada ? 'Desbloquear' : 'Bloquear'}
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); handleLimpar(conv.id) }}
+                        style={menuItemStyle}>
+                        Limpar conversa
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); handleApagar(conv.id) }}
+                        style={{ ...menuItemStyle, color: '#dc2626' }}>
+                        Apagar conversa
+                      </button>
                     </div>
                   )}
                 </div>
@@ -632,6 +675,11 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
             )}
 
             {/* Input */}
+            {convSelecionada?.bloqueada ? (
+              <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '13px', borderTop: `1px solid ${C.border}` }}>
+                Conversa bloqueada. Desbloqueie para enviar mensagens.
+              </div>
+            ) : (
             <div style={{ padding: '12px 20px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
               <button
                 onClick={() => fileRef.current?.click()}
@@ -664,6 +712,7 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
                 <Send size={14} color={(!texto.trim() && !arquivoPreview) ? C.muted : '#fff'} />
               </button>
             </div>
+            )}
           </>
         )}
       </div>
