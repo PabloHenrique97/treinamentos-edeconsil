@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, Paperclip, X, Download, Search, Plus, MoreVertical } from 'lucide-react'
+import { Send, Paperclip, X, Download, Search, Plus, MoreVertical, ChevronDown, Pin, BellOff, Star } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getToken } from '../../services/authStorage'
 import { conversasAPI } from '../../services/api'
@@ -124,6 +124,8 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
   const [menuHeaderAberto,      setMenuHeaderAberto]      = useState(false)
   const [modoSelecao,           setModoSelecao]           = useState(false)
   const [conversasSelecionadas, setConversasSelecionadas] = useState<string[]>([])
+  const [menuConversa,    setMenuConversa]    = useState<string | null>(null)
+  const [filtroFavoritas, setFiltroFavoritas] = useState(false)
   const bottomRef          = useRef<HTMLDivElement>(null)
   const fileRef            = useRef<HTMLInputElement>(null)
   const convSelecionadaRef = useRef<any>(null)
@@ -211,17 +213,35 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
     }
   }
 
+  const recarregarConversas = () => {
+    const token = getToken()
+    fetch(`${baseUrl}/api/conversas`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => setConversas(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }
+
   const handleMarcarTodasLidas = async () => {
     try {
       await conversasAPI.marcarTodasLidas()
       setMenuHeaderAberto(false)
-      const token = getToken()
-      fetch(`${baseUrl}/api/conversas`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.json())
-        .then(data => setConversas(Array.isArray(data) ? data : []))
-        .catch(() => {})
+      recarregarConversas()
     } catch (err) {
       console.error('Erro ao marcar todas como lidas:', err)
+    }
+  }
+
+  const togglePref = async (
+    convId: string,
+    campo: 'favorita' | 'fixada' | 'silenciada' | 'nao_lida',
+    valorAtual: boolean
+  ) => {
+    try {
+      await conversasAPI.preferencias(convId, { [campo]: !valorAtual })
+      setMenuConversa(null)
+      recarregarConversas()
+    } catch (err) {
+      console.error('Erro pref:', err)
     }
   }
 
@@ -265,7 +285,8 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
     new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
   const conversasFiltradas = conversas.filter(c =>
-    !busca || c.aluno_nome?.toLowerCase().includes(busca.toLowerCase())
+    (!busca || c.aluno_nome?.toLowerCase().includes(busca.toLowerCase())) &&
+    (!filtroFavoritas || c.favorita)
   )
 
   return (
@@ -325,6 +346,15 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
                       style={menuItemStyle}
                     >
                       Marcar todas como lidas
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFiltroFavoritas(v => !v)
+                        setMenuHeaderAberto(false)
+                      }}
+                      style={menuItemStyle}
+                    >
+                      {filtroFavoritas ? 'Mostrar todas' : 'Mensagens favoritas'}
                     </button>
                   </div>
                 )}
@@ -393,6 +423,7 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
                   })
               }}
               style={{
+                position: 'relative',
                 padding: '12px 16px',
                 borderBottom: `1px solid ${C.border}`,
                 cursor: 'pointer',
@@ -421,18 +452,67 @@ export function MensagensConteudo({ onNavigate: _onNavigate }: MensagensConteudo
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {conv.aluno_nome ?? 'Aluno'}
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: C.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {conv.fixada      && <Pin     size={11} color={C.muted} />}
+                      {conv.silenciada  && <BellOff size={11} color={C.muted} />}
+                      {conv.favorita    && <Star    size={11} color="#f59e0b" fill="#f59e0b" />}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.aluno_nome ?? 'Aluno'}</span>
                     </p>
-                    {conv.nao_lidas_admin > 0 && (
+                    {(conv.nao_lidas_admin > 0 || conv.nao_lida) && (
                       <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', background: C.blue, borderRadius: '10px', padding: '1px 6px', flexShrink: 0 }}>
-                        {conv.nao_lidas_admin}
+                        {conv.nao_lidas_admin > 0 ? conv.nao_lidas_admin : ''}
                       </span>
                     )}
                   </div>
                   <p style={{ fontSize: '11px', color: C.muted, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {conv.ultima_mensagem ?? conv.aluno_setor ?? '—'}
                   </p>
+                </div>
+
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      setMenuConversa(menuConversa === conv.id ? null : conv.id)
+                    }}
+                    style={{
+                      background: 'transparent', border: 'none',
+                      cursor: 'pointer', padding: '4px',
+                      color: '#94a3b8',
+                      zIndex: menuConversa === conv.id ? 60 : undefined,
+                    }}
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+
+                  {menuConversa === conv.id && (
+                    <div style={{
+                      position: 'absolute', right: '8px',
+                      top: '100%', background: '#fff',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                      border: '1px solid #e2e8f0',
+                      minWidth: '200px', zIndex: 100,
+                      overflow: 'hidden',
+                    }}>
+                      <button onClick={e => { e.stopPropagation(); togglePref(conv.id, 'silenciada', conv.silenciada) }}
+                        style={menuItemStyle}>
+                        {conv.silenciada ? 'Reativar notificações' : 'Silenciar notificações'}
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); togglePref(conv.id, 'fixada', conv.fixada) }}
+                        style={menuItemStyle}>
+                        {conv.fixada ? 'Desafixar' : 'Fixar conversa'}
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); togglePref(conv.id, 'nao_lida', conv.nao_lida) }}
+                        style={menuItemStyle}>
+                        Marcar como não lida
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); togglePref(conv.id, 'favorita', conv.favorita) }}
+                        style={menuItemStyle}>
+                        {conv.favorita ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

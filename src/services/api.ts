@@ -310,6 +310,16 @@ export const conversasAPI = {
     apiRequest<any>('/conversas', { method: 'POST', body: JSON.stringify(dados) }),
   marcarTodasLidas: () =>
     apiRequest('/conversas/marcar-todas-lidas', { method: 'PATCH' }),
+  preferencias: (id: string, dados: {
+    favorita?: boolean
+    fixada?: boolean
+    silenciada?: boolean
+    nao_lida?: boolean
+  }) =>
+    apiRequest(`/conversas/${id}/preferencias`, {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    }),
 }
 
 export const modulosAPI = {
